@@ -73,7 +73,7 @@ class ContactDetailScreen extends ConsumerWidget {
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
+                              color: Colors.white.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
@@ -86,7 +86,7 @@ class ContactDetailScreen extends ConsumerWidget {
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
+                              color: Colors.white.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(Icons.more_vert, color: Colors.white, size: 20),
@@ -103,11 +103,11 @@ class ContactDetailScreen extends ConsumerWidget {
                     height: 80,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [avatarColor, avatarColor.withValues(alpha: 0.7)],
+                        colors: [avatarColor, avatarColor.withOpacity(0.7)],
                       ),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withOpacity(0.2),
                         width: 3,
                       ),
                     ),
@@ -136,7 +136,7 @@ class ContactDetailScreen extends ConsumerWidget {
                     Text(
                       contact.subtitle,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
+                        color: Colors.white.withOpacity(0.6),
                         fontSize: 14,
                       ),
                     ),
@@ -208,7 +208,7 @@ class ContactDetailScreen extends ConsumerWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.1),
+                      color: AppColors.accent.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.access_time, color: AppColors.accent, size: 22),
@@ -268,7 +268,7 @@ class ContactDetailScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
+        color: color.withOpacity(0.2),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -303,7 +303,7 @@ class ContactDetailScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.08),
+                  color: AppColors.primary.withOpacity(0.08),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -334,7 +334,7 @@ class ContactDetailScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.08),
+            color: AppColors.primary.withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),

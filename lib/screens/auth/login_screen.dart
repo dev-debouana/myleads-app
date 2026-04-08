@@ -160,7 +160,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.white.withValues(alpha: 0.7),
+                  color: AppColors.white.withOpacity(0.7),
                 ),
               ),
             ],
@@ -183,10 +183,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.08),
+                  color: AppColors.error.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: AppColors.error.withValues(alpha: 0.2),
+                    color: AppColors.error.withOpacity(0.2),
                   ),
                 ),
                 child: Row(
@@ -226,7 +226,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 hintText: 'votre@email.com',
                 prefixIcon: Icon(
                   Icons.email_outlined,
-                  color: AppColors.textLight.withValues(alpha: 0.7),
+                  color: AppColors.textLight.withOpacity(0.7),
                   size: 20,
                 ),
               ),
@@ -260,7 +260,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 hintText: '••••••••',
                 prefixIcon: Icon(
                   Icons.lock_outline_rounded,
-                  color: AppColors.textLight.withValues(alpha: 0.7),
+                  color: AppColors.textLight.withOpacity(0.7),
                   size: 20,
                 ),
                 suffixIcon: GestureDetector(
@@ -413,7 +413,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: AppColors.accent.withValues(alpha: 0.35),
+              color: AppColors.accent.withOpacity(0.35),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -459,7 +459,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.textLight.withValues(alpha: 0.8),
+              color: AppColors.textLight.withOpacity(0.8),
             ),
           ),
         ),

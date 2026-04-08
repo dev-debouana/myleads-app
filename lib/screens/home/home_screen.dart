@@ -153,7 +153,7 @@ class _Header extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.white.withValues(alpha: 0.7),
+                        color: AppColors.white.withOpacity(0.7),
                       ),
                     ),
                   ],
@@ -175,17 +175,17 @@ class _Header extends StatelessWidget {
               height: 48,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.15),
+                color: AppColors.white.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: AppColors.white.withValues(alpha: 0.12),
+                  color: AppColors.white.withOpacity(0.12),
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.search_rounded,
-                    color: AppColors.white.withValues(alpha: 0.6),
+                    color: AppColors.white.withOpacity(0.6),
                     size: 20,
                   ),
                   const SizedBox(width: 12),
@@ -193,7 +193,7 @@ class _Header extends StatelessWidget {
                     AppStrings.searchContact,
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.white.withValues(alpha: 0.5),
+                      color: AppColors.white.withOpacity(0.5),
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -230,7 +230,7 @@ class _NotificationBell extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.12),
+                color: AppColors.white.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -345,7 +345,7 @@ class _CTACard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: (gradient != null ? AppColors.accent : AppColors.textDark)
-                  .withValues(alpha: 0.12),
+                  .withOpacity(0.12),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -360,7 +360,7 @@ class _CTACard extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: (gradient != null ? AppColors.white : AppColors.primary)
-                    .withValues(alpha: gradient != null ? 0.2 : 0.08),
+                    .withOpacity(gradient != null ? 0.2 : 0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: iconColor, size: 22),
@@ -461,7 +461,7 @@ class _StatCard extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 18),
@@ -563,7 +563,7 @@ class _HotLeadCard extends StatelessWidget {
           border: Border.all(color: AppColors.border, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textDark.withValues(alpha: 0.04),
+              color: AppColors.textDark.withOpacity(0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -627,10 +627,10 @@ class _HotLeadCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.hot.withValues(alpha: 0.1),
+                color: AppColors.hot.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: AppColors.hot.withValues(alpha: 0.25),
+                  color: AppColors.hot.withOpacity(0.25),
                 ),
               ),
               child: Row(
@@ -695,7 +695,7 @@ class _RemindersSummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
+            color: AppColors.primary.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -768,7 +768,7 @@ class _ReminderStat extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w500,
-            color: AppColors.white.withValues(alpha: 0.65),
+            color: AppColors.white.withOpacity(0.65),
           ),
           textAlign: TextAlign.center,
           maxLines: 1,
@@ -786,7 +786,7 @@ class _VerticalDivider extends StatelessWidget {
       width: 1,
       height: 50,
       margin: const EdgeInsets.symmetric(horizontal: 4),
-      color: AppColors.white.withValues(alpha: 0.15),
+      color: AppColors.white.withOpacity(0.15),
     );
   }
 }

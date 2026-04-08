@@ -25,7 +25,7 @@ class BottomNavBar extends StatelessWidget {
         color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.08),
+            color: AppColors.primary.withOpacity(0.08),
             blurRadius: 24,
             offset: const Offset(0, -4),
           ),
@@ -194,12 +194,12 @@ class _ScanButton extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accent.withValues(alpha: 0.40),
+                    color: AppColors.accent.withOpacity(0.40),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
                   BoxShadow(
-                    color: AppColors.accent.withValues(alpha: 0.15),
+                    color: AppColors.accent.withOpacity(0.15),
                     blurRadius: 32,
                     offset: const Offset(0, 10),
                   ),
@@ -215,7 +215,7 @@ class _ScanButton extends StatelessWidget {
                 child: InkWell(
                   onTap: onTap,
                   customBorder: const CircleBorder(),
-                  splashColor: Colors.white.withValues(alpha: 0.3),
+                  splashColor: Colors.white.withOpacity(0.3),
                   child: const Center(
                     child: Icon(
                       Icons.qr_code_scanner_rounded,

@@ -36,7 +36,7 @@ class PricingScreen extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
+                      color: Colors.white.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
@@ -55,7 +55,7 @@ class PricingScreen extends StatelessWidget {
                 Text(
                   AppStrings.pitchShort,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: Colors.white.withOpacity(0.5),
                     fontSize: 12,
                     height: 1.5,
                   ),
@@ -139,7 +139,7 @@ class PricingScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.06),
+                          color: AppColors.primary.withOpacity(0.06),
                           blurRadius: 20,
                         ),
                       ],
@@ -174,7 +174,7 @@ class PricingScreen extends StatelessWidget {
                           'Paiement sécurisé. Annulation à tout moment.',
                           style: TextStyle(
                             fontSize: 11,
-                            color: AppColors.textLight.withValues(alpha: 0.6),
+                            color: AppColors.textLight.withOpacity(0.6),
                           ),
                         ),
                       ],
@@ -211,8 +211,8 @@ class PricingScreen extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: isPopular
-                ? AppColors.accent.withValues(alpha: 0.2)
-                : AppColors.primary.withValues(alpha: 0.08),
+                ? AppColors.accent.withOpacity(0.2)
+                : AppColors.primary.withOpacity(0.08),
             blurRadius: isPopular ? 30 : 20,
             offset: const Offset(0, 8),
           ),
@@ -255,7 +255,7 @@ class PricingScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.1),
+                    color: AppColors.success.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
@@ -292,7 +292,7 @@ class PricingScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       color: isPopular
-                          ? Colors.white.withValues(alpha: 0.5)
+                          ? Colors.white.withOpacity(0.5)
                           : AppColors.textMid,
                     ),
                   ),
@@ -306,7 +306,7 @@ class PricingScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 13,
               color: isPopular
-                  ? Colors.white.withValues(alpha: 0.5)
+                  ? Colors.white.withOpacity(0.5)
                   : AppColors.textMid,
             ),
           ),
@@ -374,7 +374,7 @@ class PricingScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.06),
+        color: AppColors.primary.withOpacity(0.06),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(

@@ -123,7 +123,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.12),
+                          color: Colors.white.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
@@ -144,7 +144,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                 Text(
                   AppStrings.reviewSubtitle,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: Colors.white.withOpacity(0.5),
                     fontSize: 13,
                   ),
                 ),
@@ -152,7 +152,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.success.withValues(alpha: 0.15),
+                    color: AppColors.success.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -224,7 +224,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                           decoration: BoxDecoration(
                             color: selected
                                 ? AppColors.accent
-                                : AppColors.primary.withValues(alpha: 0.06),
+                                : AppColors.primary.withOpacity(0.06),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -284,7 +284,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
               color: AppColors.background,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),
@@ -382,7 +382,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.08),
+                color: AppColors.primary.withOpacity(0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -394,7 +394,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 20),

@@ -41,7 +41,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          shadowColor: AppColors.primary.withValues(alpha: 0.1),
+          shadowColor: AppColors.primary.withOpacity(0.1),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
@@ -156,7 +156,7 @@ class AppTheme {
   // Shadows
   static List<BoxShadow> get cardShadow => [
         BoxShadow(
-          color: AppColors.primary.withValues(alpha: 0.08),
+          color: AppColors.primary.withOpacity(0.08),
           blurRadius: 20,
           offset: const Offset(0, 4),
         ),
@@ -164,7 +164,7 @@ class AppTheme {
 
   static List<BoxShadow> get cardShadowLg => [
         BoxShadow(
-          color: AppColors.primary.withValues(alpha: 0.12),
+          color: AppColors.primary.withOpacity(0.12),
           blurRadius: 40,
           offset: const Offset(0, 8),
         ),
@@ -172,7 +172,7 @@ class AppTheme {
 
   static List<BoxShadow> get accentShadow => [
         BoxShadow(
-          color: AppColors.accent.withValues(alpha: 0.3),
+          color: AppColors.accent.withOpacity(0.3),
           blurRadius: 20,
           offset: const Offset(0, 6),
         ),

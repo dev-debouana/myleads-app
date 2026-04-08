@@ -42,7 +42,7 @@ class ProfileScreen extends ConsumerWidget {
                       gradient: AppColors.accentGradient,
                       borderRadius: BorderRadius.circular(28),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withOpacity(0.2),
                         width: 4,
                       ),
                     ),
@@ -70,7 +70,7 @@ class ProfileScreen extends ConsumerWidget {
                   Text(
                     auth.userEmail.isEmpty ? 'regis@debouana.com' : auth.userEmail,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: Colors.white.withOpacity(0.5),
                       fontSize: 13,
                     ),
                   ),
@@ -80,9 +80,9 @@ class ProfileScreen extends ConsumerWidget {
                   Row(
                     children: [
                       _statItem('${contacts.totalContacts}', 'Contacts'),
-                      Container(width: 1, height: 30, color: Colors.white.withValues(alpha: 0.1)),
+                      Container(width: 1, height: 30, color: Colors.white.withOpacity(0.1)),
                       _statItem('${contacts.hotLeads}', 'Hot Leads'),
-                      Container(width: 1, height: 30, color: Colors.white.withValues(alpha: 0.1)),
+                      Container(width: 1, height: 30, color: Colors.white.withOpacity(0.1)),
                       _statItem('95%', 'Scan OK'),
                     ],
                   ),
@@ -99,7 +99,7 @@ class ProfileScreen extends ConsumerWidget {
                     Icons.person,
                     AppStrings.myAccount,
                     AppStrings.myAccountDesc,
-                    AppColors.primary.withValues(alpha: 0.08),
+                    AppColors.primary.withOpacity(0.08),
                     AppColors.primary,
                     () {},
                   ),
@@ -107,7 +107,7 @@ class ProfileScreen extends ConsumerWidget {
                     Icons.notifications,
                     AppStrings.notifications,
                     AppStrings.notificationsDesc,
-                    AppColors.accent.withValues(alpha: 0.1),
+                    AppColors.accent.withOpacity(0.1),
                     AppColors.accent,
                     () {},
                   ),
@@ -115,7 +115,7 @@ class ProfileScreen extends ConsumerWidget {
                     Icons.star,
                     AppStrings.subscription,
                     AppStrings.subscriptionDesc,
-                    AppColors.warm.withValues(alpha: 0.1),
+                    AppColors.warm.withOpacity(0.1),
                     AppColors.warm,
                     () => context.push('/pricing'),
                   ),
@@ -123,7 +123,7 @@ class ProfileScreen extends ConsumerWidget {
                     Icons.cloud_upload,
                     AppStrings.sync,
                     AppStrings.syncDesc,
-                    AppColors.success.withValues(alpha: 0.1),
+                    AppColors.success.withOpacity(0.1),
                     AppColors.success,
                     () {},
                   ),
@@ -131,7 +131,7 @@ class ProfileScreen extends ConsumerWidget {
                     Icons.download,
                     AppStrings.export,
                     AppStrings.exportDesc,
-                    const Color(0xFF34495E).withValues(alpha: 0.08),
+                    const Color(0xFF34495E).withOpacity(0.08),
                     const Color(0xFF34495E),
                     () {},
                   ),
@@ -139,7 +139,7 @@ class ProfileScreen extends ConsumerWidget {
                     Icons.settings,
                     AppStrings.settings,
                     AppStrings.settingsDesc,
-                    AppColors.cold.withValues(alpha: 0.15),
+                    AppColors.cold.withOpacity(0.15),
                     AppColors.cold,
                     () {},
                   ),
@@ -148,7 +148,7 @@ class ProfileScreen extends ConsumerWidget {
                     Icons.logout,
                     AppStrings.logout,
                     AppStrings.logoutDesc,
-                    AppColors.hot.withValues(alpha: 0.1),
+                    AppColors.hot.withOpacity(0.1),
                     AppColors.hot,
                     () {
                       ref.read(authProvider.notifier).logout();
@@ -162,7 +162,7 @@ class ProfileScreen extends ConsumerWidget {
                     'My Leads v1.0.0',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textLight.withValues(alpha: 0.6),
+                      color: AppColors.textLight.withOpacity(0.6),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -170,7 +170,7 @@ class ProfileScreen extends ConsumerWidget {
                     'De Bouana - ${AppStrings.slogan}',
                     style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textLight.withValues(alpha: 0.4),
+                      color: AppColors.textLight.withOpacity(0.4),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -200,7 +200,7 @@ class ProfileScreen extends ConsumerWidget {
             label.toUpperCase(),
             style: TextStyle(
               fontSize: 10,
-              color: Colors.white.withValues(alpha: 0.4),
+              color: Colors.white.withOpacity(0.4),
               letterSpacing: 0.5,
             ),
           ),
@@ -232,7 +232,7 @@ class ProfileScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.06),
+                  color: AppColors.primary.withOpacity(0.06),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),

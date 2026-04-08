@@ -45,19 +45,19 @@ class SearchBarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final backgroundColor = isDark
-        ? Colors.white.withValues(alpha: 0.15)
+        ? Colors.white.withOpacity(0.15)
         : AppColors.inputBg;
 
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.1)
+        ? Colors.white.withOpacity(0.1)
         : AppColors.border;
 
     final iconColor = isDark
-        ? Colors.white.withValues(alpha: 0.7)
+        ? Colors.white.withOpacity(0.7)
         : AppColors.textLight;
 
     final hintColor = isDark
-        ? Colors.white.withValues(alpha: 0.5)
+        ? Colors.white.withOpacity(0.5)
         : AppColors.textLight;
 
     final textColor = isDark ? AppColors.white : AppColors.textDark;

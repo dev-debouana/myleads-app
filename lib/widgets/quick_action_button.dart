@@ -42,10 +42,10 @@ class QuickActionButton extends StatelessWidget {
             width: size,
             height: size,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               shape: BoxShape.circle,
               border: Border.all(
-                color: color.withValues(alpha: 0.2),
+                color: color.withOpacity(0.2),
                 width: 1.5,
               ),
             ),
@@ -54,8 +54,8 @@ class QuickActionButton extends StatelessWidget {
               child: InkWell(
                 onTap: onTap,
                 customBorder: const CircleBorder(),
-                splashColor: color.withValues(alpha: 0.2),
-                highlightColor: color.withValues(alpha: 0.1),
+                splashColor: color.withOpacity(0.2),
+                highlightColor: color.withOpacity(0.1),
                 child: Center(
                   child: Icon(
                     icon,

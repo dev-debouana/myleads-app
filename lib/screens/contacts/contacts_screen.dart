@@ -49,12 +49,12 @@ class ContactsScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
+                    color: Colors.white.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.search, color: Colors.white.withValues(alpha: 0.4), size: 20),
+                      Icon(Icons.search, color: Colors.white.withOpacity(0.4), size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextField(
@@ -64,7 +64,7 @@ class ContactsScreen extends ConsumerWidget {
                           decoration: InputDecoration(
                             hintText: AppStrings.searchContact,
                             hintStyle: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.4),
+                              color: Colors.white.withOpacity(0.4),
                               fontSize: 14,
                             ),
                             border: InputBorder.none,
@@ -106,7 +106,7 @@ class ContactsScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.person_search,
-                            size: 64, color: AppColors.textLight.withValues(alpha: 0.4)),
+                            size: 64, color: AppColors.textLight.withOpacity(0.4)),
                         const SizedBox(height: 16),
                         const Text(
                           'Aucun contact trouvé',
@@ -178,7 +178,7 @@ class ContactsScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.08),
+              color: AppColors.primary.withOpacity(0.08),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -192,7 +192,7 @@ class ContactsScreen extends ConsumerWidget {
               height: 48,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [color, color.withValues(alpha: 0.7)],
+                  colors: [color, color.withOpacity(0.7)],
                 ),
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -240,7 +240,7 @@ class ContactsScreen extends ConsumerWidget {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.06),
+                                color: AppColors.primary.withOpacity(0.06),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
@@ -292,7 +292,7 @@ class ContactsScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
@@ -314,7 +314,7 @@ class ContactsScreen extends ConsumerWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: color, size: 16),

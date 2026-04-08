@@ -48,7 +48,7 @@ class RemindersScreen extends ConsumerWidget {
                 Text(
                   AppStrings.remindersSubtitle,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: Colors.white.withOpacity(0.5),
                     fontSize: 13,
                   ),
                 ),
@@ -97,7 +97,7 @@ class RemindersScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.check_circle_outline,
-                            size: 64, color: AppColors.success.withValues(alpha: 0.4)),
+                            size: 64, color: AppColors.success.withOpacity(0.4)),
                         const SizedBox(height: 16),
                         const Text(
                           'Tout est à jour !',
@@ -167,7 +167,7 @@ class RemindersScreen extends ConsumerWidget {
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: isActive
-                      ? Colors.white.withValues(alpha: 0.6)
+                      ? Colors.white.withOpacity(0.6)
                       : AppColors.textMid,
                 ),
               ),
@@ -222,7 +222,7 @@ class RemindersScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.08),
+              color: AppColors.primary.withOpacity(0.08),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -247,7 +247,7 @@ class RemindersScreen extends ConsumerWidget {
               height: 44,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [priorityColor, priorityColor.withValues(alpha: 0.7)],
+                  colors: [priorityColor, priorityColor.withOpacity(0.7)],
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -292,7 +292,7 @@ class RemindersScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: priorityColor.withValues(alpha: 0.1),
+                color: priorityColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(

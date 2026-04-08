@@ -40,7 +40,7 @@ class MainShell extends ConsumerWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -105,7 +105,7 @@ class MainShell extends ConsumerWidget {
           border: Border.all(color: Colors.white, width: 4),
           boxShadow: [
             BoxShadow(
-              color: AppColors.accent.withValues(alpha: 0.4),
+              color: AppColors.accent.withOpacity(0.4),
               blurRadius: 24,
               offset: const Offset(0, 6),
             ),

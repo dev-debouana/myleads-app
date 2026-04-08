@@ -83,7 +83,7 @@ class LeadCard extends StatelessWidget {
           border: Border.all(color: AppColors.border, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.06),
+              color: AppColors.primary.withOpacity(0.06),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -95,8 +95,8 @@ class LeadCard extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(16),
-            splashColor: AppColors.primary.withValues(alpha: 0.05),
-            highlightColor: AppColors.primary.withValues(alpha: 0.03),
+            splashColor: AppColors.primary.withOpacity(0.05),
+            highlightColor: AppColors.primary.withOpacity(0.03),
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Row(
@@ -237,7 +237,7 @@ class LeadCard extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: _avatarGradient().colors.first.withValues(alpha: 0.35),
+            color: _avatarGradient().colors.first.withOpacity(0.35),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -268,7 +268,7 @@ class LeadCard extends StatelessWidget {
             margin: const EdgeInsets.only(right: 4),
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.07),
+              color: AppColors.primary.withOpacity(0.07),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
@@ -337,12 +337,12 @@ class _ActionIcon extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: color.withValues(alpha: 0.1),
+        color: color.withOpacity(0.1),
         shape: const CircleBorder(),
         child: InkWell(
           onTap: onTap,
           customBorder: const CircleBorder(),
-          splashColor: color.withValues(alpha: 0.2),
+          splashColor: color.withOpacity(0.2),
           child: Padding(
             padding: const EdgeInsets.all(8),
             child: Icon(

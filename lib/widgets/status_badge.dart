@@ -36,13 +36,13 @@ class StatusBadge extends StatelessWidget {
   Color get _backgroundColor {
     switch (status.toLowerCase()) {
       case 'hot':
-        return AppColors.hot.withValues(alpha: 0.12);
+        return AppColors.hot.withOpacity(0.12);
       case 'warm':
-        return AppColors.warm.withValues(alpha: 0.12);
+        return AppColors.warm.withOpacity(0.12);
       case 'cold':
-        return AppColors.cold.withValues(alpha: 0.12);
+        return AppColors.cold.withOpacity(0.12);
       default:
-        return AppColors.cold.withValues(alpha: 0.12);
+        return AppColors.cold.withOpacity(0.12);
     }
   }
 
@@ -87,7 +87,7 @@ class StatusBadge extends StatelessWidget {
         color: _backgroundColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _color.withValues(alpha: 0.25),
+          color: _color.withOpacity(0.25),
           width: 1,
         ),
       ),
@@ -126,7 +126,7 @@ class StatusBadge extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: _color.withValues(alpha: 0.4),
+                color: _color.withOpacity(0.4),
                 blurRadius: 4,
                 offset: const Offset(0, 1),
               ),

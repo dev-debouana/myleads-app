@@ -253,7 +253,7 @@ class _ScanScreenState extends State<ScanScreen>
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: AppColors.white.withValues(alpha: 0.7),
+                color: AppColors.white.withOpacity(0.7),
               ),
             ),
           ),
@@ -346,14 +346,14 @@ class _ScanScreenState extends State<ScanScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.accent.withValues(alpha: 0),
+                        AppColors.accent.withOpacity(0),
                         AppColors.accent,
-                        AppColors.accent.withValues(alpha: 0),
+                        AppColors.accent.withOpacity(0),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.accent.withValues(alpha: 0.5),
+                        color: AppColors.accent.withOpacity(0.5),
                         blurRadius: 12,
                         spreadRadius: 2,
                       ),
@@ -503,8 +503,8 @@ class _CircleButton extends StatelessWidget {
         height: 42,
         decoration: BoxDecoration(
           color: active
-              ? AppColors.accent.withValues(alpha: 0.25)
-              : AppColors.white.withValues(alpha: 0.12),
+              ? AppColors.accent.withOpacity(0.25)
+              : AppColors.white.withOpacity(0.12),
           shape: BoxShape.circle,
         ),
         child: Icon(
@@ -541,12 +541,12 @@ class _ModeButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
           gradient: active ? AppColors.accentGradient : null,
-          color: active ? null : AppColors.white.withValues(alpha: 0.08),
+          color: active ? null : AppColors.white.withOpacity(0.08),
           borderRadius: BorderRadius.circular(24),
           border: active
               ? null
               : Border.all(
-                  color: AppColors.white.withValues(alpha: 0.15),
+                  color: AppColors.white.withOpacity(0.15),
                 ),
         ),
         child: Row(
@@ -557,7 +557,7 @@ class _ModeButton extends StatelessWidget {
               size: 16,
               color: active
                   ? AppColors.white
-                  : AppColors.white.withValues(alpha: 0.6),
+                  : AppColors.white.withOpacity(0.6),
             ),
             const SizedBox(width: 6),
             Text(
@@ -567,7 +567,7 @@ class _ModeButton extends StatelessWidget {
                 fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                 color: active
                     ? AppColors.white
-                    : AppColors.white.withValues(alpha: 0.6),
+                    : AppColors.white.withOpacity(0.6),
               ),
             ),
           ],

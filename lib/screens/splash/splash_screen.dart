@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen>
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.accent.withValues(alpha: 0.4),
+                      color: AppColors.accent.withOpacity(0.4),
                       blurRadius: 40,
                       offset: const Offset(0, 12),
                     ),
@@ -130,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.white.withValues(alpha: 0.6),
+                  color: AppColors.white.withOpacity(0.6),
                   letterSpacing: 2,
                 ),
               )
@@ -165,7 +165,7 @@ class _SplashScreenState extends State<SplashScreen>
                             Container(
                               width: double.infinity,
                               height: 4,
-                              color: AppColors.white.withValues(alpha: 0.1),
+                              color: AppColors.white.withOpacity(0.1),
                             ),
                             // Progress
                             FractionallySizedBox(
@@ -178,7 +178,7 @@ class _SplashScreenState extends State<SplashScreen>
                                   boxShadow: [
                                     BoxShadow(
                                       color: AppColors.accent
-                                          .withValues(alpha: 0.5),
+                                          .withOpacity(0.5),
                                       blurRadius: 8,
                                       offset: const Offset(0, 0),
                                     ),
