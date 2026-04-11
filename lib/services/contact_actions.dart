@@ -98,9 +98,11 @@ class ContactActions {
     buf.writeln();
     buf.writeln('Partagé via My Leads');
 
-    await Share.share(
-      buf.toString(),
-      subject: 'Contact : ${contact.fullName}',
+    await SharePlus.instance.share(
+      ShareParams(
+        text: buf.toString(),
+        subject: 'Contact : ${contact.fullName}',
+      ),
     );
   }
 
