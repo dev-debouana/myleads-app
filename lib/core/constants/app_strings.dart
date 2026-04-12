@@ -128,8 +128,8 @@ class AppStrings {
   static const String freePlan = 'Free';
   static const String premiumPlan = 'Premium';
   static const String businessPlan = 'Business';
-  static const String premiumPrice = '7.99€ / mois';
-  static const String businessPrice = '11.99€ / utilisateur / mois';
+  static const String premiumPrice = '2.99€ / mois';
+  static const String businessPrice = '5.99€ / utilisateur / mois';
   static const String upgradeToPremium = 'Passer à Premium';
 
   // Filters

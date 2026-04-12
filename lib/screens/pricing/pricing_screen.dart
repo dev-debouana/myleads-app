@@ -79,7 +79,7 @@ class PricingScreen extends StatelessWidget {
                     price: 'Gratuit',
                     description: 'Pour découvrir My Leads',
                     features: [
-                      '50 contacts max',
+                      '25 contacts max',
                       'Scan carte de visite',
                       'Recherche basique',
                       '5 rappels actifs',
@@ -93,7 +93,7 @@ class PricingScreen extends StatelessWidget {
                   _buildPlanCard(
                     context,
                     title: AppStrings.premiumPlan,
-                    price: '7.99€',
+                    price: '2.99€',
                     period: '/ mois',
                     description: 'Pour les professionnels exigeants',
                     features: [
@@ -113,7 +113,7 @@ class PricingScreen extends StatelessWidget {
                   _buildPlanCard(
                     context,
                     title: AppStrings.businessPlan,
-                    price: '11.99€',
+                    price: '5.99€',
                     period: '/ utilisateur / mois',
                     description: 'Pour les équipes commerciales',
                     features: [

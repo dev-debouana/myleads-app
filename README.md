@@ -98,9 +98,9 @@ lib/
 
 | Plan | Price | Features |
 |------|-------|----------|
-| Free | Gratuit | 50 contacts, scan basique |
-| Premium | 7.99 EUR/mois | Illimite, OCR+QR+NFC, IA, Export |
-| Business | 11.99 EUR/utilisateur/mois | Multi-users, CRM, Analytics, API |
+| Free | Gratuit | 25 contacts, scan basique |
+| Premium | 2.99 EUR/mois | Illimite, OCR+QR+NFC, IA, Export |
+| Business | 5.99 EUR/utilisateur/mois | Multi-users, CRM, Analytics, API |
 
 ### Payment Methods
 
