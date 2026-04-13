@@ -79,7 +79,7 @@ class PricingScreen extends StatelessWidget {
                     price: 'Gratuit',
                     description: 'Pour découvrir My Leads',
                     features: [
-                      '25 contacts max',
+                      '10 contacts max',
                       'Scan carte de visite',
                       'Recherche basique',
                       '5 rappels actifs',

@@ -88,8 +88,19 @@ class ContactActions {
     if (contact.source != null && contact.source!.isNotEmpty) {
       buf.writeln('Source : ${contact.source}');
     }
-    if (contact.project != null && contact.project!.isNotEmpty) {
-      buf.writeln('Projet : ${contact.project}');
+    if (contact.project1 != null && contact.project1!.isNotEmpty) {
+      buf.write('Projet 1 : ${contact.project1}');
+      if (contact.project1Budget != null && contact.project1Budget!.isNotEmpty) {
+        buf.write(' (${contact.project1Budget})');
+      }
+      buf.writeln();
+    }
+    if (contact.project2 != null && contact.project2!.isNotEmpty) {
+      buf.write('Projet 2 : ${contact.project2}');
+      if (contact.project2Budget != null && contact.project2Budget!.isNotEmpty) {
+        buf.write(' (${contact.project2Budget})');
+      }
+      buf.writeln();
     }
     if (contact.notes != null && contact.notes!.isNotEmpty) {
       buf.writeln();

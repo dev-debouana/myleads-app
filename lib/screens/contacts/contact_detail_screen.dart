@@ -266,11 +266,31 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
                     _infoRow('Société', contact.company!),
                   if (contact.source != null && contact.source!.isNotEmpty)
                     _infoRow('Source', contact.source!),
-                  if (contact.project != null && contact.project!.isNotEmpty)
-                    _infoRow('Projet', contact.project!),
                 ],
               ),
             ),
+
+            // Projects Section
+            if (_hasProjects(contact))
+              _buildSection(
+                'Projets',
+                Column(
+                  children: [
+                    if (contact.project1 != null && contact.project1!.isNotEmpty) ...[
+                      _infoRow('Projet 1', contact.project1!),
+                      if (contact.project1Budget != null && contact.project1Budget!.isNotEmpty)
+                        _infoRow('Budget', contact.project1Budget!),
+                    ],
+                    if (contact.project2 != null && contact.project2!.isNotEmpty) ...[
+                      if (contact.project1 != null && contact.project1!.isNotEmpty)
+                        const Divider(height: 16),
+                      _infoRow('Projet 2', contact.project2!),
+                      if (contact.project2Budget != null && contact.project2Budget!.isNotEmpty)
+                        _infoRow('Budget', contact.project2Budget!),
+                    ],
+                  ],
+                ),
+              ),
 
             // History Section
             if (_interactions.isNotEmpty)
@@ -300,6 +320,11 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
         ),
       ),
     );
+  }
+
+  bool _hasProjects(Contact contact) {
+    return (contact.project1 != null && contact.project1!.isNotEmpty) ||
+        (contact.project2 != null && contact.project2!.isNotEmpty);
   }
 
   Widget _buildStatusChip(String status) {

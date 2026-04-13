@@ -25,7 +25,7 @@ import 'web_db_factory_stub.dart'
 class DatabaseService {
   static Database? _db;
   static const _dbName = 'myleads.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
 
   static Future<Database> get database async {
     _db ??= await _initDb();
@@ -34,8 +34,6 @@ class DatabaseService {
 
   static Future<Database> _initDb() async {
     if (kIsWeb) {
-      // Browser: SQLite via WASM, persisted in IndexedDB.
-      // No filesystem path needed — the database name acts as the key.
       final webFactory = getWebDatabaseFactory();
       if (webFactory != null) {
         databaseFactory = webFactory;
@@ -44,6 +42,7 @@ class DatabaseService {
         _dbName,
         version: _dbVersion,
         onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
       );
     }
 
@@ -59,7 +58,20 @@ class DatabaseService {
       path,
       version: _dbVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // v1 → v2: replace single "project" column with project_1/2 + budgets
+      await db.execute('ALTER TABLE contacts ADD COLUMN project_1 TEXT');
+      await db.execute('ALTER TABLE contacts ADD COLUMN project_1_budget TEXT');
+      await db.execute('ALTER TABLE contacts ADD COLUMN project_2 TEXT');
+      await db.execute('ALTER TABLE contacts ADD COLUMN project_2_budget TEXT');
+      // Copy old project data into project_1
+      await db.execute('UPDATE contacts SET project_1 = project WHERE project IS NOT NULL');
+    }
   }
 
   static Future<void> _onCreate(Database db, int version) async {
@@ -97,7 +109,10 @@ class DatabaseService {
         phone_lookup TEXT,
         email_lookup TEXT,
         source TEXT,
-        project TEXT,
+        project_1 TEXT,
+        project_1_budget TEXT,
+        project_2 TEXT,
+        project_2_budget TEXT,
         interest TEXT,
         notes TEXT,
         tags TEXT,
@@ -488,7 +503,10 @@ class DatabaseService {
             ? _hashLookup(Validators.normalizeEmail(c.email))
             : null,
         'source': c.source,
-        'project': c.project,
+        'project_1': c.project1,
+        'project_1_budget': c.project1Budget,
+        'project_2': c.project2,
+        'project_2_budget': c.project2Budget,
         'interest': c.interest,
         'notes': c.notes,
         'tags': jsonEncode(c.tags),
@@ -510,7 +528,10 @@ class DatabaseService {
       phone: row['phone'] as String?,
       email: row['email'] as String?,
       source: row['source'] as String?,
-      project: row['project'] as String?,
+      project1: row['project_1'] as String?,
+      project1Budget: row['project_1_budget'] as String?,
+      project2: row['project_2'] as String?,
+      project2Budget: row['project_2_budget'] as String?,
       interest: row['interest'] as String?,
       notes: row['notes'] as String?,
       tags: row['tags'] != null

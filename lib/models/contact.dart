@@ -8,7 +8,10 @@ class Contact {
   String? phone;
   String? email;
   String? source;
-  String? project;
+  String? project1;
+  String? project1Budget;
+  String? project2;
+  String? project2Budget;
   String? interest;
   String? notes;
   List<String> tags;
@@ -28,7 +31,10 @@ class Contact {
     this.phone,
     this.email,
     this.source,
-    this.project,
+    this.project1,
+    this.project1Budget,
+    this.project2,
+    this.project2Budget,
     this.interest,
     this.notes,
     List<String>? tags,
@@ -65,7 +71,10 @@ class Contact {
     String? phone,
     String? email,
     String? source,
-    String? project,
+    String? project1,
+    String? project1Budget,
+    String? project2,
+    String? project2Budget,
     String? interest,
     String? notes,
     List<String>? tags,
@@ -85,7 +94,10 @@ class Contact {
       phone: phone ?? this.phone,
       email: email ?? this.email,
       source: source ?? this.source,
-      project: project ?? this.project,
+      project1: project1 ?? this.project1,
+      project1Budget: project1Budget ?? this.project1Budget,
+      project2: project2 ?? this.project2,
+      project2Budget: project2Budget ?? this.project2Budget,
       interest: interest ?? this.interest,
       notes: notes ?? this.notes,
       tags: tags ?? List.from(this.tags),
@@ -107,7 +119,10 @@ class Contact {
         'phone': phone,
         'email': email,
         'source': source,
-        'project': project,
+        'project1': project1,
+        'project1Budget': project1Budget,
+        'project2': project2,
+        'project2Budget': project2Budget,
         'interest': interest,
         'notes': notes,
         'tags': tags,
@@ -128,7 +143,10 @@ class Contact {
         phone: json['phone'] as String?,
         email: json['email'] as String?,
         source: json['source'] as String?,
-        project: json['project'] as String?,
+        project1: json['project1'] as String?,
+        project1Budget: json['project1Budget'] as String?,
+        project2: json['project2'] as String?,
+        project2Budget: json['project2Budget'] as String?,
         interest: json['interest'] as String?,
         notes: json['notes'] as String?,
         tags: (json['tags'] as List?)?.cast<String>() ?? [],

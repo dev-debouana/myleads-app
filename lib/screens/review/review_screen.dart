@@ -22,7 +22,10 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
   final _phoneCtrl = TextEditingController(text: '+237 6 99 88 77 66');
   final _emailCtrl = TextEditingController(text: 'karen@greentech.cm');
   final _sourceCtrl = TextEditingController(text: 'Salon Luxembourg 2026');
-  final _projectCtrl = TextEditingController(text: 'Partenariat Tech');
+  final _project1Ctrl = TextEditingController(text: 'Partenariat Tech');
+  final _project1BudgetCtrl = TextEditingController(text: '15 000 €');
+  final _project2Ctrl = TextEditingController();
+  final _project2BudgetCtrl = TextEditingController();
   final _notesCtrl = TextEditingController(
       text: 'Rencontrée au salon Luxembourg. Intéressée par un partenariat.');
 
@@ -47,7 +50,10 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     _phoneCtrl.dispose();
     _emailCtrl.dispose();
     _sourceCtrl.dispose();
-    _projectCtrl.dispose();
+    _project1Ctrl.dispose();
+    _project1BudgetCtrl.dispose();
+    _project2Ctrl.dispose();
+    _project2BudgetCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
@@ -64,7 +70,10 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
       phone: _orNull(_phoneCtrl.text),
       email: _orNull(_emailCtrl.text),
       source: _orNull(_sourceCtrl.text),
-      project: _orNull(_projectCtrl.text),
+      project1: _orNull(_project1Ctrl.text),
+      project1Budget: _orNull(_project1BudgetCtrl.text),
+      project2: _orNull(_project2Ctrl.text),
+      project2Budget: _orNull(_project2BudgetCtrl.text),
       notes: _orNull(_notesCtrl.text),
       tags: _selectedTags.toList(),
       status: 'warm',
@@ -210,7 +219,10 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                   _buildField(AppStrings.phone, _phoneCtrl, type: TextInputType.phone),
                   _buildField(AppStrings.email, _emailCtrl, type: TextInputType.emailAddress),
                   _buildField(AppStrings.source, _sourceCtrl),
-                  _buildField(AppStrings.project, _projectCtrl),
+                  _buildField('Projet 1', _project1Ctrl),
+                  _buildField('Budget Projet 1', _project1BudgetCtrl),
+                  _buildField('Projet 2', _project2Ctrl),
+                  _buildField('Budget Projet 2', _project2BudgetCtrl),
 
                   // Tags
                   const SizedBox(height: 4),

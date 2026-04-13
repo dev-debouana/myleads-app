@@ -28,7 +28,10 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
   final _phoneCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _sourceCtrl = TextEditingController();
-  final _projectCtrl = TextEditingController();
+  final _project1Ctrl = TextEditingController();
+  final _project1BudgetCtrl = TextEditingController();
+  final _project2Ctrl = TextEditingController();
+  final _project2BudgetCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
 
   String _status = 'warm';
@@ -68,7 +71,10 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
       _phoneCtrl.text = contact.phone ?? '';
       _emailCtrl.text = contact.email ?? '';
       _sourceCtrl.text = contact.source ?? '';
-      _projectCtrl.text = contact.project ?? '';
+      _project1Ctrl.text = contact.project1 ?? '';
+      _project1BudgetCtrl.text = contact.project1Budget ?? '';
+      _project2Ctrl.text = contact.project2 ?? '';
+      _project2BudgetCtrl.text = contact.project2Budget ?? '';
       _notesCtrl.text = contact.notes ?? '';
       _status = contact.status;
       _selectedTags
@@ -86,7 +92,10 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
     _phoneCtrl.dispose();
     _emailCtrl.dispose();
     _sourceCtrl.dispose();
-    _projectCtrl.dispose();
+    _project1Ctrl.dispose();
+    _project1BudgetCtrl.dispose();
+    _project2Ctrl.dispose();
+    _project2BudgetCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
   }
@@ -111,7 +120,10 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
       phone: _orNull(_phoneCtrl.text),
       email: _orNull(_emailCtrl.text),
       source: _orNull(_sourceCtrl.text),
-      project: _orNull(_projectCtrl.text),
+      project1: _orNull(_project1Ctrl.text),
+      project1Budget: _orNull(_project1BudgetCtrl.text),
+      project2: _orNull(_project2Ctrl.text),
+      project2Budget: _orNull(_project2BudgetCtrl.text),
       notes: _orNull(_notesCtrl.text),
       tags: _selectedTags.toList(),
       status: _status,
@@ -299,10 +311,35 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                       _sourceCtrl,
                       hint: 'Ex : Salon Luxembourg 2026',
                     ),
+
+                    // Projet 1
+                    _label('PROJET 1'),
+                    const SizedBox(height: 6),
                     _buildField(
-                      AppStrings.project,
-                      _projectCtrl,
+                      'Nom du projet',
+                      _project1Ctrl,
                       hint: 'Ex : Partenariat Tech',
+                    ),
+                    _buildField(
+                      'Budget',
+                      _project1BudgetCtrl,
+                      hint: 'Ex : 15 000 €',
+                      type: TextInputType.text,
+                    ),
+
+                    // Projet 2
+                    _label('PROJET 2'),
+                    const SizedBox(height: 6),
+                    _buildField(
+                      'Nom du projet',
+                      _project2Ctrl,
+                      hint: 'Ex : Déploiement CRM',
+                    ),
+                    _buildField(
+                      'Budget',
+                      _project2BudgetCtrl,
+                      hint: 'Ex : 8 000 €',
+                      type: TextInputType.text,
                     ),
 
                     // Status
