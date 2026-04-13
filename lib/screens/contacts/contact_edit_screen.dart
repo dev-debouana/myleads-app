@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_strings.dart';
@@ -49,6 +52,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
 
   Contact? _existing;
   bool _saving = false;
+  String? _photoPath;
 
   @override
   void initState() {
@@ -77,6 +81,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
       _project2BudgetCtrl.text = contact.project2Budget ?? '';
       _notesCtrl.text = contact.notes ?? '';
       _status = contact.status;
+      _photoPath = contact.photoPath;
       _selectedTags
         ..clear()
         ..addAll(contact.tags);
@@ -127,6 +132,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
       notes: _orNull(_notesCtrl.text),
       tags: _selectedTags.toList(),
       status: _status,
+      photoPath: _photoPath,
     );
 
     final notifier = ref.read(contactsProvider.notifier);
@@ -257,6 +263,57 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Photo picker
+                    if (!kIsWeb)
+                      Center(
+                        child: GestureDetector(
+                          onTap: () async {
+                            final img = await ImagePicker().pickImage(
+                              source: ImageSource.gallery,
+                              imageQuality: 80,
+                              maxWidth: 512,
+                            );
+                            if (img != null) setState(() => _photoPath = img.path);
+                          },
+                          child: Stack(
+                            children: [
+                              Container(
+                                width: 80,
+                                height: 80,
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(24),
+                                  image: _photoPath != null
+                                      ? DecorationImage(
+                                          image: FileImage(File(_photoPath!)),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                                ),
+                                child: _photoPath == null
+                                    ? const Icon(Icons.person, size: 36, color: AppColors.textLight)
+                                    : null,
+                              ),
+                              Positioned(
+                                bottom: 12,
+                                right: 0,
+                                child: Container(
+                                  width: 26,
+                                  height: 26,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accent,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                  ),
+                                  child: const Icon(Icons.camera_alt, size: 12, color: AppColors.primary),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
                     _buildField(
                       AppStrings.firstName,
                       _firstNameCtrl,

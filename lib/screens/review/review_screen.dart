@@ -8,26 +8,48 @@ import '../../models/contact.dart';
 import '../../providers/contacts_provider.dart';
 
 class ReviewScreen extends ConsumerStatefulWidget {
-  const ReviewScreen({super.key});
+  final Map<String, String> ocrData;
+  const ReviewScreen({super.key, this.ocrData = const {}});
 
   @override
   ConsumerState<ReviewScreen> createState() => _ReviewScreenState();
 }
 
 class _ReviewScreenState extends ConsumerState<ReviewScreen> {
-  final _firstNameCtrl = TextEditingController(text: 'Karen');
-  final _lastNameCtrl = TextEditingController(text: 'Ambassa');
-  final _jobTitleCtrl = TextEditingController(text: 'CEO');
-  final _companyCtrl = TextEditingController(text: 'GreenTech Cameroon');
-  final _phoneCtrl = TextEditingController(text: '+237 6 99 88 77 66');
-  final _emailCtrl = TextEditingController(text: 'karen@greentech.cm');
-  final _sourceCtrl = TextEditingController(text: 'Salon Luxembourg 2026');
-  final _project1Ctrl = TextEditingController(text: 'Partenariat Tech');
-  final _project1BudgetCtrl = TextEditingController(text: '15 000 €');
-  final _project2Ctrl = TextEditingController();
-  final _project2BudgetCtrl = TextEditingController();
-  final _notesCtrl = TextEditingController(
-      text: 'Rencontrée au salon Luxembourg. Intéressée par un partenariat.');
+  late final TextEditingController _firstNameCtrl;
+  late final TextEditingController _lastNameCtrl;
+  late final TextEditingController _jobTitleCtrl;
+  late final TextEditingController _companyCtrl;
+  late final TextEditingController _phoneCtrl;
+  late final TextEditingController _emailCtrl;
+  late final TextEditingController _sourceCtrl;
+  late final TextEditingController _project1Ctrl;
+  late final TextEditingController _project1BudgetCtrl;
+  late final TextEditingController _project2Ctrl;
+  late final TextEditingController _project2BudgetCtrl;
+  late final TextEditingController _notesCtrl;
+  String? _photoPath;
+
+  @override
+  void initState() {
+    super.initState();
+    final d = widget.ocrData;
+    final hasOcr = d.isNotEmpty;
+    _firstNameCtrl = TextEditingController(text: d['firstName'] ?? (hasOcr ? '' : 'Karen'));
+    _lastNameCtrl = TextEditingController(text: d['lastName'] ?? (hasOcr ? '' : 'Ambassa'));
+    _jobTitleCtrl = TextEditingController(text: d['jobTitle'] ?? (hasOcr ? '' : 'CEO'));
+    _companyCtrl = TextEditingController(text: d['company'] ?? (hasOcr ? '' : 'GreenTech Cameroon'));
+    _phoneCtrl = TextEditingController(text: d['phone'] ?? (hasOcr ? '' : '+237 6 99 88 77 66'));
+    _emailCtrl = TextEditingController(text: d['email'] ?? (hasOcr ? '' : 'karen@greentech.cm'));
+    _sourceCtrl = TextEditingController(text: hasOcr ? '' : 'Salon Luxembourg 2026');
+    _project1Ctrl = TextEditingController(text: hasOcr ? '' : 'Partenariat Tech');
+    _project1BudgetCtrl = TextEditingController(text: hasOcr ? '' : '15 000 €');
+    _project2Ctrl = TextEditingController();
+    _project2BudgetCtrl = TextEditingController();
+    _notesCtrl = TextEditingController(
+        text: hasOcr ? '' : 'Rencontrée au salon Luxembourg. Intéressée par un partenariat.');
+    _photoPath = d['photoPath'];
+  }
 
   final List<String> _availableTags = [
     'Tech',
@@ -78,6 +100,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
       tags: _selectedTags.toList(),
       status: 'warm',
       captureMethod: 'scan',
+      photoPath: _photoPath,
     );
 
     final result = await ref.read(contactsProvider.notifier).addContact(contact);

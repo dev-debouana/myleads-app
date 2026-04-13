@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -5,6 +6,10 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../services/ocr_parser.dart';
+import '../../services/ocr_service_stub.dart'
+    if (dart.library.io) '../../services/ocr_service_mobile.dart'
+    as ocr_service;
 
 /// Scan modes available in the capture screen.
 enum ScanMode { card, qr, nfc }
@@ -146,16 +151,28 @@ class _ScanScreenState extends State<ScanScreen>
 
       if (photo != null) {
         _showDetectionToast();
-        await Future.delayed(const Duration(seconds: 1));
-        if (mounted) context.push('/review');
+
+        // Run OCR on the captured image (mobile only)
+        Map<String, String> ocrData = {};
+        if (!kIsWeb) {
+          try {
+            final rawText = await ocr_service.recognizeTextFromFile(photo.path);
+            if (rawText.isNotEmpty) {
+              ocrData = OcrParser.parse(rawText);
+              ocrData['photoPath'] = photo.path;
+            }
+          } catch (_) {
+            // OCR failed — proceed with empty data
+          }
+        }
+
+        if (mounted) context.push('/review', extra: ocrData);
       }
     } catch (_) {
-      // Camera unavailable / permission denied. Show toast and navigate anyway
-      // so the reviewer screen can be reached during development.
       if (!mounted) return;
       _showDetectionToast();
       await Future.delayed(const Duration(seconds: 1));
-      if (mounted) context.push('/review');
+      if (mounted) context.push('/review', extra: <String, String>{});
     } finally {
       if (mounted) setState(() => _isCapturing = false);
     }
@@ -169,10 +186,14 @@ class _ScanScreenState extends State<ScanScreen>
     setState(() => _isCapturing = true);
     _showDetectionToast();
 
+    // Parse QR/barcode data — could be vCard or plain text
+    final raw = barcodes.first.rawValue ?? '';
+    final ocrData = raw.isNotEmpty ? OcrParser.parse(raw) : <String, String>{};
+
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         setState(() => _isCapturing = false);
-        context.push('/review');
+        context.push('/review', extra: ocrData);
       }
     });
   }

@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../providers/auth_provider.dart';
@@ -9,6 +12,20 @@ import '../../providers/reminders_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  Future<void> _pickPhoto(BuildContext context, WidgetRef ref) async {
+    if (kIsWeb) return; // file picking not supported on web demo
+    try {
+      final image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 512,
+      );
+      if (image != null) {
+        await ref.read(authProvider.notifier).updatePhoto(image.path);
+      }
+    } catch (_) {}
+  }
 
   String _initialsFor(String name) {
     final parts =
@@ -47,27 +64,56 @@ class ProfileScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  // Avatar
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.accentGradient,
-                      borderRadius: BorderRadius.circular(28),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
-                        width: 4,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        displayInitials,
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 36,
-                          fontWeight: FontWeight.w800,
+                  // Avatar with photo picker
+                  GestureDetector(
+                    onTap: () => _pickPhoto(context, ref),
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 90,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.accentGradient,
+                            borderRadius: BorderRadius.circular(28),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 4,
+                            ),
+                            image: auth.userPhotoPath != null && !kIsWeb
+                                ? DecorationImage(
+                                    image: FileImage(File(auth.userPhotoPath!)),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: auth.userPhotoPath == null || kIsWeb
+                              ? Center(
+                                  child: Text(
+                                    displayInitials,
+                                    style: const TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                )
+                              : null,
                         ),
-                      ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: AppColors.accent,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(Icons.camera_alt, size: 14, color: AppColors.primary),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 14),

@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -132,17 +134,25 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
                         color: Colors.white.withOpacity(0.2),
                         width: 3,
                       ),
+                      image: contact.photoPath != null && !kIsWeb
+                          ? DecorationImage(
+                              image: FileImage(File(contact.photoPath!)),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    child: Center(
-                      child: Text(
-                        contact.initials,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
+                    child: contact.photoPath == null || kIsWeb
+                        ? Center(
+                            child: Text(
+                              contact.initials,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 14),
                   Text(

@@ -25,7 +25,7 @@ import 'web_db_factory_stub.dart'
 class DatabaseService {
   static Database? _db;
   static const _dbName = 'myleads.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
 
   static Future<Database> get database async {
     _db ??= await _initDb();
@@ -72,6 +72,11 @@ class DatabaseService {
       // Copy old project data into project_1
       await db.execute('UPDATE contacts SET project_1 = project WHERE project IS NOT NULL');
     }
+    if (oldVersion < 3) {
+      // v2 → v3: add photo_path to users and contacts
+      await db.execute('ALTER TABLE users ADD COLUMN photo_path TEXT');
+      await db.execute('ALTER TABLE contacts ADD COLUMN photo_path TEXT');
+    }
   }
 
   static Future<void> _onCreate(Database db, int version) async {
@@ -91,7 +96,8 @@ class DatabaseService {
         session_token TEXT,
         created_at TEXT NOT NULL,
         last_login_at TEXT,
-        password_changed_at TEXT NOT NULL
+        password_changed_at TEXT NOT NULL,
+        photo_path TEXT
       )
     ''');
 
@@ -121,6 +127,7 @@ class DatabaseService {
         last_contact_date TEXT,
         avatar_color TEXT,
         capture_method TEXT NOT NULL DEFAULT 'manual',
+        photo_path TEXT,
         FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
       )
     ''');
@@ -283,6 +290,7 @@ class DatabaseService {
         'created_at': u.createdAt.toIso8601String(),
         'last_login_at': u.lastLoginAt?.toIso8601String(),
         'password_changed_at': u.passwordChangedAt.toIso8601String(),
+        'photo_path': u.photoPath,
       };
 
   static UserAccount _userFromRow(Map<String, dynamic> row) {
@@ -306,6 +314,7 @@ class DatabaseService {
           : null,
       passwordChangedAt:
           DateTime.parse(row['password_changed_at'] as String),
+      photoPath: row['photo_path'] as String?,
     );
   }
 
@@ -515,6 +524,7 @@ class DatabaseService {
         'last_contact_date': c.lastContactDate?.toIso8601String(),
         'avatar_color': c.avatarColor,
         'capture_method': c.captureMethod,
+        'photo_path': c.photoPath,
       };
 
   static Contact _contactFromRow(Map<String, dynamic> row) {
@@ -544,6 +554,7 @@ class DatabaseService {
           : null,
       avatarColor: row['avatar_color'] as String?,
       captureMethod: row['capture_method'] as String? ?? 'manual',
+      photoPath: row['photo_path'] as String?,
     );
   }
 

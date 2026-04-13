@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_strings.dart';
 import '../../models/reminder.dart';
 import '../../providers/reminders_provider.dart';
+import '../../services/calendar_service.dart';
 
 class RemindersScreen extends ConsumerWidget {
   const RemindersScreen({super.key});
@@ -285,6 +286,39 @@ class RemindersScreen extends ConsumerWidget {
                     ),
                   ],
                 ],
+              ),
+            ),
+
+            // Calendar sync button
+            GestureDetector(
+              onTap: () {
+                CalendarService.addReminderToCalendar(reminder);
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: const Row(
+                        children: [
+                          Icon(Icons.calendar_month, color: Colors.white, size: 18),
+                          SizedBox(width: 8),
+                          Text('Ajouté au calendrier'),
+                        ],
+                      ),
+                      backgroundColor: AppColors.primary,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  );
+              },
+              child: Container(
+                width: 36,
+                height: 36,
+                margin: const EdgeInsets.only(right: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.calendar_month, size: 18, color: AppColors.primary),
               ),
             ),
 

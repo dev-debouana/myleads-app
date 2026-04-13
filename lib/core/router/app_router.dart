@@ -66,9 +66,11 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/review',
-      pageBuilder: (context, state) => CustomTransitionPage(
+      pageBuilder: (context, state) {
+        final ocrData = state.extra as Map<String, String>? ?? const {};
+        return CustomTransitionPage(
         key: state.pageKey,
-        child: const ReviewScreen(),
+        child: ReviewScreen(ocrData: ocrData),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
@@ -79,7 +81,8 @@ final appRouter = GoRouter(
             child: child,
           );
         },
-      ),
+      );
+      },
     ),
     GoRoute(
       path: '/contact/new',

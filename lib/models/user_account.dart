@@ -15,6 +15,7 @@ class UserAccount {
   final DateTime createdAt;
   final DateTime? lastLoginAt;
   final DateTime passwordChangedAt;
+  final String? photoPath; // local file path to profile photo
 
   UserAccount({
     required this.id,
@@ -29,6 +30,7 @@ class UserAccount {
     DateTime? createdAt,
     this.lastLoginAt,
     DateTime? passwordChangedAt,
+    this.photoPath,
   })  : createdAt = createdAt ?? DateTime.now(),
         passwordChangedAt = passwordChangedAt ?? DateTime.now();
 
@@ -47,6 +49,7 @@ class UserAccount {
     DateTime? createdAt,
     DateTime? lastLoginAt,
     DateTime? passwordChangedAt,
+    String? photoPath,
   }) {
     return UserAccount(
       id: id ?? this.id,
@@ -61,6 +64,7 @@ class UserAccount {
       createdAt: createdAt ?? this.createdAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
       passwordChangedAt: passwordChangedAt ?? this.passwordChangedAt,
+      photoPath: photoPath ?? this.photoPath,
     );
   }
 }

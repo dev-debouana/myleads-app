@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -215,17 +217,25 @@ class ContactsScreen extends ConsumerWidget {
                   colors: [color, color.withOpacity(0.7)],
                 ),
                 borderRadius: BorderRadius.circular(14),
+                image: contact.photoPath != null && !kIsWeb
+                    ? DecorationImage(
+                        image: FileImage(File(contact.photoPath!)),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
-              child: Center(
-                child: Text(
-                  contact.initials,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
+              child: contact.photoPath == null || kIsWeb
+                  ? Center(
+                      child: Text(
+                        contact.initials,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    )
+                  : null,
             ),
             const SizedBox(width: 14),
 

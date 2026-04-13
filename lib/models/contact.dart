@@ -21,6 +21,7 @@ class Contact {
   String? avatarColor;
   String captureMethod; // 'scan' | 'qr' | 'nfc' | 'manual'
   String ownerId; // foreign key to UserAccount.id
+  String? photoPath; // local file path to contact photo
 
   Contact({
     required this.id,
@@ -44,6 +45,7 @@ class Contact {
     this.avatarColor,
     this.captureMethod = 'manual',
     this.ownerId = '',
+    this.photoPath,
   })  : tags = tags ?? [],
         createdAt = createdAt ?? DateTime.now();
 
@@ -84,6 +86,7 @@ class Contact {
     String? avatarColor,
     String? captureMethod,
     String? ownerId,
+    String? photoPath,
   }) {
     return Contact(
       id: id ?? this.id,
@@ -107,6 +110,7 @@ class Contact {
       avatarColor: avatarColor ?? this.avatarColor,
       captureMethod: captureMethod ?? this.captureMethod,
       ownerId: ownerId ?? this.ownerId,
+      photoPath: photoPath ?? this.photoPath,
     );
   }
 
@@ -132,6 +136,7 @@ class Contact {
         'avatarColor': avatarColor,
         'captureMethod': captureMethod,
         'ownerId': ownerId,
+        'photoPath': photoPath,
       };
 
   factory Contact.fromJson(Map<String, dynamic> json) => Contact(
@@ -158,5 +163,6 @@ class Contact {
         avatarColor: json['avatarColor'] as String?,
         captureMethod: json['captureMethod'] as String? ?? 'manual',
         ownerId: json['ownerId'] as String? ?? '',
+        photoPath: json['photoPath'] as String?,
       );
 }

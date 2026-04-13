@@ -16,6 +16,7 @@ class AuthState {
   final bool isLoading;
   final String userName;
   final String userEmail;
+  final String? userPhotoPath;
   final String? error;
 
   const AuthState({
@@ -23,6 +24,7 @@ class AuthState {
     this.isLoading = false,
     this.userName = '',
     this.userEmail = '',
+    this.userPhotoPath,
     this.error,
   });
 
@@ -31,14 +33,17 @@ class AuthState {
     bool? isLoading,
     String? userName,
     String? userEmail,
+    String? userPhotoPath,
     String? error,
     bool clearError = false,
+    bool clearPhoto = false,
   }) {
     return AuthState(
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
       isLoading: isLoading ?? this.isLoading,
       userName: userName ?? this.userName,
       userEmail: userEmail ?? this.userEmail,
+      userPhotoPath: clearPhoto ? null : (userPhotoPath ?? this.userPhotoPath),
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -50,6 +55,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoggedIn: StorageService.isLoggedIn,
           userName: StorageService.userName,
           userEmail: StorageService.userEmail,
+          userPhotoPath: StorageService.currentUser?.photoPath,
         ));
 
   // ---------------- Email login ----------------
@@ -335,6 +341,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await DatabaseService.updateUser(updated);
     await StorageService.setCurrentSession(updated, newToken);
     return null; // success
+  }
+
+  /// Update the current user's profile photo path.
+  Future<void> updatePhoto(String? photoPath) async {
+    final user = StorageService.currentUser;
+    if (user == null) return;
+    final updated = user.copyWith(photoPath: photoPath);
+    await DatabaseService.updateUser(updated);
+    await StorageService.setCurrentSession(updated, user.sessionToken ?? '');
+    state = state.copyWith(userPhotoPath: photoPath);
   }
 
   String _emailLookup(String email) =>
