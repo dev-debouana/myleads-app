@@ -75,6 +75,7 @@ class ContactsState {
     });
 
     return filtered;
+  }
 
   int get totalContacts => contacts.length;
   int get hotLeads => contacts.where((c) => c.status == 'hot').length;
@@ -98,8 +99,6 @@ class ContactsState {
       isLoading: isLoading ?? this.isLoading,
     );
   }
-}
-
 }
 
 class ContactsNotifier extends StateNotifier<ContactsState> {

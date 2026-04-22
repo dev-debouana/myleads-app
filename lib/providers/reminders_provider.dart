@@ -125,6 +125,7 @@ class RemindersNotifier extends StateNotifier<RemindersState> {
   }
 
   Future<void> refresh() => _load();
+  Future<void> reload() => _load();
 }
 
 final remindersProvider = StateNotifierProvider<RemindersNotifier, RemindersState>((ref) {
