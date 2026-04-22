@@ -277,7 +277,7 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String?>(
-                        initialValue: _repeatFrequency,
+                        value: _repeatFrequency,
                         decoration: const InputDecoration(
                           labelText: 'Repetition (optionnel)',
                           border: OutlineInputBorder(),

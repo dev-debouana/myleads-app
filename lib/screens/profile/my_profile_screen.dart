@@ -188,8 +188,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
       'Fonction: ${user.companyRole ?? ''}',
       'Biographie: ${user.biography ?? ''}',
     ];
-    return lines.join('
-');
+    return lines.join('\n');
   }
 
   void _shareProfile() {

@@ -205,7 +205,7 @@ class AppStrings {
   static const String createReminder = 'Créer un rappel';
   static const String editReminder = 'Modifier le rappel';
   static const String reminderDetail = 'Détail du rappel';
-  static const String changeEmail = 'Changer l'email';
+  static const String changeEmail = "Changer l'email";
   static const String newEmail = 'Nouvel email';
   static const String sendVerificationCode = 'Envoyer le code';
   static const String laterTab = 'Plus tard';
