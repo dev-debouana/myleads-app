@@ -366,7 +366,7 @@ the schema; never rewrite existing tables.
 
 | Job            | Steps                                                            |
 |----------------|------------------------------------------------------------------|
-| `build-android`| Java 17 → Flutter 3.24.5 → `flutter create` (regenerates android/ios/web) → patch `build.gradle` with ProGuard → **patch `AndroidManifest.xml`** (INTERNET + CAMERA + `<uses-feature android:hardware.camera>` + `<queries>` for tel/sms/mailto/https) → `flutter build apk --release --no-tree-shake-icons` → `dart run sqflite_common_ffi_web:setup` → `flutter build web --release --base-href "/myleads-app/"` → upload artifacts |
+| `build-android`| Java 17 → Flutter 3.24.5 → `flutter create` (regenerates android/ios/web) → patch `build.gradle` with ProGuard → **patch `AndroidManifest.xml`** (INTERNET permission + `<queries>` block for tel/sms/mailto/https/http) → `flutter build apk --release --no-tree-shake-icons` → `dart run sqflite_common_ffi_web:setup` → `flutter build web --release --base-href "/myleads-app/"` → upload artifacts |
 | `release`      | Downloads APK → deletes existing `v1.0.0` release → creates new release with `app-release.apk` attached |
 | `deploy-web`   | Deploys `build/web/` to GitHub Pages                              |
 
@@ -405,6 +405,11 @@ patch step in the workflow, not via committed files. Files under
   and QR modes. Starting the camera in `initState` is intentional — removing
   it reintroduces the black-screen bug. In card mode the `onDetect` callback
   is a no-op so barcode detection doesn't hijack the OCR flow.
+- **CAMERA permission:** `mobile_scanner` (5.x) and `image_picker` each merge
+  `android.permission.CAMERA` into the final manifest via their library
+  manifests. The CI patch therefore only needs to inject `INTERNET` + the
+  `<queries>` block. Don't re-add a CAMERA permission block unless a manifest
+  merge regression appears in the build logs.
 - **Riverpod `ProviderScope`:** sub-screens pushed via `Navigator.push` must
   forward the parent container (`ProviderScope(parent: …, child: …)`),
   otherwise providers reset.
@@ -434,8 +439,8 @@ Use these as reference points when coordinating changes:
   `authProvider.changeEmail`.
 - **v1.0.0 doc v5** — reminders FAB visibility fix (lifted above shell nav,
   upgraded to `FloatingActionButton.extended`), scanner black-screen fix
-  (camera preview in card mode + 25% overlay + explicit `CAMERA` permission
-  in CI manifest patch).
+  (camera preview in card mode + 25% overlay), notifications screen, delete
+  account flow, OCR enrichment, contact-detail polish.
 
 When the user references "doc vN", match the behaviour to the nearest anchor
 above and consult the corresponding commit (see `git log --oneline`).
