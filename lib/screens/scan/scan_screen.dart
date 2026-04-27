@@ -233,7 +233,7 @@ class _ScanScreenState extends State<ScanScreen>
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = 88.0 + MediaQuery.of(context).padding.bottom;
+    final bottomInset = (88.0 + MediaQuery.of(context).padding.bottom) / 4;
 
     return Scaffold(
       backgroundColor: Colors.black,
