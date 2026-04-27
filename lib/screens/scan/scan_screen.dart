@@ -233,6 +233,8 @@ class _ScanScreenState extends State<ScanScreen>
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = 88.0 + MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -265,7 +267,7 @@ class _ScanScreenState extends State<ScanScreen>
 
           // Hint text
           Positioned(
-            bottom: 240,
+            bottom: 240 + bottomInset,
             left: 0,
             right: 0,
             child: Text(
@@ -281,7 +283,7 @@ class _ScanScreenState extends State<ScanScreen>
 
           // Mode selector
           Positioned(
-            bottom: 160,
+            bottom: 160 + bottomInset,
             left: 0,
             right: 0,
             child: _buildModeSelector(),
@@ -289,7 +291,7 @@ class _ScanScreenState extends State<ScanScreen>
 
           // Capture button
           Positioned(
-            bottom: 56,
+            bottom: 56 + bottomInset,
             left: 0,
             right: 0,
             child: Center(child: _buildCaptureButton()),

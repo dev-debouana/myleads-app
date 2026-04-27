@@ -41,7 +41,8 @@ class HomeScreen extends ConsumerWidget {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+              padding: EdgeInsets.fromLTRB(
+                  20, 24, 20, 88 + MediaQuery.of(context).padding.bottom),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
