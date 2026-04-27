@@ -10,6 +10,7 @@ import '../../models/reminder.dart';
 import '../../providers/contacts_provider.dart';
 import '../../providers/reminders_provider.dart';
 import '../../services/calendar_service.dart';
+import '../../services/contact_actions.dart';
 import 'create_reminder_screen.dart';
 
 class ReminderDetailScreen extends ConsumerWidget {
@@ -373,8 +374,7 @@ class ReminderDetailScreen extends ConsumerWidget {
         color = const Color(0xFF25D366);
         icon = Icons.chat_rounded;
         label = 'Ouvrir WhatsApp';
-        final phone = (contact.phone ?? '').replaceAll(RegExp(r'[^\d+]'), '');
-        action = () => _launch('https://wa.me/$phone');
+        action = () => ContactActions.whatsapp(context, contact);
         break;
       case 'email':
         color = AppColors.warm;
