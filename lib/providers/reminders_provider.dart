@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../models/reminder.dart';
 import '../services/database_service.dart';
+import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 
 const _uuid = Uuid();
@@ -17,13 +18,13 @@ class RemindersState {
   });
 
   List<Reminder> get todayReminders {
-    final list = reminders.where((r) => r.isToday && !r.isCompleted).toList();
+    final list = reminders.where((r) => r.isToday && !r.isCompleted && !r.isLate).toList();
     list.sort((a, b) => a.startDateTime.compareTo(b.startDateTime));
     return list;
   }
 
   List<Reminder> get weekReminders {
-    final list = reminders.where((r) => r.isThisWeek && !r.isToday && !r.isCompleted).toList();
+    final list = reminders.where((r) => r.isThisWeek && !r.isToday && !r.isCompleted && !r.isLate).toList();
     list.sort((a, b) => a.startDateTime.compareTo(b.startDateTime));
     return list;
   }
@@ -99,6 +100,7 @@ class RemindersNotifier extends StateNotifier<RemindersState> {
     );
     await DatabaseService.insertReminder(r);
     state = state.copyWith(reminders: [...state.reminders, r]);
+    NotificationService.scheduleReminderUpcoming(r);
     return r;
   }
 
@@ -107,6 +109,9 @@ class RemindersNotifier extends StateNotifier<RemindersState> {
     state = state.copyWith(
       reminders: state.reminders.map((r) => r.id == reminder.id ? reminder : r).toList(),
     );
+    if (!reminder.isCompleted) {
+      NotificationService.scheduleReminderUpcoming(reminder);
+    }
   }
 
   Future<void> completeReminder(String id) async {

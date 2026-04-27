@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'services/action_tracker.dart';
+import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 
 void main() async {
@@ -35,6 +36,12 @@ void main() async {
     await StorageService.init();
   } catch (e, st) {
     debugPrint('StorageService.init failed: $e\n$st');
+  }
+
+  try {
+    await NotificationService.init();
+  } catch (e, st) {
+    debugPrint('NotificationService.init failed: $e\n$st');
   }
 
   runApp(const ProviderScope(child: MyLeadsApp()));
