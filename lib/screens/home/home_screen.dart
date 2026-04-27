@@ -11,6 +11,7 @@ import '../../models/contact.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/contacts_provider.dart';
 import '../../providers/navigation_provider.dart';
+import '../../providers/notifications_provider.dart';
 import '../../providers/reminders_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -21,6 +22,7 @@ class HomeScreen extends ConsumerWidget {
     final contactsState = ref.watch(contactsProvider);
     final remindersState = ref.watch(remindersProvider);
     final hotLeads = ref.watch(hotLeadsProvider);
+    final notificationsState = ref.watch(notificationsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -28,8 +30,7 @@ class HomeScreen extends ConsumerWidget {
         children: [
           // -- Header --
           _Header(
-            notificationCount: remindersState.todayReminders.length +
-                remindersState.lateReminders.length,
+            notificationCount: notificationsState.unreadCount,
             onNotificationTap: () => context.push('/notifications'),
             onSearchChanged: (q) =>
                 ref.read(contactsProvider.notifier).setSearchQuery(q),

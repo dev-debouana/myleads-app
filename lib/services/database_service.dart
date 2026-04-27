@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
+import '../models/app_notification.dart';
 import '../models/contact.dart';
 import '../models/interaction.dart';
 import '../models/reminder.dart';
@@ -25,7 +26,7 @@ import 'web_db_factory_stub.dart'
 class DatabaseService {
   static Database? _db;
   static const _dbName = 'myleads.db';
-  static const _dbVersion = 5;
+  static const _dbVersion = 6;
 
   static Future<Database> get database async {
     _db ??= await _initDb();
@@ -101,6 +102,24 @@ class DatabaseService {
       try { await db.execute("UPDATE reminders SET priority_v2 = 'very_important' WHERE priority = 'urgent'"); } catch (_) {}
       try { await db.execute("UPDATE reminders SET priority_v2 = 'important' WHERE priority = 'soon'"); } catch (_) {}
       try { await db.execute("UPDATE reminders SET priority_v2 = 'normal' WHERE priority = 'later' OR priority IS NULL"); } catch (_) {}
+    }
+    if (oldVersion < 6) {
+      // v5 → v6: in-app notifications table
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS notifications (
+          id TEXT PRIMARY KEY,
+          owner_id TEXT NOT NULL,
+          type TEXT NOT NULL,
+          title TEXT NOT NULL,
+          body TEXT NOT NULL,
+          scheduled_at TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          reference_id TEXT,
+          is_read INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
+      await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_notifications_owner ON notifications(owner_id)');
     }
   }
 
@@ -226,6 +245,23 @@ class DatabaseService {
         value TEXT NOT NULL
       )
     ''');
+
+    // ----- NOTIFICATIONS (v6) -----
+    await db.execute('''
+      CREATE TABLE notifications (
+        id TEXT PRIMARY KEY,
+        owner_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL,
+        scheduled_at TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        reference_id TEXT,
+        is_read INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_notifications_owner ON notifications(owner_id)');
   }
 
   // =====================================================================
@@ -836,6 +872,46 @@ class DatabaseService {
   }
 
   // =====================================================================
+  // NOTIFICATIONS
+  // =====================================================================
+
+  static Future<List<AppNotification>> getAllNotificationsForOwner(
+      String ownerId) async {
+    final db = await database;
+    final rows = await db.query(
+      'notifications',
+      where: 'owner_id = ?',
+      whereArgs: [ownerId],
+      orderBy: 'scheduled_at DESC',
+    );
+    return rows.map(AppNotification.fromRow).toList();
+  }
+
+  static Future<void> insertNotification(AppNotification n) async {
+    final db = await database;
+    await db.insert('notifications', n.toRow(),
+        conflictAlgorithm: ConflictAlgorithm.ignore);
+  }
+
+  static Future<void> markNotificationRead(String id) async {
+    final db = await database;
+    await db.update('notifications', {'is_read': 1},
+        where: 'id = ?', whereArgs: [id]);
+  }
+
+  static Future<void> deleteNotification(String id) async {
+    final db = await database;
+    await db.delete('notifications', where: 'id = ?', whereArgs: [id]);
+  }
+
+  static Future<bool> notificationExists(String id) async {
+    final db = await database;
+    final rows = await db.query('notifications',
+        columns: ['id'], where: 'id = ?', whereArgs: [id], limit: 1);
+    return rows.isNotEmpty;
+  }
+
+  // =====================================================================
   // Account deletion
   // =====================================================================
 
@@ -851,6 +927,8 @@ class DatabaseService {
       await txn.delete('contacts', where: 'owner_id = ?', whereArgs: [userId]);
       await txn.delete('reminders', where: 'owner_id = ?', whereArgs: [userId]);
       await txn.delete('payment_methods',
+          where: 'owner_id = ?', whereArgs: [userId]);
+      await txn.delete('notifications',
           where: 'owner_id = ?', whereArgs: [userId]);
       await txn.delete('users', where: 'id = ?', whereArgs: [userId]);
     });
