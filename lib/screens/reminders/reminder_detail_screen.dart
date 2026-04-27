@@ -380,7 +380,7 @@ class ReminderDetailScreen extends ConsumerWidget {
         color = AppColors.warm;
         icon = Icons.email_rounded;
         label = 'Envoyer un email';
-        action = () => _launch('mailto:${contact.email ?? ""}');
+        action = () => ContactActions.email(context, contact);
         break;
       default:
         color = AppColors.success;
