@@ -17,13 +17,13 @@ class RemindersState {
   });
 
   List<Reminder> get todayReminders {
-    final list = reminders.where((r) => r.isToday && !r.isCompleted).toList();
+    final list = reminders.where((r) => r.isToday && !r.isCompleted && !r.isLate).toList();
     list.sort((a, b) => a.startDateTime.compareTo(b.startDateTime));
     return list;
   }
 
   List<Reminder> get weekReminders {
-    final list = reminders.where((r) => r.isThisWeek && !r.isToday && !r.isCompleted).toList();
+    final list = reminders.where((r) => r.isThisWeek && !r.isToday && !r.isCompleted && !r.isLate).toList();
     list.sort((a, b) => a.startDateTime.compareTo(b.startDateTime));
     return list;
   }
