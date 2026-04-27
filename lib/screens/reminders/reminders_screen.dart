@@ -50,21 +50,28 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ProviderScope(
-                parent: ProviderScope.containerOf(context),
-                child: const CreateReminderScreen(),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(
+          bottom: 88 + MediaQuery.of(context).padding.bottom,
+        ),
+        child: FloatingActionButton.extended(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProviderScope(
+                  parent: ProviderScope.containerOf(context),
+                  child: const CreateReminderScreen(),
+                ),
               ),
-            ),
-          );
-        },
-        child: const Icon(Icons.add_rounded),
+            );
+          },
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Nouveau rappel',
+              style: TextStyle(fontWeight: FontWeight.w700)),
+        ),
       ),
       body: SafeArea(
         child: Column(
