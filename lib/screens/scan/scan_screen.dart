@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/constants/app_strings.dart';
 import '../../services/ocr_parser.dart';
 import '../../services/ocr_service_stub.dart'
     if (dart.library.io) '../../services/ocr_service_mobile.dart'
@@ -14,14 +15,14 @@ import '../../services/ocr_service_stub.dart'
 /// Scan modes available in the capture screen.
 enum ScanMode { card, qr, nfc }
 
-class ScanScreen extends StatefulWidget {
+class ScanScreen extends ConsumerStatefulWidget {
   const ScanScreen({super.key});
 
   @override
-  State<ScanScreen> createState() => _ScanScreenState();
+  ConsumerState<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ScanScreenState extends State<ScanScreen>
+class _ScanScreenState extends ConsumerState<ScanScreen>
     with SingleTickerProviderStateMixin {
   ScanMode _mode = ScanMode.card;
   bool _flashOn = false;
@@ -199,6 +200,7 @@ class _ScanScreenState extends State<ScanScreen>
   }
 
   void _showDetectionToast() {
+    final l10n = ref.read(l10nProvider);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -209,7 +211,7 @@ class _ScanScreenState extends State<ScanScreen>
                   color: AppColors.white, size: 20),
               const SizedBox(width: 10),
               Text(
-                AppStrings.cardDetected,
+                l10n.cardDetected,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: AppColors.white,
@@ -233,6 +235,7 @@ class _ScanScreenState extends State<ScanScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -244,10 +247,10 @@ class _ScanScreenState extends State<ScanScreen>
               controller: _qrController!,
               onDetect: _onQrDetected,
               errorBuilder: (context, error, child) {
-                return const Center(
+                return Center(
                   child: Text(
-                    'Camera non disponible',
-                    style: TextStyle(color: AppColors.white),
+                    l10n.cameraUnavailable,
+                    style: const TextStyle(color: AppColors.white),
                   ),
                 );
               },
@@ -258,7 +261,7 @@ class _ScanScreenState extends State<ScanScreen>
             Container(color: Colors.black),
 
           // Top bar
-          _buildTopBar(context),
+          _buildTopBar(context, l10n),
 
           // Viewport + scan line
           Center(child: _buildViewport()),
@@ -269,7 +272,7 @@ class _ScanScreenState extends State<ScanScreen>
             left: 0,
             right: 0,
             child: Text(
-              AppStrings.scanHint,
+              l10n.scanHint,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -284,7 +287,7 @@ class _ScanScreenState extends State<ScanScreen>
             bottom: 160,
             left: 0,
             right: 0,
-            child: _buildModeSelector(),
+            child: _buildModeSelector(l10n),
           ),
 
           // Capture button
@@ -303,7 +306,7 @@ class _ScanScreenState extends State<ScanScreen>
   // Top bar
   // ----------------------------------------------------------
 
-  Widget _buildTopBar(BuildContext context) {
+  Widget _buildTopBar(BuildContext context, AppL10n l10n) {
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Positioned(
@@ -320,7 +323,7 @@ class _ScanScreenState extends State<ScanScreen>
           ),
           // Title
           Text(
-            AppStrings.scanTitle,
+            l10n.scanTitle,
             style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -441,26 +444,26 @@ class _ScanScreenState extends State<ScanScreen>
   // Mode selector (Carte / QR Code / NFC)
   // ----------------------------------------------------------
 
-  Widget _buildModeSelector() {
+  Widget _buildModeSelector(AppL10n l10n) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _ModeButton(
-          label: AppStrings.scanCard,
+          label: l10n.scanCard,
           icon: Icons.credit_card_rounded,
           active: _mode == ScanMode.card,
           onTap: () => _switchMode(ScanMode.card),
         ),
         const SizedBox(width: 12),
         _ModeButton(
-          label: AppStrings.scanQR,
+          label: l10n.scanQR,
           icon: Icons.qr_code_scanner_rounded,
           active: _mode == ScanMode.qr,
           onTap: () => _switchMode(ScanMode.qr),
         ),
         const SizedBox(width: 12),
         _ModeButton(
-          label: AppStrings.scanNFC,
+          label: l10n.scanNFC,
           icon: Icons.nfc_rounded,
           active: _mode == ScanMode.nfc,
           onTap: () => _switchMode(ScanMode.nfc),

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/constants/app_strings.dart';
 import '../../models/contact.dart';
 import '../../providers/contacts_provider.dart';
 
@@ -146,13 +146,14 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
       return;
     }
 
+    final l10n = ref.read(l10nProvider);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             const Icon(Icons.check_circle, color: AppColors.accent, size: 20),
             const SizedBox(width: 10),
-            const Text(AppStrings.contactSaved),
+            Text(l10n.contactSaved),
           ],
         ),
         backgroundColor: AppColors.primary,

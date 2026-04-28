@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/contacts_provider.dart';
 import '../../providers/reminders_provider.dart';
@@ -52,6 +53,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -136,7 +139,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
               // Tagline
               Text(
-                'Scan. Connect. Convert.',
+                l10n.splashTagline,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,

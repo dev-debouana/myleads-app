@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/contact.dart';
 import '../../providers/auth_provider.dart';
@@ -19,13 +20,14 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(l10nProvider);
     final contactsState = ref.watch(contactsProvider);
     final remindersState = ref.watch(remindersProvider);
     final hotLeads = ref.watch(hotLeadsProvider);
     final notificationsState = ref.watch(notificationsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: Column(
         children: [
           // -- Header --
@@ -51,6 +53,7 @@ class HomeScreen extends ConsumerWidget {
                   _CTARow(
                     onScanTap: () => context.push('/scan'),
                     onManualTap: () => context.push('/contact/new'),
+                    l10n: l10n,
                   ),
                   const SizedBox(height: 24),
 
@@ -70,22 +73,24 @@ class HomeScreen extends ConsumerWidget {
                     },
                     onRemindersTap: () =>
                         ref.read(currentTabProvider.notifier).state = 3,
+                    l10n: l10n,
                   ),
                   const SizedBox(height: 28),
 
                   // Hot leads section
                   _SectionHeader(
-                    title: AppStrings.hotLeads,
+                    title: l10n.hotLeads,
                     icon: Icons.local_fire_department_rounded,
                     iconColor: AppColors.hot,
                     onViewAll: () =>
                         ref.read(currentTabProvider.notifier).state = 1,
+                    viewAllLabel: l10n.viewAll,
                   ),
                   const SizedBox(height: 12),
                   if (hotLeads.isEmpty)
                     _EmptyPlaceholder(
                       icon: Icons.local_fire_department_outlined,
-                      text: 'Aucun lead chaud pour le moment',
+                      text: l10n.noHotLeads,
                     )
                   else
                     ...hotLeads.take(3).map(
@@ -102,17 +107,19 @@ class HomeScreen extends ConsumerWidget {
 
                   // Reminders section
                   _SectionHeader(
-                    title: AppStrings.reminders,
+                    title: l10n.reminders,
                     icon: Icons.notifications_active_rounded,
                     iconColor: AppColors.warm,
                     onViewAll: () =>
                         ref.read(currentTabProvider.notifier).state = 3,
+                    viewAllLabel: l10n.viewAll,
                   ),
                   const SizedBox(height: 12),
                   _RemindersSummaryCard(
                     todayCount: remindersState.todayReminders.length,
                     overdueCount: remindersState.overdueReminders.length,
                     completedCount: remindersState.completedReminders.length,
+                    l10n: l10n,
                   ),
                 ],
               ),
@@ -143,6 +150,7 @@ class _Header extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(l10nProvider);
     final topPadding = MediaQuery.of(context).padding.top;
     final userName = ref.watch(
         authProvider.select((s) => s.userName.isEmpty ? '' : s.userName));
@@ -168,8 +176,8 @@ class _Header extends ConsumerWidget {
                   children: [
                     Text(
                       firstName.isEmpty
-                          ? '${AppStrings.hello} \uD83D\uDC4B'
-                          : '${AppStrings.hello} $firstName \uD83D\uDC4B',
+                          ? '${l10n.hello} 👋'
+                          : '${l10n.hello} $firstName 👋',
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -179,7 +187,7 @@ class _Header extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      AppStrings.slogan,
+                      l10n.slogan,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
@@ -226,7 +234,7 @@ class _Header extends ConsumerWidget {
                     ),
                     cursorColor: AppColors.primary,
                     decoration: InputDecoration(
-                      hintText: AppStrings.searchContact,
+                      hintText: l10n.searchContact,
                       hintStyle: const TextStyle(
                         fontSize: 14,
                         color: AppColors.textLight,
@@ -318,8 +326,13 @@ class _NotificationBell extends StatelessWidget {
 class _CTARow extends StatelessWidget {
   final VoidCallback onScanTap;
   final VoidCallback onManualTap;
+  final AppL10n l10n;
 
-  const _CTARow({required this.onScanTap, required this.onManualTap});
+  const _CTARow({
+    required this.onScanTap,
+    required this.onManualTap,
+    required this.l10n,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -328,7 +341,7 @@ class _CTARow extends StatelessWidget {
         // Scan card
         Expanded(
           child: _CTACard(
-            label: AppStrings.scanContact,
+            label: l10n.scanContact,
             icon: Icons.document_scanner_rounded,
             gradient: AppColors.accentGradient,
             textColor: AppColors.white,
@@ -340,11 +353,11 @@ class _CTARow extends StatelessWidget {
         // Manual card
         Expanded(
           child: _CTACard(
-            label: AppStrings.addManually,
+            label: l10n.addManually,
             icon: Icons.person_add_alt_1_rounded,
             gradient: null,
-            backgroundColor: AppColors.card,
-            textColor: AppColors.textDark,
+            backgroundColor: AppColors.surfaceColor(context),
+            textColor: AppColors.onSurface(context),
             iconColor: AppColors.primary,
             onTap: onManualTap,
           ),
@@ -386,7 +399,7 @@ class _CTACard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: (gradient != null ? AppColors.accent : AppColors.textDark)
+              color: (gradient != null ? AppColors.accent : AppColors.onSurface(context))
                   .withOpacity(0.12),
               blurRadius: 16,
               offset: const Offset(0, 6),
@@ -436,6 +449,7 @@ class _StatsRow extends StatelessWidget {
   final VoidCallback onContactsTap;
   final VoidCallback onHotLeadsTap;
   final VoidCallback onRemindersTap;
+  final AppL10n l10n;
 
   const _StatsRow({
     required this.totalContacts,
@@ -444,6 +458,7 @@ class _StatsRow extends StatelessWidget {
     required this.onContactsTap,
     required this.onHotLeadsTap,
     required this.onRemindersTap,
+    required this.l10n,
   });
 
   @override
@@ -452,7 +467,7 @@ class _StatsRow extends StatelessWidget {
       children: [
         Expanded(
           child: _StatCard(
-            label: AppStrings.contacts,
+            label: l10n.contacts,
             value: totalContacts.toString(),
             icon: Icons.people_alt_rounded,
             color: AppColors.primary,
@@ -462,7 +477,7 @@ class _StatsRow extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
-            label: 'Hot Leads',
+            label: l10n.hotLeads,
             value: hotLeadsCount.toString(),
             icon: Icons.local_fire_department_rounded,
             color: AppColors.hot,
@@ -472,7 +487,7 @@ class _StatsRow extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
-            label: AppStrings.reminders,
+            label: l10n.reminders,
             value: remindersCount.toString(),
             icon: Icons.notifications_active_rounded,
             color: AppColors.warm,
@@ -504,9 +519,9 @@ class _StatCard extends StatelessWidget {
     final card = Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: AppColors.borderColor(context), width: 1),
       ),
       child: Column(
         children: [
@@ -522,19 +537,19 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: AppColors.textDark,
+              color: AppColors.onSurface(context),
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w500,
-              color: AppColors.textLight,
+              color: AppColors.hint(context),
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -565,12 +580,14 @@ class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final VoidCallback onViewAll;
+  final String viewAllLabel;
 
   const _SectionHeader({
     required this.title,
     required this.icon,
     required this.iconColor,
     required this.onViewAll,
+    required this.viewAllLabel,
   });
 
   @override
@@ -581,18 +598,18 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: AppColors.textDark,
+            color: AppColors.onSurface(context),
           ),
         ),
         const Spacer(),
         GestureDetector(
           onTap: onViewAll,
-          child: const Text(
-            AppStrings.viewAll,
-            style: TextStyle(
+          child: Text(
+            viewAllLabel,
+            style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: AppColors.accent,
@@ -621,12 +638,12 @@ class _HotLeadCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: AppColors.surfaceColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 1),
+          border: Border.all(color: AppColors.borderColor(context), width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textDark.withOpacity(0.04),
+              color: AppColors.onSurface(context).withOpacity(0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -671,10 +688,10 @@ class _HotLeadCard extends StatelessWidget {
                 children: [
                   Text(
                     contact.fullName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      color: AppColors.onSurface(context),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -683,10 +700,10 @@ class _HotLeadCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       contact.subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textMid,
+                        color: AppColors.secondary(context),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -728,9 +745,9 @@ class _HotLeadCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.textLight,
+              color: AppColors.hint(context),
               size: 20,
             ),
           ],
@@ -748,11 +765,13 @@ class _RemindersSummaryCard extends StatelessWidget {
   final int todayCount;
   final int overdueCount;
   final int completedCount;
+  final AppL10n l10n;
 
   const _RemindersSummaryCard({
     required this.todayCount,
     required this.overdueCount,
     required this.completedCount,
+    required this.l10n,
   });
 
   @override
@@ -778,7 +797,7 @@ class _RemindersSummaryCard extends StatelessWidget {
         children: [
           Expanded(
             child: _ReminderStat(
-              label: AppStrings.todayReminders,
+              label: l10n.today,
               value: todayCount.toString(),
               color: AppColors.white,
               icon: Icons.today_rounded,
@@ -787,7 +806,7 @@ class _RemindersSummaryCard extends StatelessWidget {
           _VerticalDivider(),
           Expanded(
             child: _ReminderStat(
-              label: AppStrings.overdueReminders,
+              label: l10n.overdue,
               value: overdueCount.toString(),
               color: AppColors.hotLight,
               icon: Icons.warning_amber_rounded,
@@ -796,7 +815,7 @@ class _RemindersSummaryCard extends StatelessWidget {
           _VerticalDivider(),
           Expanded(
             child: _ReminderStat(
-              label: AppStrings.doneReminders,
+              label: l10n.done,
               value: completedCount.toString(),
               color: AppColors.successLight,
               icon: Icons.check_circle_outline_rounded,
@@ -880,19 +899,19 @@ class _EmptyPlaceholder extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderColor(context)),
       ),
       child: Column(
         children: [
-          Icon(icon, color: AppColors.textLight, size: 36),
+          Icon(icon, color: AppColors.hint(context), size: 36),
           const SizedBox(height: 8),
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: AppColors.textLight,
+              color: AppColors.hint(context),
               fontWeight: FontWeight.w500,
             ),
           ),

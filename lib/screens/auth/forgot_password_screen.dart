@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 
@@ -83,8 +83,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: AnimatedBuilder(
         animation: _animController,
         builder: (context, child) {
@@ -93,13 +94,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
               children: [
                 Transform.translate(
                   offset: Offset(0, _headerSlide.value),
-                  child: _buildHeader(),
+                  child: _buildHeader(l10n),
                 ),
                 Opacity(
                   opacity: _formFade.value,
                   child: Transform.translate(
                     offset: Offset(0, 20 * (1 - _formFade.value)),
-                    child: _buildForm(),
+                    child: _buildForm(context, l10n),
                   ),
                 ),
               ],
@@ -110,7 +111,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppL10n l10n) {
     return Container(
       width: double.infinity,
       height: 250,
@@ -153,9 +154,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                AppStrings.forgotPasswordTitle,
-                style: TextStyle(
+              Text(
+                l10n.forgotPasswordTitle,
+                style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
                   color: AppColors.white,
@@ -164,7 +165,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                AppStrings.forgotPasswordSubtitle,
+                l10n.forgotPasswordSubtitle,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -179,7 +180,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     );
   }
 
-  Widget _buildForm() {
+  Widget _buildForm(BuildContext context, AppL10n l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
       child: Form(
@@ -217,32 +218,32 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
               const SizedBox(height: 20),
             ],
 
-            _buildInputLabel(AppStrings.email),
+            _buildInputLabel(context, l10n.emailLabel),
             const SizedBox(height: 8),
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) => _handleSendCode(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
-                hintText: 'votre@email.com',
+                hintText: l10n.emailHint,
                 prefixIcon: Icon(
                   Icons.email_outlined,
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   size: 20,
                 ),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Veuillez entrer votre email';
+                  return l10n.emailRequired;
                 }
                 if (!value.contains('@') || !value.contains('.')) {
-                  return 'Email invalide';
+                  return l10n.emailInvalid;
                 }
                 return null;
               },
@@ -252,7 +253,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
             // Send code button
             _buildAccentButton(
-              label: AppStrings.sendCode,
+              label: l10n.sendCode,
               isLoading: _isLoading,
               onPressed: _handleSendCode,
             ),
@@ -270,12 +271,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                       TextSpan(
                         text: '← ',
                         style: TextStyle(
-                          color: AppColors.textMid,
+                          color: AppColors.secondary(context),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       TextSpan(
-                        text: AppStrings.backToLogin,
+                        text: l10n.backToLogin,
                         style: const TextStyle(
                           color: AppColors.accent,
                           fontWeight: FontWeight.w700,
@@ -294,13 +295,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     );
   }
 
-  Widget _buildInputLabel(String label) {
+  Widget _buildInputLabel(BuildContext context, String label) {
     return Text(
       label.toUpperCase(),
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w800,
-        color: AppColors.textLight,
+        color: AppColors.hint(context),
         letterSpacing: 1.2,
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/reminder.dart';
 import '../../providers/contacts_provider.dart';
@@ -21,6 +22,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     final state = ref.watch(remindersProvider);
     List<Reminder> current;
     switch (_activeTab) {
@@ -41,15 +43,15 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     }
 
     final tabs = <(String, String, int)>[
-      ('today', "Aujourd'hui", state.todayReminders.length),
-      ('week', 'Semaine', state.weekReminders.length),
-      ('later', 'Plus tard', state.laterReminders.length),
-      ('late', 'En retard', state.lateReminders.length),
-      ('done', 'Termines', state.doneReminders.length),
+      ('today', l10n.tabToday, state.todayReminders.length),
+      ('week', l10n.tabWeek, state.weekReminders.length),
+      ('later', l10n.tabLater, state.laterReminders.length),
+      ('late', l10n.tabLate, state.lateReminders.length),
+      ('done', l10n.tabDone, state.doneReminders.length),
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       floatingActionButton: Padding(
         padding: EdgeInsets.only(
           bottom: 88 + MediaQuery.of(context).padding.bottom,
@@ -69,8 +71,8 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
             );
           },
           icon: const Icon(Icons.add_rounded),
-          label: const Text('Nouveau rappel',
-              style: TextStyle(fontWeight: FontWeight.w700)),
+          label: Text(l10n.newReminder,
+              style: const TextStyle(fontWeight: FontWeight.w700)),
         ),
       ),
       body: SafeArea(
@@ -90,17 +92,17 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                     child: const Icon(Icons.notifications_rounded, color: Colors.white),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Rappels',
+                        Text(l10n.remindersTitle,
                             style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.textDark)),
-                        Text('Vos taches et suivis',
-                            style: TextStyle(fontSize: 13, color: AppColors.textMid)),
+                                color: AppColors.onSurface(context))),
+                        Text(l10n.remindersSubtitle,
+                            style: TextStyle(fontSize: 13, color: AppColors.secondary(context))),
                       ],
                     ),
                   ),
@@ -124,15 +126,15 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         gradient: active ? AppColors.primaryGradient : null,
-                        color: active ? null : AppColors.card,
+                        color: active ? null : AppColors.surfaceColor(context),
                         borderRadius: BorderRadius.circular(22),
-                        border: active ? null : Border.all(color: AppColors.border),
+                        border: active ? null : Border.all(color: AppColors.borderColor(context)),
                       ),
                       child: Row(
                         children: [
                           Text(t.$2,
                               style: TextStyle(
-                                color: active ? Colors.white : AppColors.textMid,
+                                color: active ? Colors.white : AppColors.secondary(context),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                               )),
@@ -162,7 +164,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
             const SizedBox(height: 12),
             Expanded(
               child: current.isEmpty
-                  ? _buildEmpty()
+                  ? _buildEmpty(l10n)
                   : RefreshIndicator(
                       onRefresh: () => ref.read(remindersProvider.notifier).refresh(),
                       child: ListView.builder(
@@ -178,7 +180,7 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
     );
   }
 
-  Widget _buildEmpty() {
+  Widget _buildEmpty(AppL10n l10n) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -194,12 +196,12 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
                 size: 36, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
-          const Text('Aucun rappel',
+          Text(l10n.noReminder,
               style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                  fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.onSurface(context))),
           const SizedBox(height: 6),
-          const Text('Appuyez sur + pour en creer un.',
-              style: TextStyle(fontSize: 13, color: AppColors.textMid)),
+          Text(l10n.noReminderDesc,
+              style: TextStyle(fontSize: 13, color: AppColors.secondary(context))),
         ],
       ),
     );
@@ -212,6 +214,8 @@ class _ReminderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(l10nProvider);
+
     Color priorityColor;
     switch (reminder.priority) {
       case 'very_important':
@@ -241,7 +245,7 @@ class _ReminderCard extends ConsumerWidget {
     final contacts = ref.watch(contactsProvider).contacts;
     final linked = contacts.where((c) => reminder.contactIds.contains(c.id)).toList();
     final contactLabel = linked.isEmpty
-        ? 'Contact supprime'
+        ? l10n.contactDeleted
         : linked.length == 1
             ? linked.first.fullName
             : '${linked.first.fullName} +${linked.length - 1}';
@@ -251,9 +255,9 @@ class _ReminderCard extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: AppColors.borderColor(context)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -298,28 +302,28 @@ class _ReminderCard extends ConsumerWidget {
                         reminder.note,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textDark),
+                            color: AppColors.onSurface(context)),
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.person_outline_rounded,
-                              size: 12, color: AppColors.textLight),
+                          Icon(Icons.person_outline_rounded,
+                              size: 12, color: AppColors.hint(context)),
                           const SizedBox(width: 3),
                           Expanded(
                               child: Text(contactLabel,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontSize: 11, color: AppColors.textMid))),
+                                  style: TextStyle(
+                                      fontSize: 11, color: AppColors.secondary(context)))),
                           const SizedBox(width: 8),
-                          const Icon(Icons.access_time_rounded,
-                              size: 12, color: AppColors.textLight),
+                          Icon(Icons.access_time_rounded,
+                              size: 12, color: AppColors.hint(context)),
                           const SizedBox(width: 3),
                           Text(dateLabel,
-                              style: const TextStyle(fontSize: 11, color: AppColors.textMid)),
+                              style: TextStyle(fontSize: 11, color: AppColors.secondary(context))),
                         ],
                       ),
                     ],
@@ -330,8 +334,8 @@ class _ReminderCard extends ConsumerWidget {
                   onTap: () {
                     CalendarService.addReminderToCalendar(reminder);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Ajoute au calendrier'),
+                      SnackBar(
+                          content: Text(l10n.addedToCalendar),
                           backgroundColor: AppColors.primary),
                     );
                   },

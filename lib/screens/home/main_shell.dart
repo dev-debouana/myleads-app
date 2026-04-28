@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/navigation_provider.dart';
 import '../home/home_screen.dart';
@@ -34,13 +35,16 @@ class MainShell extends ConsumerWidget {
   }
 
   Widget _buildBottomNav(BuildContext context, WidgetRef ref, int current) {
+    final l10n = ref.watch(l10nProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       height: 88 + MediaQuery.of(context).padding.bottom,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? AppColors.cardDark : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -51,18 +55,20 @@ class MainShell extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _navItem(Icons.home_rounded, 'Home', 0, current, ref),
-            _navItem(Icons.people_rounded, 'Contacts', 1, current, ref),
+            _navItem(Icons.home_rounded, l10n.navHome, 0, current, ref),
+            _navItem(Icons.people_rounded, l10n.navContacts, 1, current, ref),
             _scanButton(ref),
-            _navItem(Icons.access_time_rounded, 'Rappels', 3, current, ref),
-            _navItem(Icons.person_rounded, 'Compte', 4, current, ref),
+            _navItem(
+                Icons.access_time_rounded, l10n.navReminders, 3, current, ref),
+            _navItem(Icons.person_rounded, l10n.navAccount, 4, current, ref),
           ],
         ),
       ),
     );
   }
 
-  Widget _navItem(IconData icon, String label, int index, int current, WidgetRef ref) {
+  Widget _navItem(
+      IconData icon, String label, int index, int current, WidgetRef ref) {
     final isActive = current == index;
     return GestureDetector(
       onTap: () => ref.read(currentTabProvider.notifier).state = index,

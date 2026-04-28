@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 
@@ -66,7 +66,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
     super.dispose();
   }
 
-  Future<void> _handleReset() async {
+  Future<void> _handleReset(AppL10n l10n) async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -95,7 +95,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
     // Show success toast then navigate to login.
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(AppStrings.passwordResetSuccess),
+        content: Text(l10n.passwordResetSuccess),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -111,8 +111,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: AnimatedBuilder(
         animation: _animController,
         builder: (context, child) {
@@ -121,13 +122,13 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
               children: [
                 Transform.translate(
                   offset: Offset(0, _headerSlide.value),
-                  child: _buildHeader(),
+                  child: _buildHeader(l10n),
                 ),
                 Opacity(
                   opacity: _formFade.value,
                   child: Transform.translate(
                     offset: Offset(0, 20 * (1 - _formFade.value)),
-                    child: _buildForm(),
+                    child: _buildForm(context, l10n),
                   ),
                 ),
               ],
@@ -138,7 +139,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppL10n l10n) {
     return Container(
       width: double.infinity,
       height: 250,
@@ -181,9 +182,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                AppStrings.newPasswordTitle,
-                style: TextStyle(
+              Text(
+                l10n.newPasswordTitle,
+                style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
                   color: AppColors.white,
@@ -192,7 +193,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                AppStrings.newPasswordSubtitle,
+                l10n.newPasswordSubtitle,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -207,7 +208,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
     );
   }
 
-  Widget _buildForm() {
+  Widget _buildForm(BuildContext context, AppL10n l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
       child: Form(
@@ -246,23 +247,23 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
             ],
 
             // New password field
-            _buildInputLabel(AppStrings.newPassword),
+            _buildInputLabel(context, l10n.newPassword),
             const SizedBox(height: 8),
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
               textInputAction: TextInputAction.next,
               maxLength: 15,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
-                hintText: '8-15 caractères',
+                hintText: l10n.newPasswordHint,
                 prefixIcon: Icon(
                   Icons.lock_outline_rounded,
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   size: 20,
                 ),
                 suffixIcon: GestureDetector(
@@ -272,30 +273,30 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
                     _obscurePassword
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textLight,
+                    color: AppColors.hint(context),
                     size: 20,
                   ),
                 ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Veuillez entrer un mot de passe';
+                  return l10n.passwordRequired;
                 }
                 if (value.length < 8 || value.length > 15) {
-                  return 'Le mot de passe doit contenir entre 8 et 15 caractères';
+                  return l10n.passwordLengthError;
                 }
                 if (value.contains(RegExp(r'\s'))) {
-                  return 'Le mot de passe ne doit pas contenir d\'espaces';
+                  return l10n.passwordNoSpaces;
                 }
                 if (!value.contains(RegExp(r'[a-zA-Z]'))) {
-                  return 'Le mot de passe doit contenir au moins une lettre';
+                  return l10n.passwordNeedsLetter;
                 }
                 if (!value.contains(RegExp(r'[0-9]'))) {
-                  return 'Le mot de passe doit contenir au moins un chiffre';
+                  return l10n.passwordNeedsDigit;
                 }
                 if (!value.contains(
                     RegExp(r'[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\/~`;]'))) {
-                  return 'Le mot de passe doit contenir au moins un symbole';
+                  return l10n.passwordNeedsSymbol;
                 }
                 return null;
               },
@@ -307,11 +308,11 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
             Padding(
               padding: const EdgeInsets.only(left: 2),
               child: Text(
-                AppStrings.passwordRules,
+                l10n.passwordRules,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textLight.withOpacity(0.8),
+                  color: AppColors.hint(context).withOpacity(0.8),
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -320,24 +321,24 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
             const SizedBox(height: 20),
 
             // Confirm password field
-            _buildInputLabel(AppStrings.confirmNewPassword),
+            _buildInputLabel(context, l10n.confirmNewPassword),
             const SizedBox(height: 8),
             TextFormField(
               controller: _confirmController,
               obscureText: _obscureConfirm,
               textInputAction: TextInputAction.done,
               maxLength: 15,
-              onFieldSubmitted: (_) => _handleReset(),
-              style: const TextStyle(
+              onFieldSubmitted: (_) => _handleReset(l10n),
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
-                hintText: 'Répétez le mot de passe',
+                hintText: l10n.confirmPasswordHint,
                 prefixIcon: Icon(
                   Icons.lock_outline_rounded,
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   size: 20,
                 ),
                 suffixIcon: GestureDetector(
@@ -347,17 +348,17 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
                     _obscureConfirm
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textLight,
+                    color: AppColors.hint(context),
                     size: 20,
                   ),
                 ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Veuillez confirmer votre mot de passe';
+                  return l10n.confirmPasswordRequired;
                 }
                 if (value != _passwordController.text) {
-                  return AppStrings.passwordsMustMatch;
+                  return l10n.passwordsNotMatch;
                 }
                 return null;
               },
@@ -367,9 +368,9 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
 
             // Reset button
             _buildAccentButton(
-              label: AppStrings.resetPassword,
+              label: l10n.resetPassword,
               isLoading: _isLoading,
-              onPressed: _handleReset,
+              onPressed: () => _handleReset(l10n),
             ),
 
             const SizedBox(height: 16),
@@ -379,13 +380,13 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
     );
   }
 
-  Widget _buildInputLabel(String label) {
+  Widget _buildInputLabel(BuildContext context, String label) {
     return Text(
       label.toUpperCase(),
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w800,
-        color: AppColors.textLight,
+        color: AppColors.hint(context),
         letterSpacing: 1.2,
       ),
     );

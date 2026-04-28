@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../models/contact.dart';
 import '../../providers/contacts_provider.dart';
 import '../../services/contact_actions.dart';
@@ -14,11 +15,12 @@ class ContactsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(l10nProvider);
     final state = ref.watch(contactsProvider);
     final contacts = state.filteredContacts;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: Column(
         children: [
           // Header
@@ -43,7 +45,7 @@ class ContactsScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        '${AppStrings.contacts} (${state.totalContacts})',
+                        l10n.contactsCount(state.totalContacts),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -73,7 +75,7 @@ class ContactsScreen extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: AppColors.borderColor(context)),
                   ),
                   child: Row(
                     children: [
@@ -85,9 +87,9 @@ class ContactsScreen extends ConsumerWidget {
                               ref.read(contactsProvider.notifier).setSearchQuery(v),
                           style: const TextStyle(color: Colors.black, fontSize: 14),
                           cursorColor: AppColors.primary,
-                          decoration: const InputDecoration(
-                            hintText: AppStrings.searchContact,
-                            hintStyle: TextStyle(
+                          decoration: InputDecoration(
+                            hintText: l10n.searchContact,
+                            hintStyle: const TextStyle(
                               color: AppColors.textLight,
                               fontSize: 14,
                             ),
@@ -112,7 +114,7 @@ class ContactsScreen extends ConsumerWidget {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               children: [
-                _buildChip(context, ref, AppStrings.all, 'all', state.activeFilter),
+                _buildChip(context, ref, l10n.all, 'all', state.activeFilter),
                 _buildChip(context, ref, 'Hot', 'hot', state.activeFilter),
                 _buildChip(context, ref, 'Warm', 'warm', state.activeFilter),
                 _buildChip(context, ref, 'Cold', 'cold', state.activeFilter),
@@ -130,12 +132,12 @@ class ContactsScreen extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.person_search,
-                            size: 64, color: AppColors.textLight.withOpacity(0.4)),
+                            size: 64, color: AppColors.hint(context).withOpacity(0.4)),
                         const SizedBox(height: 16),
-                        const Text(
-                          'Aucun contact trouvé',
+                        Text(
+                          l10n.noContactFound,
                           style: TextStyle(
-                            color: AppColors.textMid,
+                            color: AppColors.secondary(context),
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -167,10 +169,10 @@ class ContactsScreen extends ConsumerWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
           decoration: BoxDecoration(
-            color: isActive ? AppColors.primary : AppColors.card,
+            color: isActive ? AppColors.primary : AppColors.surfaceColor(context),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isActive ? AppColors.primary : AppColors.border,
+              color: isActive ? AppColors.primary : AppColors.borderColor(context),
               width: 2,
             ),
           ),
@@ -179,7 +181,7 @@ class ContactsScreen extends ConsumerWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: isActive ? Colors.white : AppColors.textMid,
+              color: isActive ? Colors.white : AppColors.secondary(context),
             ),
           ),
         ),
@@ -198,7 +200,7 @@ class ContactsScreen extends ConsumerWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.card,
+          color: AppColors.surfaceColor(ctx),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -248,17 +250,17 @@ class ContactsScreen extends ConsumerWidget {
                 children: [
                   Text(
                     contact.fullName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      color: AppColors.onSurface(ctx),
                     ),
                   ),
                   if (contact.subtitle.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
                       contact.subtitle,
-                      style: const TextStyle(fontSize: 12, color: AppColors.textMid),
+                      style: TextStyle(fontSize: 12, color: AppColors.secondary(ctx)),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],

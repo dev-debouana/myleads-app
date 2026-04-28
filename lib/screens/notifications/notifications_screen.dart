@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/app_notification.dart';
 import '../../providers/notifications_provider.dart';
@@ -40,19 +41,20 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     // Watch sync provider so it re-runs when reminders/contacts change
     ref.watch(notificationsSyncProvider);
 
+    final l10n = ref.watch(l10nProvider);
     final state = ref.watch(notificationsProvider);
     final items = _filtered(state.visible);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.bg(context),
         elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textDark),
-        title: const Text(
-          'Notifications',
+        iconTheme: IconThemeData(color: AppColors.onSurface(context)),
+        title: Text(
+          l10n.notificationsScreenTitle,
           style: TextStyle(
-            color: AppColors.textDark,
+            color: AppColors.onSurface(context),
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
@@ -65,9 +67,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   await ref.read(notificationsProvider.notifier).markRead(n.id);
                 }
               },
-              child: const Text(
-                'Tout lire',
-                style: TextStyle(
+              child: Text(
+                l10n.markAllRead,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
@@ -86,33 +88,33 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               child: Container(
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.card,
+                  color: AppColors.surfaceColor(context),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.borderColor(context)),
                 ),
                 child: TextField(
                   controller: _searchCtrl,
                   onChanged: (v) => setState(() => _query = v),
-                  style: const TextStyle(
-                      fontSize: 14, color: AppColors.textDark),
+                  style: TextStyle(
+                      fontSize: 14, color: AppColors.onSurface(context)),
                   cursorColor: AppColors.primary,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
-                    hintText: 'Rechercher une notification…',
-                    hintStyle: const TextStyle(
-                        fontSize: 14, color: AppColors.textLight),
-                    prefixIcon: const Icon(Icons.search_rounded,
-                        color: AppColors.textLight, size: 20),
+                    hintText: l10n.searchNotifications,
+                    hintStyle: TextStyle(
+                        fontSize: 14, color: AppColors.hint(context)),
+                    prefixIcon: Icon(Icons.search_rounded,
+                        color: AppColors.hint(context), size: 20),
                     suffixIcon: _query.isNotEmpty
                         ? GestureDetector(
                             onTap: () {
                               _searchCtrl.clear();
                               setState(() => _query = '');
                             },
-                            child: const Icon(Icons.close_rounded,
-                                color: AppColors.textLight, size: 18),
+                            child: Icon(Icons.close_rounded,
+                                color: AppColors.hint(context), size: 18),
                           )
                         : null,
                   ),
@@ -125,7 +127,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               child: state.loading
                   ? const Center(child: CircularProgressIndicator())
                   : items.isEmpty
-                      ? _buildEmpty()
+                      ? _buildEmpty(l10n)
                       : RefreshIndicator(
                           onRefresh: () =>
                               ref.read(notificationsProvider.notifier).refresh(),
@@ -144,7 +146,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     );
   }
 
-  Widget _buildEmpty() {
+  Widget _buildEmpty(AppL10n l10n) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -160,21 +162,20 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 size: 36, color: AppColors.primary),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Aucune notification',
+          Text(
+            l10n.noNotifications,
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textDark),
+                color: AppColors.onSurface(context)),
           ),
           const SizedBox(height: 6),
           Text(
             _query.isNotEmpty
-                ? 'Aucun résultat pour "$_query"'
-                : 'Vos alertes et rappels apparaîtront ici.',
+                ? l10n.noResultsFor(_query)
+                : l10n.noNotificationsDesc,
             textAlign: TextAlign.center,
-            style:
-                const TextStyle(fontSize: 13, color: AppColors.textMid),
+            style: TextStyle(fontSize: 13, color: AppColors.secondary(context)),
           ),
         ],
       ),
@@ -189,6 +190,7 @@ class _NotificationCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(l10nProvider);
     final n = notification;
     final isRead = n.isRead;
     final accent = _accentForType(n.type);
@@ -196,10 +198,14 @@ class _NotificationCard extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: isRead ? AppColors.card : AppColors.primary.withOpacity(0.04),
+        color: isRead
+            ? AppColors.surfaceColor(context)
+            : AppColors.primary.withOpacity(0.04),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isRead ? AppColors.border : AppColors.primary.withOpacity(0.2),
+          color: isRead
+              ? AppColors.borderColor(context)
+              : AppColors.primary.withOpacity(0.2),
         ),
       ),
       child: Material(
@@ -246,7 +252,7 @@ class _NotificationCard extends ConsumerWidget {
                                 fontWeight: isRead
                                     ? FontWeight.w600
                                     : FontWeight.w800,
-                                color: AppColors.textDark,
+                                color: AppColors.onSurface(context),
                               ),
                             ),
                           ),
@@ -267,12 +273,12 @@ class _NotificationCard extends ConsumerWidget {
                         n.body,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 13, color: AppColors.textMid),
+                        style: TextStyle(
+                            fontSize: 13, color: AppColors.secondary(context)),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _labelForType(n.type),
+                        _labelForType(n.type, l10n),
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
@@ -283,8 +289,8 @@ class _NotificationCard extends ConsumerWidget {
                       Text(
                         DateFormat('dd MMM yyyy • HH:mm')
                             .format(n.scheduledAt),
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.textLight),
+                        style: TextStyle(
+                            fontSize: 11, color: AppColors.hint(context)),
                       ),
                     ],
                   ),
@@ -352,16 +358,16 @@ class _NotificationCard extends ConsumerWidget {
     }
   }
 
-  String _labelForType(String type) {
+  String _labelForType(String type, AppL10n l10n) {
     switch (type) {
       case 'reminder_overdue':
-        return 'RAPPEL EN RETARD';
+        return l10n.overdueReminderBadge;
       case 'reminder_upcoming':
-        return 'RAPPEL À VENIR';
+        return l10n.upcomingReminderBadge;
       case 'contact_incomplete':
-        return 'PROFIL INCOMPLET';
+        return l10n.incompleteProfileBadge;
       default:
-        return 'NOTIFICATION';
+        return l10n.notificationLabel;
     }
   }
 }

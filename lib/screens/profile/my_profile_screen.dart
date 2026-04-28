@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/database_service.dart';
 import '../../services/photo_storage_service.dart';
@@ -126,13 +126,14 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
           _isEditing = false;
           _isSaving = false;
         });
+        final l10n = ref.read(l10nProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
               children: [
                 const Icon(Icons.check_circle, color: Colors.white, size: 18),
                 const SizedBox(width: 8),
-                Text(AppStrings.profileUpdated),
+                Text(l10n.profileUpdated),
               ],
             ),
             backgroundColor: AppColors.success,
@@ -206,6 +207,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     final auth = ref.watch(authProvider);
     final user = StorageService.currentUser;
     final displayName = auth.userName.isEmpty ? 'Utilisateur' : auth.userName;
@@ -213,7 +215,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
     final displayEmail = auth.userEmail.isEmpty ? '—' : auth.userEmail;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: Form(
         key: _formKey,
         child: Column(
@@ -242,11 +244,11 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                         icon: Icons.arrow_back_ios_new_rounded,
                         onTap: () => context.pop(),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          AppStrings.myProfile,
+                          l10n.myProfile,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -368,21 +370,21 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                         const SizedBox(width: 10),
                         Text(
                           _isEditing
-                              ? AppStrings.editMode
-                              : AppStrings.viewMode,
-                          style: const TextStyle(
+                              ? l10n.editMode
+                              : l10n.viewMode,
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
+                            color: AppColors.onSurface(context),
                           ),
                         ),
                         if (_isEditing) ...[
                           const Spacer(),
                           Text(
-                            'Modifiez vos informations',
+                            l10n.editHint,
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textLight,
+                              color: AppColors.hint(context),
                             ),
                           ),
                         ],
@@ -393,7 +395,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                     // Profile fields card
                     Container(
                       decoration: BoxDecoration(
-                        color: AppColors.card,
+                        color: AppColors.surfaceColor(context),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -406,67 +408,83 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                       child: Column(
                         children: [
                           _profileField(
-                            label: AppStrings.firstName,
+                            context: context,
+                            l10n: l10n,
+                            label: l10n.firstName,
                             value: user?.firstName ?? '',
                             controller: _firstNameCtrl,
                             isFirst: true,
                             validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Prénom requis'
+                                ? l10n.firstNameRequired2
                                 : null,
                           ),
-                          _divider(),
+                          _divider(context),
                           _profileField(
-                            label: AppStrings.lastName,
+                            context: context,
+                            l10n: l10n,
+                            label: l10n.lastName,
                             value: user?.lastName ?? '',
                             controller: _lastNameCtrl,
                             validator: (v) => (v == null || v.trim().isEmpty)
-                                ? 'Nom requis'
+                                ? l10n.lastNameRequired3
                                 : null,
                           ),
-                          _divider(),
+                          _divider(context),
                           _profileField(
-                            label: AppStrings.nickname,
+                            context: context,
+                            l10n: l10n,
+                            label: l10n.nicknameLabel,
                             value: user?.nickname ?? '—',
                             controller: _nicknameCtrl,
                             hint: 'ex: Régis',
                           ),
-                          _divider(),
+                          _divider(context),
                           _profileField(
-                            label: AppStrings.email,
+                            context: context,
+                            l10n: l10n,
+                            label: l10n.emailLabel,
                             value: displayEmail,
                             controller: null,
                             readOnly: true,
                             trailingIcon: Icons.lock_outline_rounded,
                           ),
-                          _divider(),
+                          _divider(context),
                           _profileField(
-                            label: AppStrings.phoneNumber,
+                            context: context,
+                            l10n: l10n,
+                            label: l10n.phoneLabel,
                             value: user?.phone ?? '—',
                             controller: _phoneCtrl,
                             keyboardType: TextInputType.phone,
                             hint: '+352 XXX XXX XXX',
                           ),
-                          _divider(),
+                          _divider(context),
                           _profileField(
-                            label: AppStrings.companyNameLabel,
+                            context: context,
+                            l10n: l10n,
+                            label: l10n.companyNameLabel,
                             value: user?.companyName ?? '—',
                             controller: _companyNameCtrl,
                             hint: 'ex: Acme Corp',
                           ),
-                          _divider(),
+                          _divider(context),
                           _profileField(
-                            label: AppStrings.companyRoleLabel,
+                            context: context,
+                            l10n: l10n,
+                            label: l10n.companyRoleLabel,
                             value: user?.companyRole ?? '—',
                             controller: _companyRoleCtrl,
                             hint: 'ex: Directeur Commercial',
                           ),
-                          _divider(),
+                          _divider(context),
                           _profileField(
-                            label: AppStrings.biographyLabel,
+                            context: context,
+                            l10n: l10n,
+                            label: l10n.biographyLabel,
                             value: user?.biography ?? '—',
                             controller: _biographyCtrl,
                             isLast: true,
-                            hint: 'Quelques mots sur vous...',
+                            hint: l10n.biographyHint,
                             maxLines: 3,
                           ),
                         ],
@@ -501,7 +519,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                                   ),
                                 )
                               : Text(
-                                  AppStrings.saveChanges,
+                                  l10n.saveChanges,
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
@@ -525,12 +543,12 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        const Text(
-                          AppStrings.qrCodeSection,
+                        Text(
+                          l10n.qrCodeSection,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
+                            color: AppColors.onSurface(context),
                           ),
                         ),
                       ],
@@ -540,7 +558,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: AppColors.card,
+                        color: AppColors.surfaceColor(context),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -569,10 +587,10 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            AppStrings.qrCodeHint,
+                            l10n.qrCodeHint,
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textLight,
+                              color: AppColors.hint(context),
                             ),
                           ),
                         ],
@@ -608,17 +626,19 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
     );
   }
 
-  Widget _divider() {
+  Widget _divider(BuildContext context) {
     return Divider(
       height: 1,
       thickness: 1,
-      color: AppColors.border,
+      color: AppColors.borderColor(context),
       indent: 16,
       endIndent: 16,
     );
   }
 
   Widget _profileField({
+    required BuildContext context,
+    required AppL10n l10n,
     required String label,
     required String value,
     required TextEditingController? controller,
@@ -650,7 +670,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textLight,
+                color: AppColors.hint(context),
                 letterSpacing: 0.5,
               ),
             ),
@@ -661,20 +681,20 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
               validator: validator,
               maxLines: maxLines ?? 1,
               minLines: 1,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
                 hintText: hint,
                 hintStyle: TextStyle(
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
                 filled: true,
-                fillColor: AppColors.inputBg,
+                fillColor: AppColors.bg(context),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 12,
@@ -685,7 +705,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: AppColors.borderColor(context)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -712,8 +732,8 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
     return Container(
       decoration: BoxDecoration(
         color: readOnly && _isEditing
-            ? AppColors.inputBg.withOpacity(0.5)
-            : AppColors.card,
+            ? AppColors.bg(context).withOpacity(0.5)
+            : AppColors.surfaceColor(context),
         borderRadius: borderRadius,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -729,7 +749,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textLight,
+                    color: AppColors.hint(context),
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -739,7 +759,9 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: readOnly ? AppColors.textMid : AppColors.textDark,
+                    color: readOnly
+                        ? AppColors.secondary(context)
+                        : AppColors.onSurface(context),
                   ),
                   maxLines: maxLines,
                   overflow:
@@ -751,7 +773,7 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
           if (trailingIcon != null)
             Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Icon(trailingIcon, size: 16, color: AppColors.textLight),
+              child: Icon(trailingIcon, size: 16, color: AppColors.hint(context)),
             ),
         ],
       ),

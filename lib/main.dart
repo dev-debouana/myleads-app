@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
+import 'providers/settings_provider.dart';
 import 'services/action_tracker.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
@@ -47,15 +48,18 @@ void main() async {
   runApp(const ProviderScope(child: MyLeadsApp()));
 }
 
-class MyLeadsApp extends StatelessWidget {
+class MyLeadsApp extends ConsumerWidget {
   const MyLeadsApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
     return MaterialApp.router(
       title: 'My Leads',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: settings.themeMode,
       routerConfig: appRouter,
     );
   }

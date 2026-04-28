@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 
@@ -89,10 +89,10 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _handleVerify() async {
+  Future<void> _handleVerify(AppL10n l10n) async {
     final code = _codeController.text.trim();
     if (code.length != 6) {
-      setState(() => _error = 'Veuillez entrer un code à 6 chiffres');
+      setState(() => _error = l10n.codeRequired);
       return;
     }
 
@@ -122,7 +122,7 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
     );
   }
 
-  Future<void> _handleResend() async {
+  Future<void> _handleResend(AppL10n l10n) async {
     setState(() {
       _isResending = true;
       _error = null;
@@ -146,7 +146,7 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Code renvoyé à ${widget.email}'),
+        content: Text(l10n.codeSentTo(widget.email)),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -156,8 +156,9 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: AnimatedBuilder(
         animation: _animController,
         builder: (context, child) {
@@ -166,13 +167,13 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
               children: [
                 Transform.translate(
                   offset: Offset(0, _headerSlide.value),
-                  child: _buildHeader(),
+                  child: _buildHeader(l10n),
                 ),
                 Opacity(
                   opacity: _formFade.value,
                   child: Transform.translate(
                     offset: Offset(0, 20 * (1 - _formFade.value)),
-                    child: _buildForm(),
+                    child: _buildForm(context, l10n),
                   ),
                 ),
               ],
@@ -183,7 +184,7 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppL10n l10n) {
     return Container(
       width: double.infinity,
       height: 250,
@@ -226,9 +227,9 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                AppStrings.recoveryCodeTitle,
-                style: TextStyle(
+              Text(
+                l10n.recoveryCodeTitle,
+                style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
                   color: AppColors.white,
@@ -237,7 +238,7 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                '${AppStrings.recoveryCodeSent}\n${widget.email}',
+                '${l10n.recoveryCodeSent}\n${widget.email}',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -252,7 +253,7 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
     );
   }
 
-  Widget _buildForm() {
+  Widget _buildForm(BuildContext context, AppL10n l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
       child: Column(
@@ -298,11 +299,11 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
                 textAlign: TextAlign.center,
                 maxLength: 6,
                 textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _handleVerify(),
-                style: const TextStyle(
+                onSubmitted: (_) => _handleVerify(ref.read(l10nProvider)),
+                style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
+                  color: AppColors.onSurface(context),
                   letterSpacing: 8,
                 ),
                 decoration: InputDecoration(
@@ -312,7 +313,7 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 8,
-                    color: AppColors.textLight.withOpacity(0.4),
+                    color: AppColors.hint(context).withOpacity(0.4),
                   ),
                 ),
                 onChanged: (val) {
@@ -328,11 +329,11 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
           Center(
             child: _secondsLeft > 0
                 ? Text(
-                    '${AppStrings.resendCodeIn} $_countdownLabel',
-                    style: const TextStyle(
+                    '${l10n.resendCodeIn} $_countdownLabel',
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textLight,
+                      color: AppColors.hint(context),
                     ),
                   )
                 : _isResending
@@ -346,10 +347,10 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
                         ),
                       )
                     : GestureDetector(
-                        onTap: _handleResend,
-                        child: const Text(
-                          AppStrings.resendCode,
-                          style: TextStyle(
+                        onTap: () => _handleResend(l10n),
+                        child: Text(
+                          l10n.resendCode,
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: AppColors.accent,
@@ -362,9 +363,9 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen>
 
           // Verify button
           _buildAccentButton(
-            label: AppStrings.verify,
+            label: l10n.verify,
             isLoading: _isLoading,
-            onPressed: _handleVerify,
+            onPressed: () => _handleVerify(l10n),
           ),
 
           const SizedBox(height: 16),

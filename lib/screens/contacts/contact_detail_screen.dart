@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../models/contact.dart';
 import '../../models/interaction.dart';
 import '../../models/reminder.dart';
@@ -45,6 +46,7 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     final contact = ref.watch(contactByIdProvider(widget.contactId));
 
     if (contact == null) {
@@ -53,14 +55,14 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: AppColors.textLight),
+              Icon(Icons.error_outline,
+                  size: 48, color: AppColors.hint(context)),
               const SizedBox(height: 16),
-              const Text('Contact non trouvé'),
+              Text(l10n.contactNotFound),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => context.pop(),
-                child: const Text('Retour'),
+                child: Text(l10n.back),
               ),
             ],
           ),
