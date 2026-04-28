@@ -11,6 +11,8 @@ import '../../screens/home/main_shell.dart';
 import '../../screens/review/review_screen.dart';
 import '../../screens/contacts/contact_detail_screen.dart';
 import '../../screens/contacts/contact_edit_screen.dart';
+import '../../screens/contacts/contact_history_screen.dart';
+import '../../screens/contacts/contact_reminders_screen.dart';
 import '../../screens/pricing/pricing_screen.dart';
 import '../../screens/scan/scan_screen.dart';
 import '../../screens/profile/my_profile_screen.dart';
@@ -219,6 +221,46 @@ final appRouter = GoRouter(
         return CustomTransitionPage(
           key: state.pageKey,
           child: ContactEditScreen(contactId: contactId),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            final tween = Tween(begin: begin, end: end)
+                .chain(CurveTween(curve: Curves.easeInOut));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: '/contact/:id/history',
+      pageBuilder: (context, state) {
+        final contactId = state.pathParameters['id']!;
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: ContactHistoryScreen(contactId: contactId),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            final tween = Tween(begin: begin, end: end)
+                .chain(CurveTween(curve: Curves.easeInOut));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: '/contact/:id/reminders',
+      pageBuilder: (context, state) {
+        final contactId = state.pathParameters['id']!;
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: ContactRemindersScreen(contactId: contactId),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;

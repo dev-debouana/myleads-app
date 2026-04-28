@@ -321,7 +321,7 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
             _buildSection(
               context: context,
               title: l10n.qrCode,
-              Center(
+              child: Center(
                 child: QrImageView(
                   data: [
                     'Prénom: ${contact.firstName}',
@@ -358,92 +358,122 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
                 ),
               ),
 
-            // Rappels Section
+            // Rappels Section — only incomplete reminders, max 3, ascending.
+            // Header always shows a nav button to the full pending list.
             Builder(
               builder: (context) {
-                final reminders = ref
+                final pending = ref
                     .watch(remindersProvider)
-                    .getRemindersForContact(contact.id);
-                final shown = reminders.take(3).toList();
-                if (shown.isEmpty) return const SizedBox.shrink();
+                    .getRemindersForContact(contact.id)
+                    .where((r) => !r.isCompleted)
+                    .take(3)
+                    .toList();
                 return _buildSection(
                   context: context,
                   title: l10n.reminderSection,
-                  child: Column(
-                    children: shown.map((reminder) {
-                      Color priorityColor;
-                      switch (reminder.priority) {
-                        case 'very_important':
-                          priorityColor = AppColors.hot;
-                          break;
-                        case 'important':
-                          priorityColor = AppColors.warm;
-                          break;
-                        default:
-                          priorityColor = AppColors.success;
-                      }
-                      return GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProviderScope(parent: ProviderScope.containerOf(context), child: ReminderDetailScreen(reminderId: reminder.id)),
+                  trailing: GestureDetector(
+                    onTap: () => context.push(
+                        '/contact/${contact.id}/reminders'),
+                    child: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                  child: pending.isEmpty
+                      ? Text(
+                          l10n.noPendingReminders,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: AppColors.hint(context),
                           ),
-                        ),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: AppColors.bg(context),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.borderColor(context)),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 4,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: priorityColor,
-                                  borderRadius: BorderRadius.circular(2),
+                        )
+                      : Column(
+                          children: pending.map((reminder) {
+                            Color priorityColor;
+                            switch (reminder.priority) {
+                              case 'very_important':
+                                priorityColor = AppColors.hot;
+                                break;
+                              case 'important':
+                                priorityColor = AppColors.warm;
+                                break;
+                              default:
+                                priorityColor = AppColors.success;
+                            }
+                            return GestureDetector(
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ProviderScope(
+                                    parent: ProviderScope.containerOf(context),
+                                    child: ReminderDetailScreen(
+                                        reminderId: reminder.id),
+                                  ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: AppColors.bg(context),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                      color: AppColors.borderColor(context)),
+                                ),
+                                child: Row(
                                   children: [
-                                    Text(
-                                      reminder.note,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.onSurface(context),
+                                    Container(
+                                      width: 4,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: priorityColor,
+                                        borderRadius: BorderRadius.circular(2),
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      DateFormat("dd MMM yyyy HH:mm").format(reminder.startDateTime),
-                                      style: TextStyle(
-                                        fontSize: 11,
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            reminder.note,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.onSurface(
+                                                  context),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            DateFormat("dd MMM yyyy HH:mm")
+                                                .format(reminder.startDateTime),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: AppColors.hint(context),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(Icons.chevron_right,
                                         color: AppColors.hint(context),
-                                      ),
-                                    ),
+                                        size: 18),
                                   ],
                                 ),
                               ),
-                              Icon(Icons.chevron_right,
-                                  color: AppColors.hint(context), size: 18),
-                            ],
-                          ),
+                            );
+                          }).toList(),
                         ),
-                      );
-                    }).toList(),
-                  ),
                 );
               },
             ),
             // History Section — merge raw interactions with completed
-            // reminders linked to this contact (doc v7).
+            // reminders linked to this contact (doc v7). Shows 3 most
+            // recent; "View all" opens the full history screen.
             Builder(builder: (_) {
               final remindersState = ref.watch(remindersProvider);
               final doneForContact = remindersState.doneReminders
@@ -456,11 +486,29 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
               ]..sort((a, b) => b.date.compareTo(a.date));
 
               if (entries.isEmpty) return const SizedBox.shrink();
+
+              final shown = entries.take(3).toList();
+              final hasMore = entries.length > 3;
+
               return _buildSection(
                 context: context,
                 title: l10n.historyLabel,
+                trailing: hasMore
+                    ? GestureDetector(
+                        onTap: () => context.push(
+                            '/contact/${contact.id}/history'),
+                        child: Text(
+                          l10n.viewAll,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.accent,
+                          ),
+                        ),
+                      )
+                    : null,
                 child: Column(
-                  children: entries.map((e) => _historyRow(context, e)).toList(),
+                  children: shown.map((e) => _historyRow(context, e)).toList(),
                 ),
               );
             }),
@@ -562,6 +610,7 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
     required BuildContext context,
     required String title,
     required Widget child,
+    Widget? trailing,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
@@ -580,14 +629,20 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title.toUpperCase(),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.hint(context),
-              letterSpacing: 1,
-            ),
+          Row(
+            children: [
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.hint(context),
+                  letterSpacing: 1,
+                ),
+              ),
+              const Spacer(),
+              if (trailing != null) trailing,
+            ],
           ),
           const SizedBox(height: 14),
           child,

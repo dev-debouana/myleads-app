@@ -193,6 +193,12 @@ class AppL10n {
   String get hotStatus => '● Hot Lead';
   String get warmStatus => '● Warm Lead';
   String get coldStatus => '● Cold Lead';
+  String get fullHistory => _en ? 'Full History' : 'Historique complet';
+  String get noHistory => _en ? 'No history' : 'Aucun historique';
+  String get noPendingReminders =>
+      _en ? 'No pending reminders' : 'Aucun rappel en attente';
+  String get allPendingReminders =>
+      _en ? 'Pending reminders' : 'Rappels en attente';
 
   // ─── Contact Edit ─────────────────────────────────────────────────────────
   String get addContact => _en ? 'Add manually' : 'Ajouter manuellement';
