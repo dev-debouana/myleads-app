@@ -11,6 +11,7 @@ import '../../models/reminder.dart';
 import '../../providers/contacts_provider.dart';
 import '../../providers/reminders_provider.dart';
 import '../../services/calendar_service.dart';
+import '../../services/contact_actions.dart';
 import 'create_reminder_screen.dart';
 
 class ReminderDetailScreen extends ConsumerWidget {

@@ -60,7 +60,8 @@ class Reminder {
 
   bool get isLate {
     if (isCompleted) return false;
-    return startDateTime.isBefore(DateTime.now()) && !isToday;
+    final deadline = endDateTime ?? startDateTime;
+    return deadline.isBefore(DateTime.now());
   }
 
   DateTime get sortKey => endDateTime ?? startDateTime;

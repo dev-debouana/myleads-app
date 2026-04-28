@@ -1,11 +1,14 @@
+import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/utils/validators.dart';
+import '../models/contact.dart';
 import '../models/user_account.dart';
 import '../services/database_service.dart';
 import '../services/email_service.dart';
@@ -339,20 +342,45 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Permanently deletes the current user account and every piece of
   /// data that belongs to them (contacts, reminders, interactions,
-  /// payment methods). Clears the session afterwards.
+  /// payment methods, photo files). Clears the session afterwards.
   ///
   /// Returns `null` on success, or an error string on failure.
   Future<String?> deleteAccount() async {
     final user = StorageService.currentUser;
     if (user == null) return 'Aucun utilisateur connecté';
     try {
+      // Collect photo paths before rows are erased from the DB.
+      final userPhotoPath = user.photoPath;
+      final List<Contact> contacts =
+          await DatabaseService.getAllContactsForOwner(user.id);
+
+      // Erase all DB rows owned by this user.
       await DatabaseService.deleteUserAndAllData(user.id);
+
+      // Clear secure-storage session keys and reset auth state.
       await StorageService.clearSession();
       state = const AuthState();
+
+      // Delete photo files from device storage (best-effort, non-blocking).
+      if (!kIsWeb) {
+        _deleteFileIfExists(userPhotoPath);
+        for (final c in contacts) {
+          _deleteFileIfExists(c.photoPath);
+        }
+      }
+
       return null;
     } catch (e) {
       return 'Erreur lors de la suppression : $e';
     }
+  }
+
+  static void _deleteFileIfExists(String? path) {
+    if (path == null || path.isEmpty) return;
+    try {
+      final file = File(path);
+      if (file.existsSync()) file.deleteSync();
+    } catch (_) {}
   }
 
   // ---------------- Change password ----------------

@@ -256,24 +256,6 @@ class _AccountSecurityScreenState
     await ref.read(contactsProvider.notifier).reload();
     await ref.read(remindersProvider.notifier).reload();
     if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: const [
-            Icon(Icons.check_circle, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Expanded(child: Text('Compte supprimé')),
-          ],
-        ),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
     context.go('/login');
   }
 
