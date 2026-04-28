@@ -167,8 +167,9 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: Column(
         children: [
           // Header
@@ -206,9 +207,9 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  AppStrings.reviewTitle,
-                  style: TextStyle(
+                Text(
+                  l10n.reviewTitle,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
@@ -216,7 +217,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  AppStrings.reviewSubtitle,
+                  l10n.reviewSubtitle,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.5),
                     fontSize: 13,
@@ -234,9 +235,9 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                     children: [
                       const Icon(Icons.check_circle, color: AppColors.success, size: 14),
                       const SizedBox(width: 6),
-                      const Text(
-                        AppStrings.ocrConfidence,
-                        style: TextStyle(
+                      Text(
+                        l10n.ocrConfidence,
+                        style: const TextStyle(
                           color: AppColors.success,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -256,26 +257,26 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildField(AppStrings.firstName, _firstNameCtrl),
-                  _buildField(AppStrings.lastName, _lastNameCtrl),
-                  _buildField(AppStrings.jobTitle, _jobTitleCtrl),
-                  _buildField(AppStrings.company, _companyCtrl),
-                  _buildField(AppStrings.phone, _phoneCtrl, type: TextInputType.phone),
-                  _buildField(AppStrings.email, _emailCtrl, type: TextInputType.emailAddress),
-                  _buildField(AppStrings.source, _sourceCtrl),
-                  _buildField('Projet 1', _project1Ctrl),
-                  _buildField('Budget Projet 1', _project1BudgetCtrl),
-                  _buildField('Projet 2', _project2Ctrl),
-                  _buildField('Budget Projet 2', _project2BudgetCtrl),
+                  _buildField(context, l10n.firstName, _firstNameCtrl),
+                  _buildField(context, l10n.lastName, _lastNameCtrl),
+                  _buildField(context, l10n.jobTitleLabel, _jobTitleCtrl),
+                  _buildField(context, l10n.companyLabel, _companyCtrl),
+                  _buildField(context, l10n.phoneLabel, _phoneCtrl, type: TextInputType.phone),
+                  _buildField(context, l10n.emailLabel, _emailCtrl, type: TextInputType.emailAddress),
+                  _buildField(context, l10n.sourceLabel, _sourceCtrl),
+                  _buildField(context, l10n.project1Review, _project1Ctrl),
+                  _buildField(context, l10n.project1BudgetReview, _project1BudgetCtrl),
+                  _buildField(context, l10n.project2Review, _project2Ctrl),
+                  _buildField(context, l10n.project2BudgetReview, _project2BudgetCtrl),
 
                   // Tags
                   const SizedBox(height: 4),
                   Text(
-                    AppStrings.tags.toUpperCase(),
-                    style: const TextStyle(
+                    l10n.tagsLabel.toUpperCase(),
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textLight,
+                      color: AppColors.hint(context),
                       letterSpacing: 1,
                     ),
                   ),
@@ -306,10 +307,10 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                           ),
                           child: Text(
                             tag,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: selected ? AppColors.primary : AppColors.primary,
+                              color: AppColors.primary,
                             ),
                           ),
                         ),
@@ -318,29 +319,29 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                   ),
 
                   const SizedBox(height: 16),
-                  _buildField(AppStrings.notes, _notesCtrl, maxLines: 3),
+                  _buildField(context, l10n.notesLabel, _notesCtrl, maxLines: 3),
 
                   // Quick Actions
                   const SizedBox(height: 8),
                   Text(
-                    AppStrings.quickActions.toUpperCase(),
-                    style: const TextStyle(
+                    l10n.quickActions.toUpperCase(),
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textLight,
+                      color: AppColors.hint(context),
                       letterSpacing: 1,
                     ),
                   ),
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      _buildQuickAction(const Icon(Icons.phone, size: 20), AppStrings.call, AppColors.success),
+                      _buildQuickAction(context, l10n, const Icon(Icons.phone, size: 20), l10n.callLabel, AppColors.success),
                       const SizedBox(width: 10),
-                      _buildQuickAction(const FaIcon(FontAwesomeIcons.whatsapp, size: 20), AppStrings.whatsapp, const Color(0xFF25D366)),
+                      _buildQuickAction(context, l10n, const FaIcon(FontAwesomeIcons.whatsapp, size: 20), l10n.whatsappLabel, const Color(0xFF25D366)),
                       const SizedBox(width: 10),
-                      _buildQuickAction(const Icon(Icons.email, size: 20), AppStrings.emailAction, AppColors.primary),
+                      _buildQuickAction(context, l10n, const Icon(Icons.email, size: 20), l10n.emailActionLabel, AppColors.primary),
                       const SizedBox(width: 10),
-                      _buildQuickAction(const Icon(Icons.sms, size: 20), AppStrings.sms, AppColors.warm),
+                      _buildQuickAction(context, l10n, const Icon(Icons.sms, size: 20), l10n.smsLabel, AppColors.warm),
                     ],
                   ),
                   const SizedBox(height: 100),
@@ -358,7 +359,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
               top: 16,
             ),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: AppColors.bg(context),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -381,9 +382,9 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        AppStrings.save,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                      child: Text(
+                        l10n.saveButton,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
