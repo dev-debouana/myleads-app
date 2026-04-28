@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/reminder.dart';
 import '../../providers/contacts_provider.dart';
@@ -72,7 +73,7 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
     });
   }
 
-  void _pickContacts() {
+  void _pickContacts(AppL10n l10n) {
     final contacts = ref.read(contactsProvider).contacts;
     showModalBottomSheet(
       context: context,
@@ -83,9 +84,9 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
         return StatefulBuilder(
           builder: (ctx, setSt) => Container(
             height: MediaQuery.of(context).size.height * 0.75,
-            decoration: const BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceColor(context),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               children: [
@@ -94,18 +95,29 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                   height: 4,
                   margin: const EdgeInsets.only(top: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.border,
+                    color: AppColors.borderColor(context),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('Selectionner des contacts',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    l10n.selectContacts,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.onSurface(context),
+                    ),
+                  ),
                 ),
                 Expanded(
                   child: contacts.isEmpty
-                      ? const Center(child: Text('Aucun contact disponible'))
+                      ? Center(
+                          child: Text(
+                            l10n.noContactsAvailable,
+                            style: TextStyle(color: AppColors.secondary(context)),
+                          ),
+                        )
                       : ListView.builder(
                           itemCount: contacts.length,
                           itemBuilder: (_, i) {
@@ -117,11 +129,17 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                                 child: Text(c.initials,
                                     style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
                               ),
-                              title: Text(c.fullName),
-                              subtitle: Text(c.phone ?? c.email ?? ''),
+                              title: Text(
+                                c.fullName,
+                                style: TextStyle(color: AppColors.onSurface(context)),
+                              ),
+                              subtitle: Text(
+                                c.phone ?? c.email ?? '',
+                                style: TextStyle(color: AppColors.secondary(context)),
+                              ),
                               trailing: isSel
                                   ? const Icon(Icons.check_circle, color: AppColors.primary)
-                                  : const Icon(Icons.radio_button_unchecked, color: AppColors.textLight),
+                                  : Icon(Icons.radio_button_unchecked, color: AppColors.hint(context)),
                               onTap: () => setSt(() {
                                 if (isSel) {
                                   selected.remove(c.id);
@@ -147,8 +165,10 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                         minimumSize: const Size(double.infinity, 48),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: Text('Valider (${selected.length})',
-                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                      child: Text(
+                        l10n.validateContacts(selected.length),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                 ),
@@ -160,11 +180,14 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
     );
   }
 
-  Future<void> _save() async {
+  Future<void> _save(AppL10n l10n) async {
     if (!_formKey.currentState!.validate()) return;
     if (_contactIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Au moins 1 contact requis'), backgroundColor: AppColors.hot),
+        SnackBar(
+          content: Text(l10n.contactRequired),
+          backgroundColor: AppColors.hot,
+        ),
       );
       return;
     }
@@ -196,6 +219,14 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
       if (_priority == 'important' || _priority == 'very_important') {
         try {
           await CalendarService.addReminderToCalendar(saved);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.addedToCalendar),
+                backgroundColor: AppColors.primary,
+              ),
+            );
+          }
         } catch (_) {}
       }
       if (mounted) Navigator.pop(context);
@@ -206,12 +237,13 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     final isEdit = widget.existing != null;
     final contacts = ref.watch(contactsProvider).contacts;
     final selectedContacts = contacts.where((c) => _contactIds.contains(c.id)).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -221,11 +253,18 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                 child: Row(
                   children: [
-                    IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back)),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.arrow_back, color: AppColors.onSurface(context)),
+                    ),
                     Expanded(
                       child: Text(
-                        isEdit ? 'Modifier le rappel' : 'Nouveau rappel',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                        isEdit ? l10n.editReminderTitle : l10n.newReminderTitle,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.onSurface(context),
+                        ),
                       ),
                     ),
                   ],
@@ -237,36 +276,46 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _section('Contacts'),
+                      _section(context, l10n.contactsSection),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
                         children: [
                           ...selectedContacts.map((c) => Chip(
-                                label: Text(c.fullName),
+                                label: Text(
+                                  c.fullName,
+                                  style: TextStyle(color: AppColors.onSurface(context)),
+                                ),
                                 onDeleted: () => setState(() => _contactIds.remove(c.id)),
                                 backgroundColor: AppColors.primary.withOpacity(0.12),
                               )),
                           ActionChip(
-                            label: const Text('+ Ajouter'),
-                            onPressed: _pickContacts,
-                            backgroundColor: AppColors.card,
+                            label: Text(
+                              l10n.addButton,
+                              style: TextStyle(color: AppColors.onSurface(context)),
+                            ),
+                            onPressed: () => _pickContacts(l10n),
+                            backgroundColor: AppColors.surfaceColor(context),
                           ),
                         ],
                       ),
                       const SizedBox(height: 20),
-                      _section('Planification'),
+                      _section(context, l10n.planningSection),
                       _rowField(
+                        context: context,
                         icon: Icons.play_arrow_rounded,
-                        label: 'Debut',
+                        label: l10n.startLabel,
                         value: DateFormat('dd MMM yyyy HH:mm').format(_startDateTime),
                         onTap: () => _pickDate(isStart: true),
                       ),
                       const SizedBox(height: 8),
                       _rowField(
+                        context: context,
                         icon: Icons.stop_rounded,
-                        label: 'Fin (optionnel)',
-                        value: _endDateTime == null ? '-' : DateFormat('dd MMM yyyy HH:mm').format(_endDateTime!),
+                        label: l10n.endLabel,
+                        value: _endDateTime == null
+                            ? '-'
+                            : DateFormat('dd MMM yyyy HH:mm').format(_endDateTime!),
                         onTap: () => _pickDate(isStart: false),
                         trailing: _endDateTime == null
                             ? null
@@ -278,51 +327,56 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String?>(
                         value: _repeatFrequency,
-                        decoration: const InputDecoration(
-                          labelText: 'Repetition (optionnel)',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.repeat_rounded),
+                        dropdownColor: AppColors.surfaceColor(context),
+                        style: TextStyle(color: AppColors.onSurface(context)),
+                        decoration: InputDecoration(
+                          labelText: l10n.repeatLabel,
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.repeat_rounded),
                         ),
-                        items: const [
-                          DropdownMenuItem(value: null, child: Text('Aucune')),
-                          DropdownMenuItem(value: '30m', child: Text('Toutes les 30 min')),
-                          DropdownMenuItem(value: '1h', child: Text('Toutes les heures')),
-                          DropdownMenuItem(value: '1d', child: Text('Chaque jour')),
-                          DropdownMenuItem(value: '1w', child: Text('Chaque semaine')),
-                          DropdownMenuItem(value: '1mo', child: Text('Chaque mois')),
+                        items: [
+                          DropdownMenuItem(value: null, child: Text(l10n.repeatNone)),
+                          DropdownMenuItem(value: '30m', child: Text(l10n.repeat30min)),
+                          DropdownMenuItem(value: '1h', child: Text(l10n.repeatHourly)),
+                          DropdownMenuItem(value: '1d', child: Text(l10n.repeatDaily)),
+                          DropdownMenuItem(value: '1w', child: Text(l10n.repeatWeekly)),
+                          DropdownMenuItem(value: '1mo', child: Text(l10n.repeatMonthly)),
                         ],
                         onChanged: (v) => setState(() => _repeatFrequency = v),
                       ),
                       const SizedBox(height: 20),
-                      _section('Note'),
+                      _section(context, l10n.noteSection),
                       TextFormField(
                         controller: _noteCtrl,
                         maxLines: 3,
-                        validator: (v) => v == null || v.trim().isEmpty ? 'Note requise' : null,
-                        decoration: const InputDecoration(
-                          hintText: 'Ex: Rappeler pour offre 50k',
-                          border: OutlineInputBorder(),
+                        style: TextStyle(color: AppColors.onSurface(context)),
+                        validator: (v) =>
+                            v == null || v.trim().isEmpty ? l10n.noteRequired : null,
+                        decoration: InputDecoration(
+                          hintText: l10n.noteHint,
+                          hintStyle: TextStyle(color: AppColors.hint(context)),
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _section('A faire'),
+                      _section(context, l10n.todoSection),
                       Wrap(
                         spacing: 8,
                         children: [
-                          _choiceChip('call', 'Appeler', Icons.phone_rounded),
-                          _choiceChip('sms', 'SMS', Icons.sms_rounded),
-                          _choiceChip('whatsapp', 'WhatsApp', Icons.chat_rounded),
-                          _choiceChip('email', 'Email', Icons.email_rounded),
+                          _choiceChip(context, 'call', l10n.actionCall, Icons.phone_rounded),
+                          _choiceChip(context, 'sms', l10n.actionSms, Icons.sms_rounded),
+                          _choiceChip(context, 'whatsapp', l10n.actionWhatsapp, Icons.chat_rounded),
+                          _choiceChip(context, 'email', l10n.actionEmail, Icons.email_rounded),
                         ],
                       ),
                       const SizedBox(height: 20),
-                      _section('Priorite'),
+                      _section(context, l10n.prioritySection),
                       Wrap(
                         spacing: 8,
                         children: [
-                          _priorityChip('normal', 'Normal', AppColors.success),
-                          _priorityChip('important', 'Important', AppColors.warm),
-                          _priorityChip('very_important', 'Tres important', AppColors.hot),
+                          _priorityChip(context, 'normal', l10n.priorityNormal, AppColors.success),
+                          _priorityChip(context, 'important', l10n.priorityImportant, AppColors.warm),
+                          _priorityChip(context, 'very_important', l10n.priorityVeryImportant, AppColors.hot),
                         ],
                       ),
                       const SizedBox(height: 32),
@@ -334,7 +388,7 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: ElevatedButton(
-                    onPressed: _saving ? null : _save,
+                    onPressed: _saving ? null : () => _save(l10n),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
@@ -348,7 +402,7 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                           )
                         : Text(
-                            isEdit ? 'Enregistrer' : 'Creer le rappel',
+                            isEdit ? l10n.saveReminderBtn : l10n.createReminderBtn,
                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                           ),
                   ),
@@ -361,16 +415,21 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
     );
   }
 
-  Widget _section(String t) => Padding(
+  Widget _section(BuildContext context, String t) => Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: Text(
           t.toUpperCase(),
-          style: const TextStyle(
-              fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1, color: AppColors.textLight),
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1,
+            color: AppColors.hint(context),
+          ),
         ),
       );
 
   Widget _rowField({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
@@ -383,7 +442,7 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: AppColors.borderColor(context)),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -394,8 +453,15 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textLight)),
-                  Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  Text(label, style: TextStyle(fontSize: 11, color: AppColors.hint(context))),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.onSurface(context),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -406,7 +472,7 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
     );
   }
 
-  Widget _choiceChip(String v, String label, IconData icon) {
+  Widget _choiceChip(BuildContext context, String v, String label, IconData icon) {
     final sel = _toDoAction == v;
     return ChoiceChip(
       avatar: Icon(icon, size: 16, color: sel ? Colors.white : AppColors.primary),
@@ -414,11 +480,14 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
       selected: sel,
       onSelected: (_) => setState(() => _toDoAction = v),
       selectedColor: AppColors.primary,
-      labelStyle: TextStyle(color: sel ? Colors.white : AppColors.textDark, fontWeight: FontWeight.w600),
+      labelStyle: TextStyle(
+        color: sel ? Colors.white : AppColors.onSurface(context),
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 
-  Widget _priorityChip(String v, String label, Color color) {
+  Widget _priorityChip(BuildContext context, String v, String label, Color color) {
     final sel = _priority == v;
     return ChoiceChip(
       label: Text(label),
@@ -427,7 +496,7 @@ class _CreateReminderScreenState extends ConsumerState<CreateReminderScreen> {
       selectedColor: color,
       labelStyle: TextStyle(color: sel ? Colors.white : color, fontWeight: FontWeight.w700),
       side: BorderSide(color: color),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surfaceColor(context),
     );
   }
 }

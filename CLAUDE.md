@@ -3,8 +3,25 @@
 Reference document for Claude when working on the **My Leads** Flutter
 application. Read this first on every task touching this repository so
 changes stay consistent with the existing architecture, theme tokens, and
-conventions. User directive (Apr 2026): **focus exclusively on the mobile
-app** — do not prioritize the web build.
+conventions.
+
+**User directives (Apr 2026) — apply to every change without exception:**
+
+1. **Focus exclusively on the mobile app** — do not prioritize the web build.
+2. **Dark / light mode on every design change.** Any new or modified UI widget
+   must use the context-aware color helpers (`AppColors.bg(context)`,
+   `AppColors.surfaceColor(context)`, `AppColors.onSurface(context)`,
+   `AppColors.secondary(context)`, `AppColors.hint(context)`,
+   `AppColors.borderColor(context)`, `AppColors.inputBackground(context)`)
+   instead of the static constants (`AppColors.background`, `AppColors.card`,
+   `AppColors.textDark`, etc.). Never introduce a `const TextStyle` that
+   references a static color token that has a context-aware equivalent.
+3. **Bilingual (FR / EN) on every text change.** Any new user-facing string, or
+   any edit to an existing one, must be added / updated in **both** languages
+   inside `lib/core/l10n/app_l10n.dart` (the `AppL10n` class). Screens must
+   retrieve strings via `final l10n = ref.watch(l10nProvider)` and reference
+   `l10n.xxx` — never hardcode a display string in a widget directly. French is
+   the default (`_en == false`); English is the `_en == true` branch.
 
 ---
 
@@ -326,36 +343,50 @@ the schema; never rewrite existing tables.
 
 1. **Theme tokens only.** Import `AppColors` + use `AppTheme.cardShadow/accentShadow`;
    never hardcode hex or raw `BoxShadow(...)`.
-2. **French UI strings.** All user-facing literals go into `AppStrings` so we
-   can localise later. Use double-quotes `"` when the literal contains an
-   apostrophe (e.g. `"Changer l'email"`).
-3. **Form inputs.** Lean on the themed `InputDecorationTheme`. If you must
+2. **All UI colors must be context-aware.** Use `AppColors.bg(context)`,
+   `AppColors.surfaceColor(context)`, `AppColors.onSurface(context)`,
+   `AppColors.secondary(context)`, `AppColors.hint(context)`,
+   `AppColors.borderColor(context)`, `AppColors.inputBackground(context)` so
+   every widget responds to light/dark mode automatically. Static constants
+   (`AppColors.background`, `AppColors.card`, `AppColors.textDark`, etc.) are
+   only valid inside gradient declarations or `const` contexts where no
+   context-aware equivalent exists (e.g. the gradient color stops themselves).
+3. **All user-facing strings must go through `AppL10n`.** Add or update the
+   string in `lib/core/l10n/app_l10n.dart` with both a French branch
+   (`_en == false`) and an English branch (`_en == true`). In widgets, obtain
+   the accessor with `final l10n = ref.watch(l10nProvider)` and reference
+   `l10n.xxx`. Never place a display string literal directly in a widget.
+   Use double-quotes `"` in Dart when the literal contains an apostrophe
+   (e.g. `"Changer l'email"`).
+4. **Form inputs.** Lean on the themed `InputDecorationTheme`. If you must
    override colours (e.g. search bars on a coloured header), set
-   `cursorColor: AppColors.primary`, `style: TextStyle(color: Colors.black)`,
-   `hintStyle: TextStyle(color: AppColors.textLight)` explicitly.
-4. **Buttons.** Primary CTA = `ElevatedButton` (auto-styled accent/primary).
+   `cursorColor: AppColors.primary`,
+   `style: TextStyle(color: AppColors.onSurface(context))`,
+   `hintStyle: TextStyle(color: AppColors.hint(context))` explicitly.
+5. **Buttons.** Primary CTA = `ElevatedButton` (auto-styled accent/primary).
    Secondary = `OutlinedButton`. Tertiary = `TextButton`. Do not ship a custom
    wrapper unless reused ≥ 3 times.
-5. **Cards.** Use `Container` with `color: AppColors.card`, `borderRadius:
-   BorderRadius.circular(14–16)`, `border: Border.all(color: AppColors.border)`
+6. **Cards.** Use `Container` with `color: AppColors.surfaceColor(context)`,
+   `borderRadius: BorderRadius.circular(14–16)`,
+   `border: Border.all(color: AppColors.borderColor(context))`
    **or** `boxShadow: AppTheme.cardShadow`, not both.
-6. **Priority bars.** Reminder cards carry a 4 px vertical bar in
+7. **Priority bars.** Reminder cards carry a 4 px vertical bar in
    `priorityColor` on the left (see `_ReminderCard`). Keep the bar for any
    new priority-bearing card.
-7. **Icons.** Stick to `Icons.xxx_rounded`. For status / action mapping use
+8. **Icons.** Stick to `Icons.xxx_rounded`. For status / action mapping use
    the switch tables in `reminders_screen.dart` / `contacts_screen.dart`.
-8. **Storage & encryption.** Any new sensitive column must (a) be encrypted
+9. **Storage & encryption.** Any new sensitive column must (a) be encrypted
    on write with `EncryptionService.encryptText`, (b) store a SHA-256 hash in
    a `_lookup` companion column if it needs uniqueness queries.
-9. **Never log plaintext PII.** `debugPrint` is OK for non-sensitive metadata;
-   never print emails, phones, tokens.
-10. **Platform guards.** Use `kIsWeb` + `Platform.isWindows/isLinux` checks in
+10. **Never log plaintext PII.** `debugPrint` is OK for non-sensitive metadata;
+    never print emails, phones, tokens.
+11. **Platform guards.** Use `kIsWeb` + `Platform.isWindows/isLinux` checks in
     services (see `database_service.dart`). Keep conditional imports for web
     via the `web_db_factory_{stub,web}.dart` pattern.
-11. **OCR.** `ocr_service_mobile.dart` is the real ML Kit implementation;
+12. **OCR.** `ocr_service_mobile.dart` is the real ML Kit implementation;
     web / desktop fall back to `ocr_service_stub.dart`. Do not import the
     mobile one directly — go through `storage_service.dart` or the provider.
-12. **No build-runner output committed.** If you add `@riverpod` annotations,
+13. **No build-runner output committed.** If you add `@riverpod` annotations,
     run `flutter pub run build_runner build` locally; CI will regenerate.
 
 ---

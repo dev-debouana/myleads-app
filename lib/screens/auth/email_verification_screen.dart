@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 
@@ -90,10 +90,10 @@ class _EmailVerificationScreenState
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _handleVerify() async {
+  Future<void> _handleVerify(AppL10n l10n) async {
     final code = _codeController.text.trim();
     if (code.length != 6) {
-      setState(() => _error = 'Veuillez entrer un code à 6 chiffres');
+      setState(() => _error = l10n.codeRequired);
       return;
     }
 
@@ -118,13 +118,14 @@ class _EmailVerificationScreenState
 
     setState(() => _isLoading = false);
 
+    final l10n = ref.read(l10nProvider);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.verified_rounded, color: Colors.white, size: 20),
-            SizedBox(width: 10),
-            Expanded(child: Text(AppStrings.emailVerified)),
+            const Icon(Icons.verified_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(child: Text(l10n.emailVerified)),
           ],
         ),
         backgroundColor: AppColors.success,
@@ -139,7 +140,7 @@ class _EmailVerificationScreenState
     if (mounted) context.go('/login');
   }
 
-  Future<void> _handleResend() async {
+  Future<void> _handleResend(AppL10n l10n) async {
     setState(() {
       _isResending = true;
       _error = null;
@@ -163,7 +164,7 @@ class _EmailVerificationScreenState
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${AppStrings.verificationCodeSent} ${widget.email}'),
+        content: Text(l10n.codeSentTo(widget.email)),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -173,8 +174,9 @@ class _EmailVerificationScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: AnimatedBuilder(
         animation: _animController,
         builder: (context, child) {
@@ -183,13 +185,13 @@ class _EmailVerificationScreenState
               children: [
                 Transform.translate(
                   offset: Offset(0, _headerSlide.value),
-                  child: _buildHeader(),
+                  child: _buildHeader(l10n),
                 ),
                 Opacity(
                   opacity: _formFade.value,
                   child: Transform.translate(
                     offset: Offset(0, 20 * (1 - _formFade.value)),
-                    child: _buildForm(),
+                    child: _buildForm(context, l10n),
                   ),
                 ),
               ],
@@ -200,7 +202,7 @@ class _EmailVerificationScreenState
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppL10n l10n) {
     return Container(
       width: double.infinity,
       height: 250,
@@ -243,9 +245,9 @@ class _EmailVerificationScreenState
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                AppStrings.emailVerificationTitle,
-                style: TextStyle(
+              Text(
+                l10n.emailVerificationTitle,
+                style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
                   color: AppColors.white,
@@ -254,7 +256,7 @@ class _EmailVerificationScreenState
               ),
               const SizedBox(height: 8),
               Text(
-                '${AppStrings.verificationCodeSent}\n${widget.email}',
+                '${l10n.verificationCodeSent}\n${widget.email}',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -269,7 +271,7 @@ class _EmailVerificationScreenState
     );
   }
 
-  Widget _buildForm() {
+  Widget _buildForm(BuildContext context, AppL10n l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
       child: Column(
@@ -277,12 +279,12 @@ class _EmailVerificationScreenState
         children: [
           // Subtitle
           Text(
-            AppStrings.emailVerificationSubtitle,
+            l10n.emailVerificationSubtitle,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: AppColors.textMid,
+              color: AppColors.secondary(context),
               height: 1.5,
             ),
           ),
@@ -329,11 +331,11 @@ class _EmailVerificationScreenState
                 textAlign: TextAlign.center,
                 maxLength: 6,
                 textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _handleVerify(),
-                style: const TextStyle(
+                onSubmitted: (_) => _handleVerify(ref.read(l10nProvider)),
+                style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
+                  color: AppColors.onSurface(context),
                   letterSpacing: 8,
                 ),
                 decoration: InputDecoration(
@@ -343,7 +345,7 @@ class _EmailVerificationScreenState
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 8,
-                    color: AppColors.textLight.withOpacity(0.4),
+                    color: AppColors.hint(context).withOpacity(0.4),
                   ),
                 ),
                 onChanged: (val) {
@@ -359,11 +361,11 @@ class _EmailVerificationScreenState
           Center(
             child: _secondsLeft > 0
                 ? Text(
-                    '${AppStrings.resendCodeIn} $_countdownLabel',
-                    style: const TextStyle(
+                    '${l10n.resendCodeIn} $_countdownLabel',
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textLight,
+                      color: AppColors.hint(context),
                     ),
                   )
                 : _isResending
@@ -377,10 +379,10 @@ class _EmailVerificationScreenState
                         ),
                       )
                     : GestureDetector(
-                        onTap: _handleResend,
-                        child: const Text(
-                          AppStrings.resendCode,
-                          style: TextStyle(
+                        onTap: () => _handleResend(l10n),
+                        child: Text(
+                          l10n.resendCode,
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: AppColors.accent,
@@ -393,9 +395,9 @@ class _EmailVerificationScreenState
 
           // Verify button
           _buildAccentButton(
-            label: AppStrings.verify,
+            label: l10n.verify,
             isLoading: _isLoading,
-            onPressed: _handleVerify,
+            onPressed: () => _handleVerify(l10n),
           ),
 
           const SizedBox(height: 16),

@@ -11,6 +11,8 @@ import '../../screens/home/main_shell.dart';
 import '../../screens/review/review_screen.dart';
 import '../../screens/contacts/contact_detail_screen.dart';
 import '../../screens/contacts/contact_edit_screen.dart';
+import '../../screens/contacts/contact_history_screen.dart';
+import '../../screens/contacts/contact_reminders_screen.dart';
 import '../../screens/pricing/pricing_screen.dart';
 import '../../screens/scan/scan_screen.dart';
 import '../../screens/profile/my_profile_screen.dart';
@@ -18,6 +20,9 @@ import '../../screens/profile/account_security_screen.dart';
 import '../../screens/reminders/create_reminder_screen.dart';
 import '../../screens/reminders/reminder_detail_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
+import '../../screens/settings/settings_screen.dart';
+import '../../screens/pricing/subscription_plan_screen.dart';
+import '../../screens/pricing/payment_history_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -230,6 +235,46 @@ final appRouter = GoRouter(
       },
     ),
     GoRoute(
+      path: '/contact/:id/history',
+      pageBuilder: (context, state) {
+        final contactId = state.pathParameters['id']!;
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: ContactHistoryScreen(contactId: contactId),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            final tween = Tween(begin: begin, end: end)
+                .chain(CurveTween(curve: Curves.easeInOut));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+      },
+    ),
+    GoRoute(
+      path: '/contact/:id/reminders',
+      pageBuilder: (context, state) {
+        final contactId = state.pathParameters['id']!;
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: ContactRemindersScreen(contactId: contactId),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            final tween = Tween(begin: begin, end: end)
+                .chain(CurveTween(curve: Curves.easeInOut));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
+          },
+        );
+      },
+    ),
+    GoRoute(
       path: '/pricing',
       pageBuilder: (context, state) => CustomTransitionPage(
         key: state.pageKey,
@@ -302,6 +347,48 @@ final appRouter = GoRouter(
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
           final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: Curves.easeInOut));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    ),
+    GoRoute(
+      path: '/settings',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const SettingsScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end)
+              .chain(CurveTween(curve: Curves.easeInOut));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    ),
+    GoRoute(
+      path: '/subscription-plan',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const SubscriptionPlanScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end)
+              .chain(CurveTween(curve: Curves.easeInOut));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    ),
+    GoRoute(
+      path: '/payment-history',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const PaymentHistoryScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end)
+              .chain(CurveTween(curve: Curves.easeInOut));
           return SlideTransition(position: animation.drive(tween), child: child);
         },
       ),

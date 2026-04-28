@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/contact.dart';
 import '../../models/reminder.dart';
@@ -19,6 +20,7 @@ class ReminderDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(l10nProvider);
     final reminders = ref.watch(remindersProvider).reminders;
     Reminder? reminder;
     for (final r in reminders) {
@@ -30,15 +32,22 @@ class ReminderDetailScreen extends ConsumerWidget {
 
     if (reminder == null) {
       return Scaffold(
+        backgroundColor: AppColors.bg(context),
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: AppColors.textLight),
+              Icon(Icons.error_outline, size: 48, color: AppColors.hint(context)),
               const SizedBox(height: 16),
-              const Text('Rappel introuvable'),
+              Text(
+                l10n.reminderNotFound,
+                style: TextStyle(color: AppColors.onSurface(context)),
+              ),
               const SizedBox(height: 16),
-              ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('Retour')),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.back),
+              ),
             ],
           ),
         ),
@@ -54,15 +63,15 @@ class ReminderDetailScreen extends ConsumerWidget {
     switch (r.priority) {
       case 'very_important':
         priorityColor = AppColors.hot;
-        priorityLabel = 'Tres important';
+        priorityLabel = l10n.priorityVeryImportant;
         break;
       case 'important':
         priorityColor = AppColors.warm;
-        priorityLabel = 'Important';
+        priorityLabel = l10n.priorityImportant;
         break;
       default:
         priorityColor = AppColors.success;
-        priorityLabel = 'Normal';
+        priorityLabel = l10n.priorityNormal;
     }
 
     IconData actionIcon;
@@ -81,7 +90,7 @@ class ReminderDetailScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -114,7 +123,8 @@ class ReminderDetailScreen extends ConsumerWidget {
                         );
                       }),
                       const SizedBox(width: 8),
-                      _iconButton(Icons.delete_outline, () => _confirmDelete(context, ref, r)),
+                      _iconButton(Icons.delete_outline,
+                          () => _confirmDelete(context, ref, r, l10n)),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -154,35 +164,43 @@ class ReminderDetailScreen extends ConsumerWidget {
                 children: [
                   if (linked.isNotEmpty) ...[
                     _section(
-                        'Contacts concernes',
+                        context,
+                        l10n.affectedContacts,
                         Column(
                           children: linked.map((c) => _contactRow(context, c)).toList(),
                         )),
                     const SizedBox(height: 12),
                   ],
                   _section(
-                      'Planification',
+                      context,
+                      l10n.planningSection,
                       Column(children: [
-                        _info(Icons.play_arrow_rounded, 'Debut',
+                        _info(context, Icons.play_arrow_rounded, l10n.startLabel,
                             DateFormat('dd MMM yyyy HH:mm').format(r.startDateTime)),
                         if (r.endDateTime != null)
-                          _info(Icons.stop_rounded, 'Fin',
+                          _info(context, Icons.stop_rounded, l10n.endLabel,
                               DateFormat('dd MMM yyyy HH:mm').format(r.endDateTime!)),
                         if (r.repeatFrequency != null)
-                          _info(Icons.repeat_rounded, 'Repetition',
-                              _repeatLabel(r.repeatFrequency!)),
+                          _info(context, Icons.repeat_rounded, l10n.repeatLabel,
+                              _repeatLabel(r.repeatFrequency!, l10n)),
                       ])),
                   const SizedBox(height: 12),
-                  if (linked.length == 1) _section('Action', _actionButton(context, linked.first, r)),
+                  if (linked.length == 1)
+                    _section(context, l10n.actionSection,
+                        _actionButton(context, linked.first, r, l10n)),
                   if (linked.length == 1) const SizedBox(height: 12),
                   _section(
-                      'Statut',
+                      context,
+                      l10n.statusSection,
                       Column(children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Termine',
-                                style: TextStyle(fontSize: 14, color: AppColors.textMid)),
+                            Text(
+                              l10n.completedStatus,
+                              style: TextStyle(
+                                  fontSize: 14, color: AppColors.secondary(context)),
+                            ),
                             Switch(
                               value: r.isCompleted,
                               onChanged: (v) {
@@ -204,14 +222,14 @@ class ReminderDetailScreen extends ConsumerWidget {
                             await CalendarService.addReminderToCalendar(r);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('Rappel ajoute au calendrier'),
+                                SnackBar(
+                                    content: Text(l10n.addedToCalendar),
                                     backgroundColor: AppColors.primary),
                               );
                             }
                           },
                           icon: const Icon(Icons.calendar_month_rounded, size: 18),
-                          label: const Text('Ajouter au calendrier'),
+                          label: Text(l10n.addToCalendar),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.primary,
                             side: const BorderSide(color: AppColors.primary),
@@ -243,29 +261,29 @@ class ReminderDetailScreen extends ConsumerWidget {
     );
   }
 
-  String _repeatLabel(String f) {
+  String _repeatLabel(String f, AppL10n l10n) {
     switch (f) {
       case '30m':
-        return 'Toutes les 30 min';
+        return l10n.repeat30min;
       case '1h':
-        return 'Toutes les heures';
+        return l10n.repeatHourly;
       case '1d':
-        return 'Chaque jour';
+        return l10n.repeatDaily;
       case '1w':
-        return 'Chaque semaine';
+        return l10n.repeatWeekly;
       case '1mo':
-        return 'Chaque mois';
+        return l10n.repeatMonthly;
       default:
         return f;
     }
   }
 
-  Widget _section(String title, Widget child) {
+  Widget _section(BuildContext context, String title, Widget child) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -279,11 +297,11 @@ class ReminderDetailScreen extends ConsumerWidget {
         children: [
           Text(
             title.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1,
-                color: AppColors.textLight),
+                color: AppColors.hint(context)),
           ),
           const SizedBox(height: 12),
           child,
@@ -292,21 +310,23 @@ class ReminderDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _info(IconData icon, String label, String value) {
+  Widget _info(BuildContext context, IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Icon(icon, size: 16, color: AppColors.primary),
           const SizedBox(width: 10),
-          Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textMid)),
+          Text(label, style: TextStyle(fontSize: 13, color: AppColors.secondary(context))),
           const Spacer(),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
-                  fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textDark),
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.onSurface(context)),
             ),
           ),
         ],
@@ -332,14 +352,16 @@ class ReminderDetailScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(c.fullName,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark)),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.onSurface(context))),
                 if (c.phone != null)
                   Text(c.phone!,
-                      style: const TextStyle(fontSize: 12, color: AppColors.textMid)),
+                      style: TextStyle(fontSize: 12, color: AppColors.secondary(context))),
                 if (c.email != null)
                   Text(c.email!,
-                      style: const TextStyle(fontSize: 12, color: AppColors.textMid)),
+                      style: TextStyle(fontSize: 12, color: AppColors.secondary(context))),
               ],
             ),
           ),
@@ -358,7 +380,8 @@ class ReminderDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _actionButton(BuildContext context, Contact contact, Reminder reminder) {
+  Widget _actionButton(
+      BuildContext context, Contact contact, Reminder reminder, AppL10n l10n) {
     Color color;
     IconData icon;
     String label;
@@ -367,25 +390,26 @@ class ReminderDetailScreen extends ConsumerWidget {
       case 'sms':
         color = AppColors.primary;
         icon = Icons.sms_rounded;
-        label = 'Envoyer un SMS';
+        label = l10n.sendSms;
         action = () => _launch('sms:${contact.phone ?? ""}');
         break;
       case 'whatsapp':
         color = const Color(0xFF25D366);
         icon = Icons.chat_rounded;
-        label = 'Ouvrir WhatsApp';
-        action = () => ContactActions.whatsapp(context, contact);
+        label = l10n.openWhatsapp;
+        final phone = (contact.phone ?? '').replaceAll(RegExp(r'[^\d+]'), '');
+        action = () => _launch('https://wa.me/$phone');
         break;
       case 'email':
         color = AppColors.warm;
         icon = Icons.email_rounded;
-        label = 'Envoyer un email';
-        action = () => ContactActions.email(context, contact);
+        label = l10n.sendEmail;
+        action = () => _launch('mailto:${contact.email ?? ""}');
         break;
       default:
         color = AppColors.success;
         icon = Icons.phone_rounded;
-        label = 'Appeler';
+        label = l10n.callLabel;
         action = () => _launch('tel:${contact.phone ?? ""}');
     }
     return ElevatedButton.icon(
@@ -407,23 +431,27 @@ class ReminderDetailScreen extends ConsumerWidget {
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref, Reminder reminder) async {
+  void _confirmDelete(
+      BuildContext context, WidgetRef ref, Reminder reminder, AppL10n l10n) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Supprimer le rappel ?',
-            style: TextStyle(fontWeight: FontWeight.w700)),
-        content:
-            const Text('Cette action est irreversible.', style: TextStyle(color: AppColors.textMid)),
+        title: Text(l10n.deleteReminderTitle,
+            style: const TextStyle(fontWeight: FontWeight.w700)),
+        content: Text(
+          l10n.deleteReminderWarning,
+          style: TextStyle(color: AppColors.secondary(context)),
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.hot, foregroundColor: Colors.white),
-            child: const Text('Supprimer'),
+            child: Text(l10n.delete),
           ),
         ],
       ),

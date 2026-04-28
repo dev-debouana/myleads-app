@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/constants/app_strings.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/contacts_provider.dart';
 import '../../providers/reminders_provider.dart';
@@ -15,7 +15,7 @@ class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   Future<void> _pickPhoto(BuildContext context, WidgetRef ref) async {
-    if (kIsWeb) return; // file picking not supported on web demo
+    if (kIsWeb) return;
     try {
       final image = await ImagePicker().pickImage(
         source: ImageSource.gallery,
@@ -43,14 +43,16 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = ref.watch(l10nProvider);
     final auth = ref.watch(authProvider);
     final contacts = ref.watch(contactsProvider);
-    final displayName = auth.userName.isEmpty ? 'Utilisateur' : auth.userName;
+    final displayName =
+        auth.userName.isEmpty ? (l10n._en ? 'User' : 'Utilisateur') : auth.userName;
     final displayEmail = auth.userEmail.isEmpty ? '—' : auth.userEmail;
     final displayInitials = _initialsFor(displayName);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -69,9 +71,8 @@ class ProfileScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  // Header title
                   Text(
-                    AppStrings.account,
+                    l10n.accountLabel.toUpperCase(),
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.55),
                       fontSize: 12,
@@ -80,8 +81,6 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Avatar with photo picker
                   GestureDetector(
                     onTap: () => _pickPhoto(context, ref),
                     child: Stack(
@@ -125,7 +124,8 @@ class ProfileScreen extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: AppColors.accent,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
+                              border:
+                                  Border.all(color: Colors.white, width: 2),
                             ),
                             child: const Icon(Icons.camera_alt,
                                 size: 14, color: AppColors.primary),
@@ -151,8 +151,6 @@ class ProfileScreen extends ConsumerWidget {
                       fontSize: 13,
                     ),
                   ),
-
-                  // Stats
                   const SizedBox(height: 20),
                   Row(
                     children: [
@@ -179,66 +177,74 @@ class ProfileScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   _menuItem(
-                    Icons.person,
-                    AppStrings.myProfile,
-                    AppStrings.myProfileDesc,
+                    context,
+                    Icons.person_rounded,
+                    l10n.myProfile,
+                    l10n.myProfileDesc,
                     AppColors.primary.withOpacity(0.08),
                     AppColors.primary,
                     () => context.push('/my-profile'),
                   ),
                   _menuItem(
+                    context,
                     Icons.security_rounded,
-                    AppStrings.accountSecurity,
-                    AppStrings.accountSecurityDesc,
+                    l10n.accountSecurity,
+                    l10n.accountSecurityDesc,
                     AppColors.warm.withOpacity(0.1),
                     AppColors.warm,
                     () => context.push('/account-security'),
                   ),
                   _menuItem(
-                    Icons.notifications,
-                    AppStrings.notifications,
-                    AppStrings.notificationsDesc,
+                    context,
+                    Icons.notifications_rounded,
+                    l10n.notificationsTitle,
+                    l10n.notificationsDesc,
                     AppColors.accent.withOpacity(0.1),
                     AppColors.accent,
                     () => context.push('/notifications'),
                   ),
                   _menuItem(
-                    Icons.star,
-                    AppStrings.subscription,
-                    AppStrings.subscriptionDesc,
+                    context,
+                    Icons.star_rounded,
+                    l10n.subscriptionLabel,
+                    l10n.subscriptionDesc,
                     AppColors.warm.withOpacity(0.1),
                     AppColors.warm,
                     () => context.push('/pricing'),
                   ),
                   _menuItem(
-                    Icons.cloud_upload,
-                    AppStrings.sync,
-                    AppStrings.syncDesc,
+                    context,
+                    Icons.cloud_upload_rounded,
+                    l10n.syncLabel,
+                    l10n.syncDesc,
                     AppColors.success.withOpacity(0.1),
                     AppColors.success,
                     () {},
                   ),
                   _menuItem(
-                    Icons.download,
-                    AppStrings.export,
-                    AppStrings.exportDesc,
+                    context,
+                    Icons.download_rounded,
+                    l10n.exportLabel,
+                    l10n.exportDesc,
                     const Color(0xFF34495E).withOpacity(0.08),
                     const Color(0xFF34495E),
                     () {},
                   ),
                   _menuItem(
-                    Icons.settings,
-                    AppStrings.settings,
-                    AppStrings.settingsDesc,
+                    context,
+                    Icons.settings_rounded,
+                    l10n.settingsLabel,
+                    l10n.settingsDesc,
                     AppColors.cold.withOpacity(0.15),
                     AppColors.cold,
-                    () {},
+                    () => context.push('/settings'),
                   ),
                   const SizedBox(height: 8),
                   _menuItem(
-                    Icons.logout,
-                    AppStrings.logout,
-                    AppStrings.logoutDesc,
+                    context,
+                    Icons.logout_rounded,
+                    l10n.logoutLabel,
+                    l10n.logoutDesc,
                     AppColors.hot.withOpacity(0.1),
                     AppColors.hot,
                     () async {
@@ -250,20 +256,19 @@ class ProfileScreen extends ConsumerWidget {
                     isLogout: true,
                   ),
                   const SizedBox(height: 20),
-                  // App version
                   Text(
                     'My Leads v1.0.0',
                     style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textLight.withOpacity(0.6),
+                      color: AppColors.hint(context),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'De Bouana - ${AppStrings.slogan}',
+                    'De Bouana - ${l10n.slogan}',
                     style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textLight.withOpacity(0.4),
+                      color: AppColors.hint(context).withOpacity(0.6),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -303,6 +308,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _menuItem(
+    BuildContext context,
     IconData icon,
     String title,
     String subtitle,
@@ -314,7 +320,7 @@ class ProfileScreen extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: AppColors.card,
+        color: AppColors.surfaceColor(context),
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: onTap,
@@ -323,13 +329,7 @@ class ProfileScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withOpacity(0.06),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              border: Border.all(color: AppColors.borderColor(context)),
             ),
             child: Row(
               children: [
@@ -352,23 +352,24 @@ class ProfileScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color:
-                              isLogout ? AppColors.hot : AppColors.textDark,
+                          color: isLogout
+                              ? AppColors.hot
+                              : AppColors.onSurface(context),
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textMid,
+                          color: AppColors.secondary(context),
                         ),
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right,
-                    color: AppColors.textLight, size: 20),
+                Icon(Icons.chevron_right_rounded,
+                    color: AppColors.hint(context), size: 20),
               ],
             ),
           ),

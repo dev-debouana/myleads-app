@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/contacts_provider.dart';
 import '../../providers/reminders_provider.dart';
@@ -54,7 +54,7 @@ class _AccountSecurityScreenState
     super.dispose();
   }
 
-  Future<void> _onChangePassword() async {
+  Future<void> _onChangePassword(AppL10n l10n) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() {
@@ -84,7 +84,7 @@ class _AccountSecurityScreenState
           children: [
             const Icon(Icons.check_circle, color: Colors.white, size: 18),
             const SizedBox(width: 8),
-            Expanded(child: Text(AppStrings.passwordChanged)),
+            Expanded(child: Text(l10n.passwordChanged)),
           ],
         ),
         backgroundColor: AppColors.success,
@@ -128,7 +128,7 @@ class _AccountSecurityScreenState
     }
   }
 
-  Future<void> _onConfirmEmailChange() async {
+  Future<void> _onConfirmEmailChange(AppL10n l10n) async {
     setState(() {
       _isConfirmingEmail = true;
       _emailChangeError = null;
@@ -154,10 +154,10 @@ class _AccountSecurityScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
-          children: const [
-            Icon(Icons.check_circle, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Expanded(child: Text('Email modifié avec succès')),
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(child: Text(l10n.emailChangedSuccess)),
           ],
         ),
         backgroundColor: AppColors.success,
@@ -177,35 +177,44 @@ class _AccountSecurityScreenState
     if (mounted) context.go('/login');
   }
 
-  Future<void> _onDeleteAccount() async {
+  Future<void> _onDeleteAccount(AppL10n l10n) async {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogCtx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
-          children: const [
-            Icon(Icons.warning_amber_rounded, color: AppColors.error),
-            SizedBox(width: 10),
-            Text('Supprimer mon compte',
-                style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textDark)),
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: AppColors.error),
+            const SizedBox(width: 10),
+            Text(
+              l10n.deleteAccountConfirmTitle,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: AppColors.onSurface(context),
+              ),
+            ),
           ],
         ),
-        content: const Text(
-          'Cette action est définitive. Tous vos contacts, rappels, '
-          'interactions et moyens de paiement seront supprimés de cet '
-          'appareil. Voulez-vous vraiment continuer ?',
-          style: TextStyle(fontSize: 14, color: AppColors.textMid, height: 1.5),
+        content: Text(
+          l10n.deleteAccountConfirmMessage,
+          style: TextStyle(
+            fontSize: 14,
+            color: AppColors.secondary(context),
+            height: 1.5,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx, false),
-            child: const Text('Annuler',
-                style: TextStyle(
-                    color: AppColors.textMid, fontWeight: FontWeight.w700)),
+            child: Text(
+              l10n.cancel,
+              style: TextStyle(
+                color: AppColors.secondary(context),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogCtx, true),
@@ -216,8 +225,10 @@ class _AccountSecurityScreenState
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Supprimer',
-                style: TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(
+              l10n.delete,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -250,8 +261,10 @@ class _AccountSecurityScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: Column(
         children: [
           // ── Gradient Header ──────────────────────────────────────
@@ -297,7 +310,7 @@ class _AccountSecurityScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            AppStrings.accountSecurity,
+                            l10n.accountSecurity,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -306,7 +319,7 @@ class _AccountSecurityScreenState
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            AppStrings.accountSecuritySubtitle,
+                            l10n.accountSecuritySubtitle,
                             style: TextStyle(
                               color: Colors.white.withOpacity(0.55),
                               fontSize: 12,
@@ -346,14 +359,15 @@ class _AccountSecurityScreenState
                   children: [
                     // ── Section 1: Change Password ──────────────────
                     _sectionHeader(
+                      context: context,
                       icon: Icons.lock_reset_rounded,
-                      title: AppStrings.changePassword,
+                      title: l10n.changePassword,
                       color: AppColors.primary,
                     ),
                     const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
-                        color: AppColors.card,
+                        color: AppColors.surfaceColor(context),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -369,14 +383,15 @@ class _AccountSecurityScreenState
                         children: [
                           // Current password
                           _passwordField(
-                            label: AppStrings.currentPassword,
+                            context: context,
+                            label: l10n.currentPassword,
                             controller: _currentPwdCtrl,
                             obscure: !_showCurrentPwd,
                             onToggle: () => setState(
                                 () => _showCurrentPwd = !_showCurrentPwd),
                             validator: (v) {
                               if (v == null || v.isEmpty) {
-                                return 'Mot de passe actuel requis';
+                                return l10n.currentPasswordRequired;
                               }
                               return null;
                             },
@@ -385,17 +400,18 @@ class _AccountSecurityScreenState
 
                           // New password
                           _passwordField(
-                            label: AppStrings.newPasswordLabel,
+                            context: context,
+                            label: l10n.newPasswordLabel,
                             controller: _newPwdCtrl,
                             obscure: !_showNewPwd,
                             onToggle: () =>
                                 setState(() => _showNewPwd = !_showNewPwd),
                             validator: (v) {
                               if (v == null || v.isEmpty) {
-                                return 'Nouveau mot de passe requis';
+                                return l10n.newPasswordRequired;
                               }
                               if (!_pwdRegex.hasMatch(v)) {
-                                return 'Format invalide (voir règles ci-dessous)';
+                                return l10n.passwordInvalidFormat;
                               }
                               return null;
                             },
@@ -404,17 +420,18 @@ class _AccountSecurityScreenState
 
                           // Confirm password
                           _passwordField(
-                            label: AppStrings.confirmPasswordLabel,
+                            context: context,
+                            label: l10n.confirmPasswordSec,
                             controller: _confirmPwdCtrl,
                             obscure: !_showConfirmPwd,
                             onToggle: () => setState(
                                 () => _showConfirmPwd = !_showConfirmPwd),
                             validator: (v) {
                               if (v == null || v.isEmpty) {
-                                return 'Confirmation requise';
+                                return l10n.confirmRequired;
                               }
                               if (v != _newPwdCtrl.text) {
-                                return AppStrings.passwordsMustMatch;
+                                return l10n.passwordsNotMatch;
                               }
                               return null;
                             },
@@ -428,7 +445,7 @@ class _AccountSecurityScreenState
                               color: AppColors.primary.withOpacity(0.05),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                  color: AppColors.border),
+                                  color: AppColors.borderColor(context)),
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,15 +453,15 @@ class _AccountSecurityScreenState
                                 Icon(
                                   Icons.info_outline_rounded,
                                   size: 15,
-                                  color: AppColors.textMid,
+                                  color: AppColors.secondary(context),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    AppStrings.passwordRules,
-                                    style: const TextStyle(
+                                    l10n.passwordRules,
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      color: AppColors.textMid,
+                                      color: AppColors.secondary(context),
                                       height: 1.4,
                                     ),
                                   ),
@@ -490,7 +507,7 @@ class _AccountSecurityScreenState
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton(
-                              onPressed: _isChanging ? null : _onChangePassword,
+                              onPressed: _isChanging ? null : () => _onChangePassword(l10n),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.accent,
                                 foregroundColor: AppColors.primary,
@@ -511,7 +528,7 @@ class _AccountSecurityScreenState
                                       ),
                                     )
                                   : Text(
-                                      AppStrings.changePassword,
+                                      l10n.changePassword,
                                       style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
@@ -524,53 +541,250 @@ class _AccountSecurityScreenState
                     ),
 
                     // ── Section 2: Change Email ───────────────
-                    _sectionHeader(icon: Icons.email_rounded, title: AppStrings.changeEmail, color: AppColors.primary),
+                    _sectionHeader(
+                      context: context,
+                      icon: Icons.email_rounded,
+                      title: l10n.changeEmail,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(height: 12),
-                    Form(key: _emailFormKey, child: Container(
-                      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.07), blurRadius: 20, offset: const Offset(0, 4))]),
-                      padding: const EdgeInsets.all(20),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        _passwordField(label: AppStrings.currentPassword, controller: _emailCurrentPwdCtrl, obscure: true, onToggle: () {}, validator: (v) { if (v == null || v.isEmpty) return 'Mot de passe actuel requis'; return null; }),
-                        const SizedBox(height: 16),
-                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text(AppStrings.newEmail, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMid, letterSpacing: 0.3)),
-                          const SizedBox(height: 6),
-                          TextFormField(controller: _newEmailCtrl, keyboardType: TextInputType.emailAddress, enabled: !_codeSent,
-                            validator: (v) { if (v == null || v.trim().isEmpty) return 'Email requis'; if (!v.contains('@')) return 'Email invalide'; return null; },
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark),
-                            decoration: InputDecoration(hintText: 'nouvel@email.com', filled: true, fillColor: AppColors.inputBg, contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.accent, width: 1.5)), errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.error)), focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.error, width: 1.5))),
-                          ),
-                        ]),
-                        if (_codeSent) ...[
-                          const SizedBox(height: 16),
-                          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            const Text('Code de vérification', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textMid, letterSpacing: 0.3)),
-                            const SizedBox(height: 6),
-                            TextFormField(controller: _verificationCodeCtrl, keyboardType: TextInputType.number, maxLength: 6, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textDark, letterSpacing: 4),
-                              decoration: InputDecoration(hintText: '0000000', counterText: '', filled: true, fillColor: AppColors.inputBg, contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.border)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.accent, width: 1.5))),
+                    Form(
+                      key: _emailFormKey,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceColor(context),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.07),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
                             ),
-                          ]),
-                        ],
-                        if (_emailChangeError != null) ...[
-                          const SizedBox(height: 14),
-                          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: AppColors.error.withOpacity(0.08), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.error.withOpacity(0.3))), child: Row(children: [const Icon(Icons.error_outline, size: 16, color: AppColors.error), const SizedBox(width: 8), Expanded(child: Text(_emailChangeError!, style: const TextStyle(fontSize: 13, color: AppColors.error)))])),
-                        ],
-                        const SizedBox(height: 20),
-                        SizedBox(width: double.infinity, height: 50, child: ElevatedButton(
-                          onPressed: _isSendingCode || _isConfirmingEmail ? null : (_codeSent ? _onConfirmEmailChange : _onSendVerificationCode),
-                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.accent, foregroundColor: AppColors.primary, disabledBackgroundColor: AppColors.accent.withOpacity(0.5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), elevation: 0),
-                          child: (_isSendingCode || _isConfirmingEmail) ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.primary))
-                              : Text(_codeSent ? 'Confirmer' : AppStrings.sendVerificationCode, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-                        )),
-                        if (_codeSent) ...[
-                          const SizedBox(height: 12),
-                          Center(child: GestureDetector(
-                            onTap: () => setState(() { _codeSent = false; _verificationCodeCtrl.clear(); _emailChangeError = null; }),
-                            child: const Text("Changer l'adresse email", style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600)),
-                          )),
-                        ],
-                      ]),
-                    )),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _passwordField(
+                              context: context,
+                              label: l10n.currentPassword,
+                              controller: _emailCurrentPwdCtrl,
+                              obscure: true,
+                              onToggle: () {},
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return l10n.currentPasswordRequired;
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.newEmail,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.secondary(context),
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: _newEmailCtrl,
+                                  keyboardType: TextInputType.emailAddress,
+                                  enabled: !_codeSent,
+                                  validator: (v) {
+                                    if (v == null || v.trim().isEmpty) {
+                                      return l10n.emailRequired;
+                                    }
+                                    if (!v.contains('@')) {
+                                      return l10n.emailInvalid;
+                                    }
+                                    return null;
+                                  },
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.onSurface(context),
+                                  ),
+                                  decoration: InputDecoration(
+                                    hintText: 'nouvel@email.com',
+                                    filled: true,
+                                    fillColor: AppColors.bg(context),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(
+                                          color: AppColors.borderColor(context)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: const BorderSide(
+                                          color: AppColors.accent, width: 1.5),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: const BorderSide(
+                                          color: AppColors.error),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: const BorderSide(
+                                          color: AppColors.error, width: 1.5),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_codeSent) ...[
+                              const SizedBox(height: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.verificationCodeLabel,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.secondary(context),
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextFormField(
+                                    controller: _verificationCodeCtrl,
+                                    keyboardType: TextInputType.number,
+                                    maxLength: 6,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.onSurface(context),
+                                      letterSpacing: 4,
+                                    ),
+                                    decoration: InputDecoration(
+                                      hintText: '0000000',
+                                      counterText: '',
+                                      filled: true,
+                                      fillColor: AppColors.bg(context),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 14, vertical: 14),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(
+                                            color:
+                                                AppColors.borderColor(context)),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: const BorderSide(
+                                            color: AppColors.accent, width: 1.5),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (_emailChangeError != null) ...[
+                              const SizedBox(height: 14),
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.error.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: AppColors.error.withOpacity(0.3)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.error_outline,
+                                        size: 16, color: AppColors.error),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        _emailChangeError!,
+                                        style: const TextStyle(
+                                            fontSize: 13,
+                                            color: AppColors.error),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: _isSendingCode || _isConfirmingEmail
+                                    ? null
+                                    : (_codeSent
+                                        ? () => _onConfirmEmailChange(l10n)
+                                        : _onSendVerificationCode),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.accent,
+                                  foregroundColor: AppColors.primary,
+                                  disabledBackgroundColor:
+                                      AppColors.accent.withOpacity(0.5),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                  elevation: 0,
+                                ),
+                                child: (_isSendingCode || _isConfirmingEmail)
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            color: AppColors.primary),
+                                      )
+                                    : Text(
+                                        _codeSent
+                                            ? l10n.saveButton
+                                            : l10n.sendVerificationCode,
+                                        style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                              ),
+                            ),
+                            if (_codeSent) ...[
+                              const SizedBox(height: 12),
+                              Center(
+                                child: GestureDetector(
+                                  onTap: () => setState(() {
+                                    _codeSent = false;
+                                    _verificationCodeCtrl.clear();
+                                    _emailChangeError = null;
+                                  }),
+                                  child: Text(
+                                    l10n.changeEmailLabel,
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
 
                     const SizedBox(height: 28),
 
@@ -578,14 +792,15 @@ class _AccountSecurityScreenState
 
                     // ── Section 3: Delete Account ───────────────────
                     _sectionHeader(
+                      context: context,
                       icon: Icons.warning_amber_rounded,
-                      title: AppStrings.deleteAccount,
+                      title: l10n.deleteAccountTitle,
                       color: AppColors.error,
                     ),
                     const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
-                        color: AppColors.card,
+                        color: AppColors.surfaceColor(context),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                             color: AppColors.error.withOpacity(0.2)),
@@ -613,7 +828,7 @@ class _AccountSecurityScreenState
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.warning_amber_rounded,
                                   size: 20,
                                   color: AppColors.error,
@@ -621,7 +836,7 @@ class _AccountSecurityScreenState
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    AppStrings.deleteAccountWarning,
+                                    l10n.deleteAccountWarning,
                                     style: const TextStyle(
                                       fontSize: 13,
                                       color: AppColors.error,
@@ -640,7 +855,7 @@ class _AccountSecurityScreenState
                             width: double.infinity,
                             height: 50,
                             child: OutlinedButton(
-                              onPressed: _onDeleteAccount,
+                              onPressed: () => _onDeleteAccount(l10n),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppColors.error,
                                 side: const BorderSide(
@@ -650,7 +865,7 @@ class _AccountSecurityScreenState
                                 ),
                               ),
                               child: Text(
-                                AppStrings.deleteMyAccount,
+                                l10n.deleteMyAccount,
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
@@ -674,6 +889,7 @@ class _AccountSecurityScreenState
   }
 
   Widget _sectionHeader({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required Color color,
@@ -695,7 +911,9 @@ class _AccountSecurityScreenState
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w800,
-            color: color == AppColors.error ? AppColors.error : AppColors.textDark,
+            color: color == AppColors.error
+                ? AppColors.error
+                : AppColors.onSurface(context),
           ),
         ),
       ],
@@ -703,6 +921,7 @@ class _AccountSecurityScreenState
   }
 
   Widget _passwordField({
+    required BuildContext context,
     required String label,
     required TextEditingController controller,
     required bool obscure,
@@ -717,7 +936,7 @@ class _AccountSecurityScreenState
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: AppColors.textMid,
+            color: AppColors.secondary(context),
             letterSpacing: 0.3,
           ),
         ),
@@ -726,14 +945,14 @@ class _AccountSecurityScreenState
           controller: controller,
           obscureText: obscure,
           validator: validator,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.textDark,
+            color: AppColors.onSurface(context),
           ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.inputBg,
+            fillColor: AppColors.bg(context),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 14,
@@ -744,7 +963,7 @@ class _AccountSecurityScreenState
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: AppColors.borderColor(context)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -763,7 +982,7 @@ class _AccountSecurityScreenState
               icon: Icon(
                 obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
                 size: 20,
-                color: AppColors.textLight,
+                color: AppColors.hint(context),
               ),
               onPressed: onToggle,
             ),

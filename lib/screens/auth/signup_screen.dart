@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/contacts_provider.dart';
@@ -114,10 +115,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: AnimatedBuilder(
         animation: _animController,
         builder: (context, child) {
@@ -126,13 +128,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
               children: [
                 Transform.translate(
                   offset: Offset(0, _headerSlide.value),
-                  child: _buildHeader(),
+                  child: _buildHeader(l10n),
                 ),
                 Opacity(
                   opacity: _formFade.value,
                   child: Transform.translate(
                     offset: Offset(0, 20 * (1 - _formFade.value)),
-                    child: _buildForm(authState),
+                    child: _buildForm(authState, l10n),
                   ),
                 ),
               ],
@@ -143,7 +145,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppL10n l10n) {
     return Container(
       width: double.infinity,
       height: 250,
@@ -173,35 +175,35 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.white.withOpacity(0.12),
+                    color: Colors.white.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Center(
                     child: Icon(
                       Icons.arrow_back_ios_new_rounded,
                       size: 18,
-                      color: AppColors.white,
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                AppStrings.signup,
-                style: TextStyle(
+              Text(
+                l10n.signup,
+                style: const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.white,
+                  color: Colors.white,
                   letterSpacing: -0.5,
                 ),
               ),
               const SizedBox(height: 6),
               Text(
-                'Rejoignez My Leads et commencez\nà convertir vos contacts.',
+                l10n.signupSubtitle,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.white.withOpacity(0.7),
+                  color: Colors.white.withOpacity(0.7),
                   height: 1.4,
                 ),
               ),
@@ -212,7 +214,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
     );
   }
 
-  Widget _buildForm(AuthState authState) {
+  Widget _buildForm(AuthState authState, AppL10n l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
       child: Form(
@@ -252,29 +254,29 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
             ],
 
             // First name
-            _buildInputLabel('Prénom'),
+            _buildInputLabel(l10n.firstName),
             const SizedBox(height: 8),
             TextFormField(
               controller: _firstNameController,
               keyboardType: TextInputType.name,
               textInputAction: TextInputAction.next,
               textCapitalization: TextCapitalization.words,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
-                hintText: 'Jean',
+                hintText: l10n.firstNameHint,
                 prefixIcon: Icon(
                   Icons.person_outline_rounded,
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   size: 20,
                 ),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Veuillez entrer votre prénom';
+                  return l10n.firstNameRequired;
                 }
                 return null;
               },
@@ -283,29 +285,29 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
             const SizedBox(height: 16),
 
             // Last name
-            _buildInputLabel('Nom'),
+            _buildInputLabel(l10n.lastName),
             const SizedBox(height: 8),
             TextFormField(
               controller: _lastNameController,
               keyboardType: TextInputType.name,
               textInputAction: TextInputAction.next,
               textCapitalization: TextCapitalization.words,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
-                hintText: 'Dupont',
+                hintText: l10n.lastNameHint,
                 prefixIcon: Icon(
                   Icons.badge_outlined,
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   size: 20,
                 ),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Veuillez entrer votre nom';
+                  return l10n.lastNameRequired;
                 }
                 return null;
               },
@@ -314,31 +316,31 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
             const SizedBox(height: 16),
 
             // Email
-            _buildInputLabel(AppStrings.email),
+            _buildInputLabel(l10n.emailLabel),
             const SizedBox(height: 8),
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
-                hintText: 'votre@email.com',
+                hintText: l10n.emailHint,
                 prefixIcon: Icon(
                   Icons.email_outlined,
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   size: 20,
                 ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Veuillez entrer votre email';
+                  return l10n.emailRequired;
                 }
                 if (!value.contains('@') || !value.contains('.')) {
-                  return 'Email invalide';
+                  return l10n.emailInvalid;
                 }
                 return null;
               },
@@ -347,22 +349,22 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
             const SizedBox(height: 16),
 
             // Phone (optional but enforced unique if provided)
-            _buildInputLabel('Téléphone (optionnel)'),
+            _buildInputLabel(l10n.phoneOptional),
             const SizedBox(height: 8),
             TextFormField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
-                hintText: '+237 6 99 88 77 66',
+                hintText: l10n.phoneHintAuth,
                 prefixIcon: Icon(
                   Icons.phone_outlined,
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   size: 20,
                 ),
               ),
@@ -371,23 +373,23 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
             const SizedBox(height: 16),
 
             // Password
-            _buildInputLabel(AppStrings.password),
+            _buildInputLabel(l10n.passwordLabel),
             const SizedBox(height: 8),
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
               textInputAction: TextInputAction.next,
               maxLength: 15,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
-                hintText: '8-15 caractères, lettre + chiffre + symbole',
+                hintText: l10n.passwordHintAuth,
                 prefixIcon: Icon(
                   Icons.lock_outline_rounded,
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   size: 20,
                 ),
                 suffixIcon: GestureDetector(
@@ -400,30 +402,30 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                     _obscurePassword
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textLight,
+                    color: AppColors.hint(context),
                     size: 20,
                   ),
                 ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Veuillez entrer un mot de passe';
+                  return l10n.passwordRequired;
                 }
                 if (value.length < 8 || value.length > 15) {
-                  return 'Le mot de passe doit contenir entre 8 et 15 caractères';
+                  return l10n.passwordLengthError;
                 }
                 if (value.contains(RegExp(r'\s'))) {
-                  return 'Le mot de passe ne doit pas contenir d\'espaces';
+                  return l10n.passwordNoSpaces;
                 }
                 if (!value.contains(RegExp(r'[A-Za-z]'))) {
-                  return 'Le mot de passe doit contenir au moins une lettre';
+                  return l10n.passwordNeedsLetter;
                 }
                 if (!value.contains(RegExp(r'[0-9]'))) {
-                  return 'Le mot de passe doit contenir au moins un chiffre';
+                  return l10n.passwordNeedsDigit;
                 }
                 if (!value.contains(
                     RegExp(r'''[!@#\$%^&*(),.?":{}|<>_\-+=\[\]\\/~`;]'''))) {
-                  return 'Le mot de passe doit contenir au moins un symbole';
+                  return l10n.passwordNeedsSymbol;
                 }
                 return null;
               },
@@ -432,7 +434,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
             const SizedBox(height: 8),
 
             // Confirm password
-            _buildInputLabel(AppStrings.confirmPassword),
+            _buildInputLabel(l10n.confirmPasswordLabel),
             const SizedBox(height: 8),
             TextFormField(
               controller: _confirmPasswordController,
@@ -440,16 +442,16 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
               textInputAction: TextInputAction.done,
               maxLength: 15,
               onFieldSubmitted: (_) => _handleSignup(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: AppColors.onSurface(context),
               ),
               decoration: InputDecoration(
-                hintText: 'Répétez le mot de passe',
+                hintText: l10n.confirmPasswordHint,
                 prefixIcon: Icon(
                   Icons.lock_outline_rounded,
-                  color: AppColors.textLight.withOpacity(0.7),
+                  color: AppColors.hint(context).withOpacity(0.7),
                   size: 20,
                 ),
                 suffixIcon: GestureDetector(
@@ -462,17 +464,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                     _obscureConfirmPassword
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: AppColors.textLight,
+                    color: AppColors.hint(context),
                     size: 20,
                   ),
                 ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Veuillez confirmer votre mot de passe';
+                  return l10n.confirmPasswordRequired;
                 }
                 if (value != _passwordController.text) {
-                  return 'Les mots de passe ne correspondent pas';
+                  return l10n.passwordsNotMatch;
                 }
                 return null;
               },
@@ -481,14 +483,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
             const SizedBox(height: 24),
 
             _buildAccentButton(
-              label: AppStrings.signup,
+              label: l10n.signup,
               isLoading: authState.isLoading,
               onPressed: _handleSignup,
             ),
 
             const SizedBox(height: 24),
 
-            _buildOrDivider(),
+            _buildOrDivider(l10n),
 
             const SizedBox(height: 24),
 
@@ -517,19 +519,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  '${AppStrings.hasAccount} ',
+                Text(
+                  '${l10n.hasAccount} ',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textMid,
+                    color: AppColors.secondary(context),
                   ),
                 ),
                 GestureDetector(
                   onTap: () => context.pop(),
-                  child: const Text(
-                    AppStrings.login,
-                    style: TextStyle(
+                  child: Text(
+                    l10n.login,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: AppColors.accent,
@@ -549,10 +551,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
   Widget _buildInputLabel(String label) {
     return Text(
       label.toUpperCase(),
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w800,
-        color: AppColors.textLight,
+        color: AppColors.hint(context),
         letterSpacing: 1.2,
       ),
     );
@@ -587,7 +589,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                   height: 22,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 )
               : Text(
@@ -595,7 +597,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: AppColors.white,
+                    color: Colors.white,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -604,30 +606,30 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
     );
   }
 
-  Widget _buildOrDivider() {
+  Widget _buildOrDivider(AppL10n l10n) {
     return Row(
       children: [
         Expanded(
           child: Container(
             height: 1,
-            color: AppColors.border,
+            color: AppColors.borderColor(context),
           ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Text(
-            AppStrings.orContinueWith,
+            l10n.orContinueWith,
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.textLight.withOpacity(0.8),
+              color: AppColors.hint(context).withOpacity(0.8),
             ),
           ),
         ),
         Expanded(
           child: Container(
             height: 1,
-            color: AppColors.border,
+            color: AppColors.borderColor(context),
           ),
         ),
       ],
@@ -647,21 +649,21 @@ class _SignupScreenState extends ConsumerState<SignupScreen>
         child: Container(
           height: 54,
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: AppColors.surfaceColor(context),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border, width: 2),
+            border: Border.all(color: AppColors.borderColor(context), width: 2),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 24, color: AppColors.textDark),
+              Icon(icon, size: 24, color: AppColors.onSurface(context)),
               const SizedBox(width: 10),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+                  color: AppColors.onSurface(context),
                 ),
               ),
             ],

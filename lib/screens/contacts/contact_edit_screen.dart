@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../../core/constants/app_strings.dart';
+import '../../core/l10n/app_l10n.dart';
 import '../../models/contact.dart';
 import '../../providers/contacts_provider.dart';
 import '../../services/photo_storage_service.dart';
@@ -106,7 +106,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
     super.dispose();
   }
 
-  Future<void> _save() async {
+  Future<void> _save(AppL10n l10n) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
 
@@ -155,9 +155,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
           children: [
             const Icon(Icons.check_circle, color: AppColors.accent, size: 20),
             const SizedBox(width: 10),
-            Text(_existing == null
-                ? 'Contact créé avec succès'
-                : 'Contact mis à jour'),
+            Text(_existing == null ? l10n.contactCreated : l10n.contactUpdated),
           ],
         ),
         backgroundColor: AppColors.primary,
@@ -192,10 +190,11 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = ref.watch(l10nProvider);
     final isEdit = widget.contactId != null;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.bg(context),
       body: Form(
         key: _formKey,
         child: Column(
@@ -237,7 +236,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    isEdit ? 'Modifier le contact' : AppStrings.addManually,
+                    isEdit ? l10n.editContact : l10n.addContact,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
@@ -246,9 +245,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    isEdit
-                        ? 'Mettez à jour les informations'
-                        : 'Renseignez les informations du contact',
+                    isEdit ? l10n.editContactSubtitle : l10n.addContactSubtitle,
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.6),
                       fontSize: 13,
@@ -299,7 +296,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                                       : null,
                                 ),
                                 child: _photoPath == null
-                                    ? const Icon(Icons.person, size: 36, color: AppColors.textLight)
+                                    ? Icon(Icons.person, size: 36, color: AppColors.hint(context))
                                     : null,
                               ),
                               Positioned(
@@ -322,85 +319,96 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                       ),
 
                     _buildField(
-                      AppStrings.firstName,
+                      context,
+                      l10n.firstName,
                       _firstNameCtrl,
-                      hint: 'Ex : Karen',
+                      hint: l10n.firstNameHint,
                     ),
                     _buildField(
-                      '${AppStrings.lastName} *',
+                      context,
+                      '${l10n.lastName} *',
                       _lastNameCtrl,
-                      hint: 'Ex : Ambassa',
+                      hint: l10n.lastNameHint,
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
-                          return 'Le nom de famille est obligatoire';
+                          return l10n.lastNameRequired2;
                         }
                         return null;
                       },
                     ),
                     _buildField(
-                      AppStrings.jobTitle,
+                      context,
+                      l10n.jobTitleLabel,
                       _jobTitleCtrl,
                       hint: 'Ex : CEO',
                     ),
                     _buildField(
-                      AppStrings.company,
+                      context,
+                      l10n.companyLabel,
                       _companyCtrl,
                       hint: 'Ex : GreenTech Cameroon',
                     ),
                     _buildField(
-                      AppStrings.phone,
+                      context,
+                      l10n.phoneLabel,
                       _phoneCtrl,
                       hint: 'Ex : +237 6 99 88 77 66',
                       type: TextInputType.phone,
                     ),
                     _buildField(
-                      AppStrings.email,
+                      context,
+                      l10n.emailLabel,
                       _emailCtrl,
-                      hint: 'Ex : nom@entreprise.com',
+                      hint: l10n.emailHint,
                       type: TextInputType.emailAddress,
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Text(
-                        '* Au moins un téléphone ou un email est requis',
+                        l10n.emailPhoneRequired,
                         style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.textLight,
+                          color: AppColors.hint(context),
                           fontStyle: FontStyle.italic,
                         ),
                       ),
                     ),
                     _buildField(
-                      AppStrings.source,
+                      context,
+                      l10n.sourceLabel,
                       _sourceCtrl,
                       hint: 'Ex : Salon Luxembourg 2026',
                     ),
 
                     // Projet 1
-                    _label('PROJET 1'),
+                    _label(context, l10n.project1Section),
                     const SizedBox(height: 6),
                     _buildField(
-                      'Nom du projet',
+                      context,
+                      l10n.projectNameLabel,
                       _project1Ctrl,
                       hint: 'Ex : Partenariat Tech',
                     ),
                     _buildField(
-                      'Budget',
+                      context,
+                      l10n.budgetLabel,
                       _project1BudgetCtrl,
                       hint: 'Ex : 15 000 €',
                       type: TextInputType.text,
                     ),
 
                     // Projet 2
-                    _label('PROJET 2'),
+                    _label(context, l10n.project2Section),
                     const SizedBox(height: 6),
                     _buildField(
-                      'Nom du projet',
+                      context,
+                      l10n.projectNameLabel,
                       _project2Ctrl,
                       hint: 'Ex : Déploiement CRM',
                     ),
                     _buildField(
-                      'Budget',
+                      context,
+                      l10n.budgetLabel,
                       _project2BudgetCtrl,
                       hint: 'Ex : 8 000 €',
                       type: TextInputType.text,
@@ -408,7 +416,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
 
                     // Status
                     const SizedBox(height: 4),
-                    _label('Statut'),
+                    _label(context, l10n.statusLabel),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -422,7 +430,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
 
                     // Tags
                     const SizedBox(height: 20),
-                    _label(AppStrings.tags),
+                    _label(context, l10n.tagsLabel),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -466,7 +474,8 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
 
                     const SizedBox(height: 20),
                     _buildField(
-                      AppStrings.notes,
+                      context,
+                      l10n.notesLabel,
                       _notesCtrl,
                       hint: 'Notes personnelles sur le contact...',
                       maxLines: 3,
@@ -487,7 +496,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                 top: 16,
               ),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: AppColors.bg(context),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -500,7 +509,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                 height: 54,
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _saving ? null : _save,
+                  onPressed: _saving ? null : () => _save(l10n),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accent,
                     foregroundColor: AppColors.primary,
@@ -519,7 +528,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                           ),
                         )
                       : Text(
-                          AppStrings.save,
+                          l10n.saveButton,
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w700),
                         ),
@@ -533,6 +542,7 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
   }
 
   Widget _buildField(
+    BuildContext context,
     String label,
     TextEditingController ctrl, {
     TextInputType? type,
@@ -545,20 +555,20 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label(label),
+          _label(context, label),
           const SizedBox(height: 6),
           TextFormField(
             controller: ctrl,
             keyboardType: type,
             maxLines: maxLines,
             validator: validator,
-            style: const TextStyle(fontSize: 14, color: AppColors.textDark),
+            style: TextStyle(fontSize: 14, color: AppColors.onSurface(context)),
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.card,
+              fillColor: AppColors.surfaceColor(context),
               hintText: hint,
               hintStyle: TextStyle(
-                color: AppColors.textLight.withOpacity(0.6),
+                color: AppColors.hint(context).withOpacity(0.6),
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
               ),
@@ -566,11 +576,11 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.border, width: 2),
+                borderSide: BorderSide(color: AppColors.borderColor(context), width: 2),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: AppColors.border, width: 2),
+                borderSide: BorderSide(color: AppColors.borderColor(context), width: 2),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -587,12 +597,12 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
     );
   }
 
-  Widget _label(String text) => Text(
+  Widget _label(BuildContext context, String text) => Text(
         text.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
-          color: AppColors.textLight,
+          color: AppColors.hint(context),
           letterSpacing: 1,
         ),
       );
