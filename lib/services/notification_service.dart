@@ -1,5 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../models/app_notification.dart';
 import '../models/contact.dart';
@@ -7,12 +11,15 @@ import '../models/reminder.dart';
 import '../services/database_service.dart';
 import '../services/storage_service.dart';
 
-/// Handles both push notifications (flutter_local_notifications) and
-/// in-app notification records persisted in the local DB.
+/// Handles both device push notifications (flutter_local_notifications) and
+/// in-app notification records persisted in the local SQLite database.
+///
+/// Push notifications are scheduled via [zonedSchedule] so they fire at the
+/// correct wall-clock time even when the app is backgrounded or closed.
+/// Cancellation is performed whenever a reminder is completed or deleted.
 class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
 
-  // Android channel IDs
   static const _chHighId = 'myleads_high';
   static const _chMediumId = 'myleads_medium';
   static const _chLowId = 'myleads_low';
@@ -26,56 +33,77 @@ class NotificationService {
   static Future<void> init() async {
     if (_initialized || kIsWeb) return;
 
+    // Load timezone database and pin to device locale.
+    tz.initializeTimeZones();
+    try {
+      final localTz = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(localTz));
+    } catch (_) {
+      // Fall back to UTC if the timezone lookup fails (e.g. simulator edge cases).
+    }
+
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-    const settings = InitializationSettings(android: android, iOS: ios);
+    await _plugin.initialize(
+      const InitializationSettings(android: android, iOS: ios),
+    );
 
-    await _plugin.initialize(settings);
+    // Android notification channels
+    final androidImpl = _plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    await androidImpl?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _chHighId,
+        'Rappels urgents',
+        description: 'Rappels très importants',
+        importance: Importance.high,
+      ),
+    );
+    await androidImpl?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _chMediumId,
+        'Rappels importants',
+        description: 'Rappels importants',
+        importance: Importance.defaultImportance,
+      ),
+    );
+    await androidImpl?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _chLowId,
+        'Rappels',
+        description: 'Rappels normaux et alertes contacts',
+        importance: Importance.low,
+      ),
+    );
 
-    // Create Android notification channels
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(
-          const AndroidNotificationChannel(
-            _chHighId,
-            'Rappels urgents',
-            description: 'Rappels très importants',
-            importance: Importance.high,
-          ),
-        );
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(
-          const AndroidNotificationChannel(
-            _chMediumId,
-            'Rappels importants',
-            description: 'Rappels importants',
-            importance: Importance.defaultImportance,
-          ),
-        );
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(
-          const AndroidNotificationChannel(
-            _chLowId,
-            'Rappels',
-            description: 'Rappels normaux et alertes contacts',
-            importance: Importance.low,
-          ),
-        );
+    // Request POST_NOTIFICATIONS permission on Android 13+.
+    // Permission.notification is a no-op on Android < 13 and non-Android.
+    try {
+      await Permission.notification.request();
+    } catch (_) {}
 
     _initialized = true;
   }
 
   // -----------------------------------------------------------------------
-  // Push notification helpers
+  // Deterministic push IDs  (must be stable for cancel to work)
+  // -----------------------------------------------------------------------
+
+  static int _upcomingPushId(String reminderId) =>
+      'upcoming_$reminderId'.hashCode.abs() % 1000000;
+
+  static int _overduePushId(String reminderId) =>
+      'overdue_$reminderId'.hashCode.abs() % 1000000;
+
+  static int _incompletePushId(String contactId) =>
+      'incomplete_$contactId'.hashCode.abs() % 1000000;
+
+  // -----------------------------------------------------------------------
+  // Internal push helpers
   // -----------------------------------------------------------------------
 
   static NotificationDetails _detailsForPriority(String priority) {
@@ -105,10 +133,10 @@ class NotificationService {
           priority: Priority.low,
         );
     }
-    const ios = DarwinNotificationDetails();
-    return NotificationDetails(android: android, iOS: ios);
+    return NotificationDetails(android: android, iOS: const DarwinNotificationDetails());
   }
 
+  /// Show a push notification immediately.
   static Future<void> _sendPush({
     required int id,
     required String title,
@@ -118,6 +146,40 @@ class NotificationService {
     if (kIsWeb || !_initialized) return;
     try {
       await _plugin.show(id, title, body, _detailsForPriority(priority));
+    } catch (_) {}
+  }
+
+  /// Schedule a push notification at [scheduledAt] (local wall-clock time).
+  /// Uses [AndroidScheduleMode.inexactAllowWhileIdle] — no SCHEDULE_EXACT_ALARM
+  /// permission needed; the notification fires approximately on time even in Doze.
+  static Future<void> _schedulePush({
+    required int id,
+    required String title,
+    required String body,
+    required String priority,
+    required DateTime scheduledAt,
+  }) async {
+    if (kIsWeb || !_initialized) return;
+    try {
+      final tzScheduled = tz.TZDateTime(
+        tz.local,
+        scheduledAt.year,
+        scheduledAt.month,
+        scheduledAt.day,
+        scheduledAt.hour,
+        scheduledAt.minute,
+        scheduledAt.second,
+      );
+      await _plugin.zonedSchedule(
+        id,
+        title,
+        body,
+        tzScheduled,
+        _detailsForPriority(priority),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
     } catch (_) {}
   }
 
@@ -133,29 +195,30 @@ class NotificationService {
   }
 
   // -----------------------------------------------------------------------
-  // Public API: schedule upcoming reminder notification (15 min before)
+  // Public API — upcoming reminder push (15 min before start)
   // -----------------------------------------------------------------------
 
-  /// Call this whenever a reminder is created or updated.
-  /// The in-app notification is stored immediately; the push fires at the
-  /// actual start time minus 15 min (only future reminders).
+  /// Call whenever a reminder is created or updated.
+  ///
+  /// Persists the in-app record immediately and (re-)schedules the device
+  /// push so it fires 15 minutes before [reminder.startDateTime].
+  /// Any previously scheduled push for the same reminder is cancelled first
+  /// so stale alarms don't accumulate.
   static Future<void> scheduleReminderUpcoming(Reminder reminder) async {
     final ownerId = StorageService.currentUserId;
     if (ownerId.isEmpty) return;
 
-    final scheduledAt =
-        reminder.startDateTime.subtract(const Duration(minutes: 15));
+    final scheduledAt = reminder.startDateTime.subtract(const Duration(minutes: 15));
     final now = DateTime.now();
 
-    final notifId = 'upcoming_${reminder.id}';
     final title = 'Rappel dans 15 min';
     final body = reminder.note.isNotEmpty
         ? reminder.note
         : 'Rappel prévu à ${_formatTime(reminder.startDateTime)}';
 
-    // Persist in-app notification (visible only at scheduledAt — filtered in provider)
+    // Persist in-app notification (visible to the screen only at scheduledAt).
     await _persistIfNew(AppNotification(
-      id: notifId,
+      id: 'upcoming_${reminder.id}',
       ownerId: ownerId,
       type: 'reminder_upcoming',
       title: title,
@@ -165,59 +228,82 @@ class NotificationService {
       referenceId: reminder.id,
     ));
 
-    // Push: only if the scheduled time is in the future
-    if (scheduledAt.isAfter(now)) {
-      final pushId = reminder.id.hashCode.abs() % 100000;
-      // We use show() immediately only if we're ≤ 1 min away; otherwise
-      // we rely on the periodic check in the provider (no background scheduling
-      // is available without timezone package / WorkManager).
-      // For this implementation, we fire the push at the moment the
-      // periodic check first detects scheduledAt has passed.
+    // Cancel any stale scheduled push before (re-)registering.
+    final pushId = _upcomingPushId(reminder.id);
+    if (!kIsWeb && _initialized) {
+      try {
+        await _plugin.cancel(pushId);
+      } catch (_) {}
     }
-  }
 
-  /// Called by the periodic check when scheduledAt has just passed.
-  static Future<void> firePushIfDue(AppNotification n, String priority) async {
-    if (kIsWeb || !_initialized) return;
-    final pushId = n.id.hashCode.abs() % 100000;
-    await _sendPush(
-        id: pushId, title: n.title, body: n.body, priority: priority);
+    if (scheduledAt.isAfter(now)) {
+      // Future reminder — schedule the push via the OS alarm manager.
+      await _schedulePush(
+        id: pushId,
+        title: title,
+        body: body,
+        priority: reminder.priority,
+        scheduledAt: scheduledAt,
+      );
+    } else if (reminder.startDateTime.isAfter(now)) {
+      // Between scheduledAt and startDateTime (0–15 min window) — fire now.
+      await _sendPush(id: pushId, title: title, body: body, priority: reminder.priority);
+    }
+    // Both times are past → no push needed (reminder is already overdue).
   }
 
   // -----------------------------------------------------------------------
-  // Public API: overdue reminder notification (4+ hours past deadline)
+  // Public API — overdue reminder push (4+ hours past deadline)
   // -----------------------------------------------------------------------
 
-  static Future<void> createOverdueReminderNotification(
-      Reminder reminder) async {
+  static Future<void> createOverdueReminderNotification(Reminder reminder) async {
     final ownerId = StorageService.currentUserId;
     if (ownerId.isEmpty) return;
 
     final notifId = 'overdue_${reminder.id}';
     final deadline = reminder.endDateTime ?? reminder.startDateTime;
+    final scheduledAt = deadline.add(const Duration(hours: 4));
+    final now = DateTime.now();
+
     final title = 'Rappel en retard';
     final body = reminder.note.isNotEmpty
         ? reminder.note
         : 'Rappel du ${_formatDate(deadline)} non effectué';
 
+    final existed = await DatabaseService.notificationExists(notifId);
     await _persistIfNew(AppNotification(
       id: notifId,
       ownerId: ownerId,
       type: 'reminder_overdue',
       title: title,
       body: body,
-      scheduledAt: deadline.add(const Duration(hours: 4)),
-      createdAt: DateTime.now(),
+      scheduledAt: scheduledAt,
+      createdAt: now,
       referenceId: reminder.id,
     ));
+
+    // Only schedule/show the push the first time we create this record.
+    if (!existed) {
+      final pushId = _overduePushId(reminder.id);
+      if (scheduledAt.isAfter(now)) {
+        await _schedulePush(
+          id: pushId,
+          title: title,
+          body: body,
+          priority: reminder.priority,
+          scheduledAt: scheduledAt,
+        );
+      } else {
+        await _sendPush(id: pushId, title: title, body: body, priority: reminder.priority);
+      }
+    }
   }
 
   // -----------------------------------------------------------------------
-  // Public API: incomplete contact profile notification (3+ days after creation)
+  // Public API — incomplete hot/warm contact push (3+ days after creation)
   // -----------------------------------------------------------------------
 
-  static Future<void> createIncompleteContactNotification(
-      Contact contact) async {
+  static Future<void> createIncompleteContactNotification(Contact contact) async {
     final ownerId = StorageService.currentUserId;
     if (ownerId.isEmpty) return;
     if (contact.status != 'hot' && contact.status != 'warm') return;
@@ -228,10 +314,12 @@ class NotificationService {
     final notifId = 'incomplete_${contact.id}';
     final label = contact.status == 'hot' ? 'HOT' : 'WARM';
     final title = 'Profil $label incomplet';
-    final body =
-        '${contact.fullName} — champs manquants : ${missingFields.join(', ')}';
+    final body = '${contact.fullName} — champs manquants : ${missingFields.join(', ')}';
     final scheduledAt = contact.createdAt.add(const Duration(days: 3));
+    final now = DateTime.now();
+    final priority = contact.status == 'hot' ? 'important' : 'normal';
 
+    final existed = await DatabaseService.notificationExists(notifId);
     await _persistIfNew(AppNotification(
       id: notifId,
       ownerId: ownerId,
@@ -239,18 +327,50 @@ class NotificationService {
       title: title,
       body: body,
       scheduledAt: scheduledAt,
-      createdAt: DateTime.now(),
+      createdAt: now,
       referenceId: contact.id,
     ));
+
+    if (!existed) {
+      final pushId = _incompletePushId(contact.id);
+      if (scheduledAt.isAfter(now)) {
+        await _schedulePush(
+          id: pushId,
+          title: title,
+          body: body,
+          priority: priority,
+          scheduledAt: scheduledAt,
+        );
+      } else {
+        await _sendPush(id: pushId, title: title, body: body, priority: priority);
+      }
+    }
   }
 
   // -----------------------------------------------------------------------
-  // Periodic check — call this on app resume / provider refresh
+  // Public API — cancel all scheduled pushes for a reminder
   // -----------------------------------------------------------------------
 
-  /// Scans all reminders and contacts and creates any missing notifications.
-  /// Also fires push notifications for in-app notifications that have just
-  /// become due.
+  /// Must be called when a reminder is deleted or marked complete so stale
+  /// OS-level alarms don't fire after the fact.
+  static Future<void> cancelReminderScheduledNotification(String reminderId) async {
+    if (kIsWeb || !_initialized) return;
+    try {
+      await _plugin.cancel(_upcomingPushId(reminderId));
+      await _plugin.cancel(_overduePushId(reminderId));
+    } catch (_) {}
+  }
+
+  // -----------------------------------------------------------------------
+  // Periodic check — run on app resume and provider refresh
+  // -----------------------------------------------------------------------
+
+  /// Scans all active reminders and hot/warm contacts, creates any missing
+  /// in-app notification records, and (re-)schedules device pushes.
+  ///
+  /// This covers two scenarios:
+  /// 1. A device reboot clears all pending OS alarms — this call re-registers them.
+  /// 2. Newly overdue reminders get their overdue notification created.
   static Future<void> runPeriodicCheck({
     required List<Reminder> reminders,
     required List<Contact> contacts,
@@ -260,52 +380,27 @@ class NotificationService {
 
     final now = DateTime.now();
 
-    // 1. Upcoming reminder notifications (15 min before start)
+    // Upcoming reminder pushes (15 min before start)
     for (final r in reminders) {
       if (r.isCompleted) continue;
       await scheduleReminderUpcoming(r);
     }
 
-    // 2. Overdue reminder notifications (4+ hours past deadline)
+    // Overdue reminder pushes (4+ hours past deadline)
     for (final r in reminders) {
       if (r.isCompleted) continue;
       final deadline = r.endDateTime ?? r.startDateTime;
-      final overdueThreshold = deadline.add(const Duration(hours: 4));
-      if (now.isAfter(overdueThreshold)) {
+      if (now.isAfter(deadline.add(const Duration(hours: 4)))) {
         await createOverdueReminderNotification(r);
       }
     }
 
-    // 3. Incomplete hot/warm contact notifications (3+ days after creation)
+    // Incomplete hot/warm contact pushes (3+ days after creation)
     for (final c in contacts) {
       if (c.status != 'hot' && c.status != 'warm') continue;
-      final threshold = c.createdAt.add(const Duration(days: 3));
-      if (now.isAfter(threshold)) {
+      if (now.isAfter(c.createdAt.add(const Duration(days: 3)))) {
         await createIncompleteContactNotification(c);
       }
-    }
-
-    // 4. Fire push notifications for records whose scheduledAt just passed
-    //    (within the last 2 minutes to avoid repeated pushes)
-    final allNotifs =
-        await DatabaseService.getAllNotificationsForOwner(ownerId);
-    for (final n in allNotifs) {
-      if (n.scheduledAt.isAfter(now)) continue;
-      if (n.scheduledAt.isBefore(now.subtract(const Duration(minutes: 2)))) {
-        continue;
-      }
-      // Determine priority from type
-      String priority = 'normal';
-      if (n.type == 'reminder_upcoming' || n.type == 'reminder_overdue') {
-        final matching = reminders.where((r) => r.id == n.referenceId).toList();
-        if (matching.isNotEmpty) priority = matching.first.priority;
-      } else if (n.type == 'contact_incomplete') {
-        final matching = contacts.where((c) => c.id == n.referenceId).toList();
-        if (matching.isNotEmpty) {
-          priority = matching.first.status == 'hot' ? 'important' : 'normal';
-        }
-      }
-      await firePushIfDue(n, priority);
     }
   }
 
@@ -320,8 +415,7 @@ class NotificationService {
     if (c.company == null || c.company!.trim().isEmpty) missing.add('entreprise');
     if (c.jobTitle == null || c.jobTitle!.trim().isEmpty) missing.add('poste');
     if (c.notes == null || c.notes!.trim().isEmpty) missing.add('notes');
-    if (c.interest == null || c.interest!.trim().isEmpty)
-      missing.add('intérêt');
+    if (c.interest == null || c.interest!.trim().isEmpty) missing.add('intérêt');
     if (c.source == null || c.source!.trim().isEmpty) missing.add('source');
     return missing;
   }
