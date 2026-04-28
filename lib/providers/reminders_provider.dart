@@ -118,11 +118,15 @@ class RemindersNotifier extends StateNotifier<RemindersState> {
     final reminder = state.reminders.firstWhere((r) => r.id == id);
     final updated = reminder.copyWith(isCompleted: true);
     await updateReminder(updated);
+    // Cancel any pending OS alarm — reminder is done.
+    NotificationService.cancelReminderScheduledNotification(id);
   }
 
   Future<void> deleteReminder(String id) async {
     await DatabaseService.deleteReminder(id);
     state = state.copyWith(reminders: state.reminders.where((r) => r.id != id).toList());
+    // Cancel any pending OS alarm so stale pushes don't fire.
+    NotificationService.cancelReminderScheduledNotification(id);
   }
 
   void setActiveTab(String tab) {

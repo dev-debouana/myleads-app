@@ -71,15 +71,28 @@ jobs:
 
           # Add INTERNET permission (idempotent)
           if 'android.permission.INTERNET' not in content:
-              content = content.replace(
-                  '<manifest',
-                  '<manifest',
-                  1,
-              )
-              # Insert permission right after <manifest ...>
               content = re.sub(
                   r'(<manifest[^>]*>)',
                   r'\1\n    <uses-permission android:name="android.permission.INTERNET"/>',
+                  content,
+                  count=1,
+              )
+
+          # POST_NOTIFICATIONS — required on Android 13+ for push notifications
+          if 'android.permission.POST_NOTIFICATIONS' not in content:
+              content = re.sub(
+                  r'(<manifest[^>]*>)',
+                  r'\1\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>',
+                  content,
+                  count=1,
+              )
+
+          # RECEIVE_BOOT_COMPLETED — lets flutter_local_notifications re-register
+          # scheduled alarms after a device reboot
+          if 'android.permission.RECEIVE_BOOT_COMPLETED' not in content:
+              content = re.sub(
+                  r'(<manifest[^>]*>)',
+                  r'\1\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>',
                   content,
                   count=1,
               )
