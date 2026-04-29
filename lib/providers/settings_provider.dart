@@ -12,7 +12,7 @@ class SettingsState {
   final ThemeMode themeMode;
 
   const SettingsState({
-    this.language = AppLanguage.fr,
+    this.language = AppLanguage.en,
     this.currency = AppCurrency.eur,
     this.themeMode = ThemeMode.light,
   });
@@ -49,7 +49,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       final curr = await _storage.read(key: _kCurrency);
       final theme = await _storage.read(key: _kTheme);
       state = SettingsState(
-        language: lang == 'en' ? AppLanguage.en : AppLanguage.fr,
+        language: lang == 'fr' ? AppLanguage.fr : AppLanguage.en,
         currency: curr == 'usd' ? AppCurrency.usd : AppCurrency.eur,
         themeMode: theme == 'dark' ? ThemeMode.dark : ThemeMode.light,
       );

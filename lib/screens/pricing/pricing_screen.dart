@@ -20,6 +20,7 @@ class PricingScreen extends ConsumerWidget {
         children: [
           // Header
           Container(
+            width: double.infinity,
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 10,
               left: 24,
@@ -128,8 +129,7 @@ class PricingScreen extends ConsumerWidget {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () =>
-                              context.push('/subscription-plan'),
+                          onTap: () => context.push('/subscription-plan'),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 8),
@@ -178,8 +178,7 @@ class PricingScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: AppColors.surfaceColor(context),
                       borderRadius: BorderRadius.circular(16),
-                      border:
-                          Border.all(color: AppColors.borderColor(context)),
+                      border: Border.all(color: AppColors.borderColor(context)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

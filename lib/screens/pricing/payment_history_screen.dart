@@ -99,6 +99,7 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
         children: [
           // Header
           Container(
+            width: double.infinity,
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 10,
               left: 24,
@@ -427,8 +428,18 @@ class _TransactionCard extends StatelessWidget {
 
   String _formatDate(DateTime d) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${d.day} ${months[d.month - 1]} ${d.year}';
   }
