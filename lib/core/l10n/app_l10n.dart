@@ -21,7 +21,7 @@ class AppL10n {
       : 'Transformez chaque rencontre professionnelle en opportunité. Scannez une carte, un QR code ou un profil professionnel et contactez instantanément vos leads.';
 
   // ─── Navigation ──────────────────────────────────────────────────────────
-  String get navHome => _en ? 'Home' : 'Home';
+  String get navHome => _en ? 'Home' : 'Accueil';
   String get navContacts => 'Contacts';
   String get navReminders => _en ? 'Reminders' : 'Rappels';
   String get navAccount => _en ? 'Account' : 'Compte';
@@ -51,8 +51,7 @@ class AppL10n {
   String get emailHint => 'votre@email.com';
   String get passwordLabel => _en ? 'Password' : 'Mot de passe';
   String get passwordHint => '••••••••';
-  String get orContinueWith =>
-      _en ? 'or continue with' : 'ou continuer avec';
+  String get orContinueWith => _en ? 'or continue with' : 'ou continuer avec';
 
   // Validators
   String get emailRequired =>
@@ -75,27 +74,30 @@ class AppL10n {
   String get passwordNeedsSymbol => _en
       ? 'Password must contain at least one symbol'
       : 'Le mot de passe doit contenir au moins un symbole';
-  String get passwordsNotMatch => _en
-      ? 'Passwords do not match'
-      : 'Les mots de passe ne correspondent pas';
+  String get passwordsNotMatch =>
+      _en ? 'Passwords do not match' : 'Les mots de passe ne correspondent pas';
   String get confirmPasswordRequired => _en
       ? 'Please confirm your password'
       : 'Veuillez confirmer votre mot de passe';
-  String get codeRequired =>
-      _en ? 'Please enter the 6-digit code' : 'Veuillez entrer un code à 6 chiffres';
+  String get codeRequired => _en
+      ? 'Please enter the 6-digit code'
+      : 'Veuillez entrer un code à 6 chiffres';
 
   // ─── Auth – Login ─────────────────────────────────────────────────────────
   String get welcomeBack => _en ? 'Welcome' : 'Bienvenue';
-  String get loginSubtitle =>
-      _en ? 'Sign in to manage your leads' : 'Connectez-vous pour gérer vos leads';
+  String get loginSubtitle => _en
+      ? 'Sign in to manage your leads'
+      : 'Connectez-vous pour gérer vos leads';
   String get login => _en ? 'Sign in' : 'Se connecter';
-  String get forgotPassword => _en ? 'Forgot password?' : 'Mot de passe oublié ?';
+  String get forgotPassword =>
+      _en ? 'Forgot password?' : 'Mot de passe oublié ?';
   String get noAccount => _en ? 'No account?' : 'Pas de compte ?';
   String get signup => _en ? 'Create account' : 'Créer un compte';
 
   // ─── Auth – Signup ───────────────────────────────────────────────────────
-  String get signupSubtitle =>
-      _en ? 'Join My Leads and start converting your contacts.' : 'Rejoignez My Leads et commencez\nà convertir vos contacts.';
+  String get signupSubtitle => _en
+      ? 'Join My Leads and start converting your contacts.'
+      : 'Rejoignez My Leads et commencez\nà convertir vos contacts.';
   String get firstName => _en ? 'First name' : 'Prénom';
   String get firstNameHint => _en ? 'Jean' : 'Jean';
   String get firstNameRequired =>
@@ -104,29 +106,37 @@ class AppL10n {
   String get lastNameHint => _en ? 'Dupont' : 'Dupont';
   String get lastNameRequired =>
       _en ? 'Please enter your last name' : 'Veuillez entrer votre nom';
-  String get phoneOptional => _en ? 'Phone (optional)' : 'Téléphone (optionnel)';
+  String get phoneOptional =>
+      _en ? 'Phone (optional)' : 'Téléphone (optionnel)';
   String get phoneHintAuth => '+237 6 99 88 77 66';
-  String get confirmPasswordLabel => _en ? 'Confirm password' : 'Confirmer le mot de passe';
+  String get confirmPasswordLabel =>
+      _en ? 'Confirm password' : 'Confirmer le mot de passe';
   String get confirmPasswordHint =>
       _en ? 'Repeat your password' : 'Répétez le mot de passe';
-  String get passwordHintAuth =>
-      _en ? '8-15 chars, letter + digit + symbol' : '8-15 caractères, lettre + chiffre + symbole';
-  String get hasAccount => _en ? 'Already have an account?' : 'Déjà un compte ?';
+  String get passwordHintAuth => _en
+      ? '8-15 chars, letter + digit + symbol'
+      : '8-15 caractères, lettre + chiffre + symbole';
+  String get hasAccount =>
+      _en ? 'Already have an account?' : 'Déjà un compte ?';
 
   // ─── Auth – Forgot Password ───────────────────────────────────────────────
-  String get forgotPasswordTitle => _en ? 'Forgot password' : 'Mot de passe oublié';
-  String get forgotPasswordSubtitle =>
-      _en ? 'Enter the email linked to your account' : "Entrez l'email lié à votre compte";
+  String get forgotPasswordTitle =>
+      _en ? 'Forgot password' : 'Mot de passe oublié';
+  String get forgotPasswordSubtitle => _en
+      ? 'Enter the email linked to your account'
+      : "Entrez l'email lié à votre compte";
   String get sendCode => _en ? 'Send code' : 'Envoyer le code';
   String get backToLogin => _en ? 'Back to login' : 'Retour à la connexion';
 
   // ─── Auth – Email Verification ────────────────────────────────────────────
   String get emailVerificationTitle =>
       _en ? 'Email Verification' : 'Vérification d\'email';
-  String get emailVerificationSubtitle =>
-      _en ? 'Verify your email address to activate your account' : "Vérifiez votre adresse email pour activer votre compte";
-  String get verificationCodeSent =>
-      _en ? 'A verification code has been sent to' : 'Un code de vérification a été envoyé à';
+  String get emailVerificationSubtitle => _en
+      ? 'Verify your email address to activate your account'
+      : "Vérifiez votre adresse email pour activer votre compte";
+  String get verificationCodeSent => _en
+      ? 'A verification code has been sent to'
+      : 'Un code de vérification a été envoyé à';
   String get resendCode => _en ? 'Resend code' : 'Renvoyer le code';
   String get resendCodeIn => _en ? 'Resend in' : 'Renvoyer dans';
   String get verify => _en ? 'Verify' : 'Vérifier';
@@ -138,23 +148,28 @@ class AppL10n {
   // ─── Auth – Recovery Code ─────────────────────────────────────────────────
   String get recoveryCodeTitle =>
       _en ? 'Verification Code' : 'Code de vérification';
-  String get recoveryCodeSent =>
-      _en ? 'A recovery code has been sent to' : 'Un code de récupération a été envoyé à';
+  String get recoveryCodeSent => _en
+      ? 'A recovery code has been sent to'
+      : 'Un code de récupération a été envoyé à';
 
   // ─── Auth – Reset Password ────────────────────────────────────────────────
   String get newPasswordTitle => _en ? 'New password' : 'Nouveau mot de passe';
-  String get newPasswordSubtitle =>
-      _en ? 'Create a new secure password' : 'Créez un nouveau mot de passe sécurisé';
+  String get newPasswordSubtitle => _en
+      ? 'Create a new secure password'
+      : 'Créez un nouveau mot de passe sécurisé';
   String get newPassword => _en ? 'New password' : 'Nouveau mot de passe';
-  String get newPasswordHint =>
-      _en ? '8-15 chars, letter + digit + symbol' : '8-15 caractères, lettre + chiffre + symbole';
+  String get newPasswordHint => _en
+      ? '8-15 chars, letter + digit + symbol'
+      : '8-15 caractères, lettre + chiffre + symbole';
   String get confirmNewPassword =>
       _en ? 'Confirm new password' : 'Confirmer le nouveau mot de passe';
-  String get passwordRules =>
-      _en ? '8-15 chars, 1 letter, 1 digit, 1 symbol, no spaces' : '8-15 car., 1 lettre, 1 chiffre, 1 symbole, sans espace';
+  String get passwordRules => _en
+      ? '8-15 chars, 1 letter, 1 digit, 1 symbol, no spaces'
+      : '8-15 car., 1 lettre, 1 chiffre, 1 symbole, sans espace';
   String get resetPassword => _en ? 'Reset' : 'Réinitialiser';
-  String get passwordResetSuccess =>
-      _en ? 'Password successfully reset' : 'Mot de passe réinitialisé avec succès';
+  String get passwordResetSuccess => _en
+      ? 'Password successfully reset'
+      : 'Mot de passe réinitialisé avec succès';
 
   // ─── Contacts ────────────────────────────────────────────────────────────
   String contactsCount(int n) =>
@@ -174,7 +189,8 @@ class AppL10n {
   String get editButton => _en ? 'Edit' : 'Modifier';
   String get deleteButton => _en ? 'Delete' : 'Supprimer';
   String get shareButton => _en ? 'Share' : 'Partager';
-  String get contactNotFound => _en ? 'Contact not found' : 'Contact non trouvé';
+  String get contactNotFound =>
+      _en ? 'Contact not found' : 'Contact non trouvé';
   String get back => _en ? 'Back' : 'Retour';
   String get phoneLabel => _en ? 'Phone' : 'Téléphone';
   String get companyLabel => _en ? 'Company' : 'Société';
@@ -205,8 +221,9 @@ class AppL10n {
   // ─── Contact Edit ─────────────────────────────────────────────────────────
   String get addContact => _en ? 'Add manually' : 'Ajouter manuellement';
   String get editContact => _en ? 'Edit contact' : 'Modifier le contact';
-  String get addContactSubtitle =>
-      _en ? 'Enter the contact information' : 'Renseignez les informations du contact';
+  String get addContactSubtitle => _en
+      ? 'Enter the contact information'
+      : 'Renseignez les informations du contact';
   String get editContactSubtitle =>
       _en ? 'Update the information' : 'Mettez à jour les informations';
   String get jobTitleLabel => _en ? 'Position' : 'Fonction';
@@ -216,8 +233,9 @@ class AppL10n {
   String get project1Section => _en ? 'PROJECT 1' : 'PROJET 1';
   String get project2Section => _en ? 'PROJECT 2' : 'PROJET 2';
   String get projectNameLabel => _en ? 'Project name' : 'Nom du projet';
-  String get emailPhoneRequired =>
-      _en ? '* At least one phone or email is required' : '* Au moins un téléphone ou un email est requis';
+  String get emailPhoneRequired => _en
+      ? '* At least one phone or email is required'
+      : '* Au moins un téléphone ou un email est requis';
   String get lastNameRequired2 =>
       _en ? 'Last name is required' : 'Le nom de famille est obligatoire';
   String get contactCreated =>
@@ -226,18 +244,22 @@ class AppL10n {
 
   // ─── Review ──────────────────────────────────────────────────────────────
   String get reviewTitle => _en ? 'Review' : 'Vérification';
-  String get reviewSubtitle =>
-      _en ? 'Verify and complete the information' : 'Vérifiez et complétez les informations';
-  String get ocrConfidence => _en ? 'OCR - 95% confidence' : 'OCR - 95% de confiance';
+  String get reviewSubtitle => _en
+      ? 'Verify and complete the information'
+      : 'Vérifiez et complétez les informations';
+  String get ocrConfidence =>
+      _en ? 'OCR - 95% confidence' : 'OCR - 95% de confiance';
   String get quickActions => _en ? 'Quick actions' : 'Actions rapides';
   String get contactSaved =>
       _en ? 'Contact saved successfully!' : 'Contact sauvegardé avec succès !';
   String actionInProgress(String label) =>
       _en ? '$label in progress...' : '$label en cours...';
   String get project1Review => _en ? 'Project 1' : 'Projet 1';
-  String get project1BudgetReview => _en ? 'Project 1 Budget' : 'Budget Projet 1';
+  String get project1BudgetReview =>
+      _en ? 'Project 1 Budget' : 'Budget Projet 1';
   String get project2Review => _en ? 'Project 2' : 'Projet 2';
-  String get project2BudgetReview => _en ? 'Project 2 Budget' : 'Budget Projet 2';
+  String get project2BudgetReview =>
+      _en ? 'Project 2 Budget' : 'Budget Projet 2';
 
   // ─── Reminders ───────────────────────────────────────────────────────────
   String get remindersTitle => _en ? 'Reminders' : 'Rappels';
@@ -268,12 +290,13 @@ class AppL10n {
       _en ? 'Select contacts' : 'Sélectionner des contacts';
   String get noContactsAvailable =>
       _en ? 'No contacts available' : 'Aucun contact disponible';
-  String validateContacts(int n) =>
-      _en ? 'Confirm ($n)' : 'Valider ($n)';
+  String validateContacts(int n) => _en ? 'Confirm ($n)' : 'Valider ($n)';
   String get startLabel => _en ? 'Start' : 'Début';
   String get endLabel => _en ? 'End (optional)' : 'Fin (optionnel)';
-  String get repeatLabel => _en ? 'Repeat (optional)' : 'Répétition (optionnel)';
-  String get noteHint => _en ? 'Ex: Remind about 50k offer' : 'Ex: Rappeler pour offre 50k';
+  String get repeatLabel =>
+      _en ? 'Repeat (optional)' : 'Répétition (optionnel)';
+  String get noteHint =>
+      _en ? 'Ex: Remind about 50k offer' : 'Ex: Rappeler pour offre 50k';
   String get repeatNone => _en ? 'None' : 'Aucune';
   String get repeat30min => _en ? 'Every 30 min' : 'Toutes les 30 min';
   String get repeatHourly => _en ? 'Every hour' : 'Toutes les heures';
@@ -286,8 +309,7 @@ class AppL10n {
   String get actionEmail => 'Email';
   String get priorityNormal => _en ? 'Normal' : 'Normal';
   String get priorityImportant => _en ? 'Important' : 'Important';
-  String get priorityVeryImportant =>
-      _en ? 'Very important' : 'Très important';
+  String get priorityVeryImportant => _en ? 'Very important' : 'Très important';
   String get createReminderBtn => _en ? 'Create reminder' : 'Créer le rappel';
   String get saveReminderBtn => _en ? 'Save' : 'Enregistrer';
   String get contactRequired =>
@@ -303,8 +325,7 @@ class AppL10n {
   String get actionSection => _en ? 'Action' : 'Action';
   String get statusSection => _en ? 'Status' : 'Statut';
   String get completedStatus => _en ? 'Done' : 'Terminé';
-  String get addToCalendar =>
-      _en ? 'Add to calendar' : 'Ajouter au calendrier';
+  String get addToCalendar => _en ? 'Add to calendar' : 'Ajouter au calendrier';
   String get deleteReminderTitle =>
       _en ? 'Delete reminder?' : 'Supprimer le rappel ?';
   String get deleteReminderWarning =>
@@ -316,15 +337,17 @@ class AppL10n {
   // ─── Profile ─────────────────────────────────────────────────────────────
   String get accountLabel => _en ? 'Account' : 'Compte';
   String get myProfile => _en ? 'My Profile' : 'Mon Profil';
-  String get myProfileDesc =>
-      _en ? 'View and edit my information' : 'Consulter et modifier mes informations';
+  String get myProfileDesc => _en
+      ? 'View and edit my information'
+      : 'Consulter et modifier mes informations';
   String get accountSecurity => _en ? 'Account Security' : 'Sécurité du compte';
   String get accountSecurityDesc =>
       _en ? 'Password and deletion' : 'Mot de passe et suppression';
   String get notificationsTitle => _en ? 'Notifications' : 'Notifications';
   String get notificationsDesc => _en ? 'Manage alerts' : 'Gérer les alertes';
   String get subscriptionLabel => _en ? 'Subscription' : 'Abonnement';
-  String get subscriptionDesc => _en ? 'Manage your plan' : 'Gérer votre forfait';
+  String get subscriptionDesc =>
+      _en ? 'Manage your plan' : 'Gérer votre forfait';
   String get syncLabel => _en ? 'Sync' : 'Synchronisation';
   String get syncDesc => _en ? 'Cloud & backup' : 'Cloud & sauvegarde';
   String get exportLabel => _en ? 'Export' : 'Exporter';
@@ -342,8 +365,10 @@ class AppL10n {
   String get editMode => _en ? 'Edit' : 'Modifier';
   String get viewMode => _en ? 'View' : 'Consulter';
   String get qrCodeSection => _en ? 'QR Code' : 'QR Code';
-  String get qrCodeHint => _en ? 'Scan to view profile' : 'Scannez pour voir le profil';
-  String get saveChanges => _en ? 'Save changes' : 'Enregistrer les modifications';
+  String get qrCodeHint =>
+      _en ? 'Scan to view profile' : 'Scannez pour voir le profil';
+  String get saveChanges =>
+      _en ? 'Save changes' : 'Enregistrer les modifications';
   String get profileUpdated => _en ? 'Profile updated' : 'Profil mis à jour';
   String get editHint =>
       _en ? 'Edit your information' : 'Modifiez vos informations';
@@ -354,28 +379,33 @@ class AppL10n {
       _en ? 'A few words about you...' : 'Quelques mots sur vous...';
 
   // ─── Account Security ─────────────────────────────────────────────────────
-  String get accountSecuritySubtitle =>
-      _en ? 'Manage your account security' : 'Gérez la sécurité de votre compte';
-  String get changePassword => _en ? 'Change password' : 'Changer le mot de passe';
-  String get currentPassword => _en ? 'Current password' : 'Mot de passe actuel';
+  String get accountSecuritySubtitle => _en
+      ? 'Manage your account security'
+      : 'Gérez la sécurité de votre compte';
+  String get changePassword =>
+      _en ? 'Change password' : 'Changer le mot de passe';
+  String get currentPassword =>
+      _en ? 'Current password' : 'Mot de passe actuel';
   String get newPasswordLabel => _en ? 'New password' : 'Nouveau mot de passe';
   String get confirmPasswordSec =>
       _en ? 'Confirm new password' : 'Confirmer le nouveau mot de passe';
-  String get passwordChanged =>
-      _en ? 'Password successfully changed' : 'Mot de passe modifié avec succès';
+  String get passwordChanged => _en
+      ? 'Password successfully changed'
+      : 'Mot de passe modifié avec succès';
   String get changeEmail => _en ? "Change email" : "Changer l'email";
   String get newEmail => _en ? 'New email' : 'Nouvel email';
-  String get sendVerificationCode =>
-      _en ? 'Send code' : 'Envoyer le code';
+  String get sendVerificationCode => _en ? 'Send code' : 'Envoyer le code';
   String get verificationCodeLabel =>
       _en ? 'Verification code' : 'Code de vérification';
   String get emailChangedSuccess =>
       _en ? 'Email successfully changed' : 'Email modifié avec succès';
   String get deleteAccountTitle =>
       _en ? 'Delete account' : 'Supprimer le compte';
-  String get deleteAccountWarning =>
-      _en ? 'This action is irreversible. All your data will be deleted.' : 'Cette action est irréversible. Toutes vos données seront supprimées.';
-  String get deleteMyAccount => _en ? 'Delete my account' : 'Supprimer mon compte';
+  String get deleteAccountWarning => _en
+      ? 'This action is irreversible. All your data will be deleted.'
+      : 'Cette action est irréversible. Toutes vos données seront supprimées.';
+  String get deleteMyAccount =>
+      _en ? 'Delete my account' : 'Supprimer mon compte';
   String get deleteAccountConfirmTitle =>
       _en ? 'Delete my account' : 'Supprimer mon compte';
   String get deleteAccountConfirmMessage => _en
@@ -385,18 +415,21 @@ class AppL10n {
       _en ? 'Current password required' : 'Mot de passe actuel requis';
   String get newPasswordRequired =>
       _en ? 'New password required' : 'Nouveau mot de passe requis';
-  String get passwordInvalidFormat =>
-      _en ? 'Invalid format (see rules below)' : 'Format invalide (voir règles ci-dessous)';
+  String get passwordInvalidFormat => _en
+      ? 'Invalid format (see rules below)'
+      : 'Format invalide (voir règles ci-dessous)';
   String get confirmRequired =>
       _en ? 'Confirmation required' : 'Confirmation requise';
-  String get changeEmailLabel => _en ? "Change email address" : "Changer l'adresse email";
+  String get changeEmailLabel =>
+      _en ? "Change email address" : "Changer l'adresse email";
 
   // ─── Settings Screen ──────────────────────────────────────────────────────
   String get settingsTitle => _en ? 'Settings' : 'Paramètres';
   String get appearance => _en ? 'Appearance' : 'Apparence';
   String get themeColor => _en ? 'Theme Color' : 'Couleur du thème';
-  String get themeColorDesc =>
-      _en ? 'Switch between light and dark mode' : 'Basculer entre mode clair et sombre';
+  String get themeColorDesc => _en
+      ? 'Switch between light and dark mode'
+      : 'Basculer entre mode clair et sombre';
   String get lightMode => _en ? 'Light' : 'Clair';
   String get darkMode => _en ? 'Dark' : 'Sombre';
   String get languageOption => _en ? 'Language' : 'Langue';
@@ -415,11 +448,13 @@ class AppL10n {
 
   // ─── Subscription Hub ─────────────────────────────────────────────────────
   String get subscriptionHubTitle => _en ? 'Subscription' : 'Abonnement';
-  String get subscriptionHubSubtitle =>
-      _en ? 'Manage your plan and billing' : 'Gérez votre forfait et facturation';
+  String get subscriptionHubSubtitle => _en
+      ? 'Manage your plan and billing'
+      : 'Gérez votre forfait et facturation';
   String get currentPlanBadge => _en ? 'CURRENT PLAN' : 'PLAN ACTUEL';
   String get freePlanName => _en ? 'Free' : 'Gratuit';
-  String get freePlanTagline => _en ? 'Discover My Leads' : 'Découvrir My Leads';
+  String get freePlanTagline =>
+      _en ? 'Discover My Leads' : 'Découvrir My Leads';
   String get upgradeNow => _en ? 'Upgrade now' : 'Améliorer maintenant';
   String get subscriptionPlanOption =>
       _en ? 'Subscription Plan' : "Plan d'abonnement";
@@ -429,14 +464,17 @@ class AppL10n {
       _en ? 'Payment History' : 'Historique des paiements';
   String get paymentHistoryOptionDesc =>
       _en ? 'View past transactions' : 'Voir les transactions passées';
-  String get secureTransactions =>
-      _en ? 'Secure transactions • Cancel anytime' : 'Transactions sécurisées • Annulation à tout moment';
+  String get secureTransactions => _en
+      ? 'Secure transactions • Cancel anytime'
+      : 'Transactions sécurisées • Annulation à tout moment';
 
   // ─── Subscription Plan Screen ─────────────────────────────────────────────
-  String get choosePlan => _en ? 'Choose your plan' : 'Choisissez votre forfait';
+  String get choosePlan =>
+      _en ? 'Choose your plan' : 'Choisissez votre forfait';
   String get popularBadge => _en ? 'POPULAR' : 'POPULAIRE';
   String get currentBadge => _en ? 'CURRENT' : 'ACTUEL';
-  String get freePlanDesc => _en ? 'To discover My Leads' : 'Pour découvrir My Leads';
+  String get freePlanDesc =>
+      _en ? 'To discover My Leads' : 'Pour découvrir My Leads';
   String get premiumPlanName => 'Premium';
   String get premiumPlanDesc =>
       _en ? 'For demanding professionals' : 'Pour les professionnels exigeants';
@@ -446,10 +484,10 @@ class AppL10n {
   String get choosePlanCta => _en ? 'Choose' : 'Choisir';
   String get paymentMethodsTitle =>
       _en ? 'PAYMENT METHODS' : 'MOYENS DE PAIEMENT';
-  String get securePayment =>
-      _en ? 'Secure payment. Cancel anytime.' : 'Paiement sécurisé. Annulation à tout moment.';
-  String get comingSoon =>
-      _en ? ' plan coming soon!' : ' bientôt disponible !';
+  String get securePayment => _en
+      ? 'Secure payment. Cancel anytime.'
+      : 'Paiement sécurisé. Annulation à tout moment.';
+  String get comingSoon => _en ? ' plan coming soon!' : ' bientôt disponible !';
   String get freeLabel => _en ? 'Free' : 'Gratuit';
 
   // ─── Payment History ─────────────────────────────────────────────────────
@@ -461,7 +499,8 @@ class AppL10n {
   String get last3Months => _en ? 'Last 3 months' : '3 derniers mois';
   String get last6Months => _en ? 'Last 6 months' : '6 derniers mois';
   String get thisYear => _en ? 'This year' : 'Cette année';
-  String get noPayments => _en ? 'No payments yet' : 'Aucun paiement pour le moment';
+  String get noPayments =>
+      _en ? 'No payments yet' : 'Aucun paiement pour le moment';
   String get noPaymentsDesc => _en
       ? 'Your payment history will appear here once you subscribe to a plan.'
       : 'Votre historique de paiements apparaîtra ici une fois que vous vous abonnerez à un plan.';
@@ -475,8 +514,9 @@ class AppL10n {
 
   // ─── Scan ─────────────────────────────────────────────────────────────────
   String get scanTitle => _en ? 'Scanner' : 'Scanner';
-  String get scanHint =>
-      _en ? 'Place the business card in the frame' : 'Placez la carte de visite dans le cadre';
+  String get scanHint => _en
+      ? 'Place the business card in the frame'
+      : 'Placez la carte de visite dans le cadre';
   String get scanCard => _en ? 'Card' : 'Carte';
   String get scanQR => _en ? 'QR Code' : 'QR Code';
   String get scanNFC => _en ? 'NFC' : 'NFC';
@@ -497,9 +537,12 @@ class AppL10n {
       _en ? 'Search a notification…' : 'Rechercher une notification…';
   String noResultsFor(String q) =>
       _en ? 'No results for "$q"' : 'Aucun résultat pour "$q"';
-  String get overdueReminderBadge => _en ? 'OVERDUE REMINDER' : 'RAPPEL EN RETARD';
-  String get upcomingReminderBadge => _en ? 'UPCOMING REMINDER' : 'RAPPEL À VENIR';
-  String get incompleteProfileBadge => _en ? 'INCOMPLETE PROFILE' : 'PROFIL INCOMPLET';
+  String get overdueReminderBadge =>
+      _en ? 'OVERDUE REMINDER' : 'RAPPEL EN RETARD';
+  String get upcomingReminderBadge =>
+      _en ? 'UPCOMING REMINDER' : 'RAPPEL À VENIR';
+  String get incompleteProfileBadge =>
+      _en ? 'INCOMPLETE PROFILE' : 'PROFIL INCOMPLET';
   String get notificationLabel => _en ? 'NOTIFICATION' : 'NOTIFICATION';
 
   // ─── Currency helpers ─────────────────────────────────────────────────────
