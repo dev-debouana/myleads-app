@@ -1,6 +1,6 @@
 {
-    "name": "myleads",
-    "short_name": "myleads",
+    "name": "me2leads",
+    "short_name": "me2leads",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

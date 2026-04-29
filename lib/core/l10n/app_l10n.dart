@@ -356,6 +356,9 @@ class AppL10n {
   String get settingsDesc => _en ? "App preferences" : "Préférences de l'app";
   String get logoutLabel => _en ? 'Logout' : 'Déconnexion';
   String get logoutDesc => _en ? 'Sign out' : 'Se déconnecter';
+  String get photoTooLarge => _en
+      ? 'Image too large. Maximum allowed size is 5 MB.'
+      : "L'image est trop volumineuse. La taille maximale autorisée est de 5 Mo.";
 
   // ─── My Profile ───────────────────────────────────────────────────────────
   String get nicknameLabel => _en ? 'Nickname' : 'Surnom';

@@ -29,7 +29,7 @@ jobs:
 
       - name: Generate platform files
         run: |
-          flutter create --project-name myleads --org com.debouana --platforms android,ios,web .
+          flutter create --project-name me2leads --org com.debouana --platforms android,ios,web .
           flutter pub get
 
       - name: Add ProGuard rules for ML Kit
@@ -142,13 +142,13 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: myleads-release-apk
+          name: me2leads-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload Web artifact
         uses: actions/upload-artifact@v4
         with:
-          name: myleads-web
+          name: me2leads-web
           path: build/web/
 
   release:
@@ -161,7 +161,7 @@ jobs:
       - name: Download APK
         uses: actions/download-artifact@v4
         with:
-          name: myleads-release-apk
+          name: me2leads-release-apk
           path: ./release/
 
       - name: Delete existing release if any
@@ -216,7 +216,7 @@ jobs:
       - name: Download Web build
         uses: actions/download-artifact@v4
         with:
-          name: myleads-web
+          name: me2leads-web
           path: ./web/
 
       - name: Setup Pages

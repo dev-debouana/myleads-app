@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 
@@ -11,6 +12,8 @@ import '../config/app_config.dart';
 /// verification / recovery codes are held in-memory regardless.
 class EmailService {
   EmailService._();
+
+  static const _timeout = Duration(seconds: 20);
 
   static SmtpServer get _smtpServer => SmtpServer(
         AppConfig.smtpHost,
@@ -67,12 +70,13 @@ class EmailService {
         ..subject = subject
         ..text = body;
 
-      await send(message, _smtpServer);
+      await send(message, _smtpServer, timeout: _timeout);
       return true;
-    } catch (_) {
+    } catch (e) {
       // Email sending failed — the in-memory code is still valid.
       // Callers should not surface this error directly; the code flow
       // continues normally.
+      debugPrint('EmailService: SMTP delivery failed — $e');
       return false;
     }
   }

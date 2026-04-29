@@ -272,11 +272,15 @@ class _ContactEditScreenState extends ConsumerState<ContactEditScreen> {
                               maxWidth: 512,
                             );
                             if (img != null) {
-                              final savedPath =
-                                  await PhotoStorageService.saveContactPhoto(
-                                      img.path);
-                              setState(
-                                  () => _photoPath = savedPath ?? img.path);
+                              try {
+                                final savedPath =
+                                    await PhotoStorageService.saveContactPhoto(
+                                        img.path);
+                                setState(
+                                    () => _photoPath = savedPath ?? img.path);
+                              } on PhotoFileTooLargeException {
+                                _showError(l10n.photoTooLarge);
+                              }
                             }
                           },
                           child: Stack(

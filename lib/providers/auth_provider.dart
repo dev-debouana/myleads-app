@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -527,7 +528,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
 
     // Try to send email (non-blocking — code is still valid if email fails).
-    EmailService.sendRecoveryEmail(email, code);
+    unawaited(EmailService.sendRecoveryEmail(email, code));
 
     return null; // success
   }
@@ -622,7 +623,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
 
     // Try to send email (non-blocking — code is still valid if email fails).
-    EmailService.sendVerificationEmail(email, code);
+    unawaited(EmailService.sendVerificationEmail(email, code));
 
     return null; // success
   }

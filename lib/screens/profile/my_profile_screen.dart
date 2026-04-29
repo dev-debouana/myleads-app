@@ -83,6 +83,25 @@ class _MyProfileScreenState extends ConsumerState<MyProfileScreen> {
           await ref.read(authProvider.notifier).updatePhoto(savedPath);
         }
       }
+    } on PhotoFileTooLargeException {
+      if (mounted) {
+        final l10n = ref.read(l10nProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Expanded(child: Text(l10n.photoTooLarge)),
+              ],
+            ),
+            backgroundColor: AppColors.hot,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
     } catch (_) {}
   }
 
