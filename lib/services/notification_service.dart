@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../models/app_notification.dart';
@@ -147,9 +149,7 @@ class NotificationService {
     } catch (_) {}
   }
 
-  /// Schedule a push notification at [scheduledAt] (any local DateTime).
-  /// Converts to UTC so the alarm fires at the correct absolute moment without
-  /// needing a native timezone plugin.
+  /// Schedule a push notification at [scheduledAt] (local wall-clock time).
   /// Uses [AndroidScheduleMode.inexactAllowWhileIdle] — no SCHEDULE_EXACT_ALARM
   /// permission needed; the notification fires approximately on time even in Doze.
   static Future<void> _schedulePush({
@@ -161,9 +161,15 @@ class NotificationService {
   }) async {
     if (kIsWeb || !_initialized) return;
     try {
-      // TZDateTime.from(utc, UTC) wraps the exact UTC instant so zonedSchedule
-      // fires at the correct wall-clock moment on every device timezone.
-      final tzScheduled = tz.TZDateTime.from(scheduledAt.toUtc(), tz.UTC);
+      final tzScheduled = tz.TZDateTime(
+        tz.local,
+        scheduledAt.year,
+        scheduledAt.month,
+        scheduledAt.day,
+        scheduledAt.hour,
+        scheduledAt.minute,
+        scheduledAt.second,
+      );
       await _plugin.zonedSchedule(
         id,
         title,
