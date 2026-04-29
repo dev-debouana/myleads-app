@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../providers/currency_provider.dart';
 import '../../providers/settings_provider.dart';
 
 class PricingScreen extends ConsumerWidget {
@@ -13,6 +14,7 @@ class PricingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = ref.watch(l10nProvider);
     final currency = ref.watch(settingsProvider).currency;
+    final eurToUsd = ref.watch(eurToUsdRateProvider);
 
     return Scaffold(
       backgroundColor: AppColors.bg(context),
@@ -197,14 +199,14 @@ class PricingScreen extends ConsumerWidget {
                           children: [
                             _MiniPlanTile(
                               name: l10n.premiumPlanName,
-                              price: l10n.premiumPrice(currency),
+                              price: l10n.premiumPrice(currency, eurToTargetRate: eurToUsd),
                               period: l10n.premiumPeriod(currency),
                               highlight: true,
                             ),
                             const SizedBox(width: 10),
                             _MiniPlanTile(
                               name: l10n.businessPlanName,
-                              price: l10n.businessPrice(currency),
+                              price: l10n.businessPrice(currency, eurToTargetRate: eurToUsd),
                               period: l10n.businessPeriod(currency),
                               highlight: false,
                             ),

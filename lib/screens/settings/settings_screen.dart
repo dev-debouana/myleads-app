@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../providers/currency_provider.dart';
 import '../../providers/settings_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -14,6 +15,7 @@ class SettingsScreen extends ConsumerWidget {
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
     final isDark = settings.themeMode == ThemeMode.dark;
+    final eurToUsd = ref.watch(eurToUsdRateProvider);
 
     return Scaffold(
       backgroundColor: AppColors.bg(context),
@@ -94,7 +96,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 32),
 
           // Preview card showing currency in action
-          _PreviewCard(settings: settings, l10n: l10n),
+          _PreviewCard(settings: settings, l10n: l10n, eurToUsd: eurToUsd),
         ],
       ),
     );
@@ -339,8 +341,13 @@ class _ToggleChip extends StatelessWidget {
 class _PreviewCard extends StatelessWidget {
   final SettingsState settings;
   final AppL10n l10n;
+  final double eurToUsd;
 
-  const _PreviewCard({required this.settings, required this.l10n});
+  const _PreviewCard({
+    required this.settings,
+    required this.l10n,
+    required this.eurToUsd,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -369,7 +376,7 @@ class _PreviewCard extends StatelessWidget {
               _previewPlanTile(
                 context,
                 label: l10n.premiumPlanName,
-                price: l10n.premiumPrice(currency),
+                price: l10n.premiumPrice(currency, eurToTargetRate: eurToUsd),
                 period: l10n.premiumPeriod(currency),
                 highlight: true,
               ),
@@ -377,7 +384,7 @@ class _PreviewCard extends StatelessWidget {
               _previewPlanTile(
                 context,
                 label: l10n.businessPlanName,
-                price: l10n.businessPrice(currency),
+                price: l10n.businessPrice(currency, eurToTargetRate: eurToUsd),
                 period: l10n.businessPeriod(currency),
                 highlight: false,
               ),

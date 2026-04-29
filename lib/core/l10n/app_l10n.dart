@@ -503,12 +503,19 @@ class AppL10n {
   String get notificationLabel => _en ? 'NOTIFICATION' : 'NOTIFICATION';
 
   // ─── Currency helpers ─────────────────────────────────────────────────────
-  String premiumPrice(AppCurrency c) =>
-      c == AppCurrency.usd ? '\$3.24' : '2.99€';
+  // [eurToTargetRate] is the live EUR → target-currency rate (e.g. 1.08 for USD).
+  // Callers that watch [eurToUsdRateProvider] should pass the live value;
+  // the default (1.08) is a reasonable fallback for EUR → USD.
+  String premiumPrice(AppCurrency c, {double eurToTargetRate = 1.08}) =>
+      c == AppCurrency.usd
+          ? '\$${(2.99 * eurToTargetRate).toStringAsFixed(2)}'
+          : '2.99€';
   String premiumPeriod(AppCurrency c) =>
       c == AppCurrency.usd ? '/month' : '/ mois';
-  String businessPrice(AppCurrency c) =>
-      c == AppCurrency.usd ? '\$6.49' : '5.99€';
+  String businessPrice(AppCurrency c, {double eurToTargetRate = 1.08}) =>
+      c == AppCurrency.usd
+          ? '\$${(5.99 * eurToTargetRate).toStringAsFixed(2)}'
+          : '5.99€';
   String businessPeriod(AppCurrency c) =>
       c == AppCurrency.usd ? '/user/month' : '/ utilisateur / mois';
   String currencySymbol(AppCurrency c) => c == AppCurrency.usd ? '\$' : '€';

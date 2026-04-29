@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../providers/currency_provider.dart';
 import '../../providers/settings_provider.dart';
 
 enum _DateFilter { allTime, thisMonth, last3Months, last6Months, thisYear }
@@ -23,7 +24,6 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
       id: 'TXN-2024-001',
       plan: 'Premium',
       amount: 2.99,
-      amountUsd: 3.24,
       date: DateTime(2024, 3, 1),
       status: _TxStatus.paid,
     ),
@@ -31,7 +31,6 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
       id: 'TXN-2024-002',
       plan: 'Premium',
       amount: 2.99,
-      amountUsd: 3.24,
       date: DateTime(2024, 2, 1),
       status: _TxStatus.paid,
     ),
@@ -39,7 +38,6 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
       id: 'TXN-2024-003',
       plan: 'Premium',
       amount: 2.99,
-      amountUsd: 3.24,
       date: DateTime(2024, 1, 1),
       status: _TxStatus.paid,
     ),
@@ -47,7 +45,6 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
       id: 'TXN-2023-012',
       plan: 'Business',
       amount: 5.99,
-      amountUsd: 6.49,
       date: DateTime(2023, 12, 1),
       status: _TxStatus.paid,
     ),
@@ -55,7 +52,6 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
       id: 'TXN-2023-011',
       plan: 'Business',
       amount: 5.99,
-      amountUsd: 6.49,
       date: DateTime(2023, 11, 1),
       status: _TxStatus.failed,
     ),
@@ -63,7 +59,6 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
       id: 'TXN-2023-010',
       plan: 'Premium',
       amount: 2.99,
-      amountUsd: 3.24,
       date: DateTime(2023, 10, 1),
       status: _TxStatus.paid,
     ),
@@ -91,6 +86,7 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
   Widget build(BuildContext context) {
     final l10n = ref.watch(l10nProvider);
     final currency = ref.watch(settingsProvider).currency;
+    final eurToUsd = ref.watch(eurToUsdRateProvider);
     final transactions = _filtered;
 
     return Scaffold(
@@ -210,6 +206,7 @@ class _PaymentHistoryScreenState extends ConsumerState<PaymentHistoryScreen> {
                     itemBuilder: (context, i) => _TransactionCard(
                       transaction: transactions[i],
                       currency: currency,
+                      eurToUsd: eurToUsd,
                       l10n: l10n,
                     ),
                   ),
@@ -293,11 +290,13 @@ class _EmptyState extends StatelessWidget {
 class _TransactionCard extends StatelessWidget {
   final _Transaction transaction;
   final AppCurrency currency;
+  final double eurToUsd;
   final AppL10n l10n;
 
   const _TransactionCard({
     required this.transaction,
     required this.currency,
+    required this.eurToUsd,
     required this.l10n,
   });
 
@@ -306,7 +305,7 @@ class _TransactionCard extends StatelessWidget {
     final isEur = currency == AppCurrency.eur;
     final displayAmount = isEur
         ? '${transaction.amount.toStringAsFixed(2)}€'
-        : '\$${transaction.amountUsd.toStringAsFixed(2)}';
+        : '\$${(transaction.amount * eurToUsd).toStringAsFixed(2)}';
     final statusColor = _statusColor(transaction.status);
     final statusLabel = _statusLabel(transaction.status, l10n);
 
@@ -453,7 +452,6 @@ class _Transaction {
   final String id;
   final String plan;
   final double amount;
-  final double amountUsd;
   final DateTime date;
   final _TxStatus status;
 
@@ -461,7 +459,6 @@ class _Transaction {
     required this.id,
     required this.plan,
     required this.amount,
-    required this.amountUsd,
     required this.date,
     required this.status,
   });
