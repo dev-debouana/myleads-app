@@ -169,7 +169,7 @@ class SubscriptionPlanScreen extends ConsumerWidget {
     );
   }
 
-  List<String> _freeFeatures(AppL10n l10n) => l10n._en
+  List<String> _freeFeatures(AppL10n l10n) => l10n.isEnglish
       ? [
           '10 contacts max',
           'Business card scan',
@@ -183,7 +183,7 @@ class SubscriptionPlanScreen extends ConsumerWidget {
           '5 rappels actifs',
         ];
 
-  List<String> _premiumFeatures(AppL10n l10n) => l10n._en
+  List<String> _premiumFeatures(AppL10n l10n) => l10n.isEnglish
       ? [
           'Unlimited contacts',
           'OCR + QR + NFC scan',
@@ -203,7 +203,7 @@ class SubscriptionPlanScreen extends ConsumerWidget {
           'Support prioritaire',
         ];
 
-  List<String> _businessFeatures(AppL10n l10n) => l10n._en
+  List<String> _businessFeatures(AppL10n l10n) => l10n.isEnglish
       ? [
           'All Premium included',
           'Multi-user management',

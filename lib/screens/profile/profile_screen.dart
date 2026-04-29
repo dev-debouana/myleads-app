@@ -47,7 +47,7 @@ class ProfileScreen extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final contacts = ref.watch(contactsProvider);
     final displayName =
-        auth.userName.isEmpty ? (l10n._en ? 'User' : 'Utilisateur') : auth.userName;
+        auth.userName.isEmpty ? (l10n.isEnglish ? 'User' : 'Utilisateur') : auth.userName;
     final displayEmail = auth.userEmail.isEmpty ? '—' : auth.userEmail;
     final displayInitials = _initialsFor(displayName);
 

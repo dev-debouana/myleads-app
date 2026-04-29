@@ -118,7 +118,6 @@ class _EmailVerificationScreenState
 
     setState(() => _isLoading = false);
 
-    final l10n = ref.read(l10nProvider);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(

@@ -257,17 +257,17 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildField(context, l10n.firstName, _firstNameCtrl),
-                  _buildField(context, l10n.lastName, _lastNameCtrl),
-                  _buildField(context, l10n.jobTitleLabel, _jobTitleCtrl),
-                  _buildField(context, l10n.companyLabel, _companyCtrl),
-                  _buildField(context, l10n.phoneLabel, _phoneCtrl, type: TextInputType.phone),
-                  _buildField(context, l10n.emailLabel, _emailCtrl, type: TextInputType.emailAddress),
-                  _buildField(context, l10n.sourceLabel, _sourceCtrl),
-                  _buildField(context, l10n.project1Review, _project1Ctrl),
-                  _buildField(context, l10n.project1BudgetReview, _project1BudgetCtrl),
-                  _buildField(context, l10n.project2Review, _project2Ctrl),
-                  _buildField(context, l10n.project2BudgetReview, _project2BudgetCtrl),
+                  _buildField(l10n.firstName, _firstNameCtrl),
+                  _buildField(l10n.lastName, _lastNameCtrl),
+                  _buildField(l10n.jobTitleLabel, _jobTitleCtrl),
+                  _buildField(l10n.companyLabel, _companyCtrl),
+                  _buildField(l10n.phoneLabel, _phoneCtrl, type: TextInputType.phone),
+                  _buildField(l10n.emailLabel, _emailCtrl, type: TextInputType.emailAddress),
+                  _buildField(l10n.sourceLabel, _sourceCtrl),
+                  _buildField(l10n.project1Review, _project1Ctrl),
+                  _buildField(l10n.project1BudgetReview, _project1BudgetCtrl),
+                  _buildField(l10n.project2Review, _project2Ctrl),
+                  _buildField(l10n.project2BudgetReview, _project2BudgetCtrl),
 
                   // Tags
                   const SizedBox(height: 4),
@@ -319,7 +319,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                   ),
 
                   const SizedBox(height: 16),
-                  _buildField(context, l10n.notesLabel, _notesCtrl, maxLines: 3),
+                  _buildField(l10n.notesLabel, _notesCtrl, maxLines: 3),
 
                   // Quick Actions
                   const SizedBox(height: 8),
@@ -335,13 +335,13 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      _buildQuickAction(context, l10n, const Icon(Icons.phone, size: 20), l10n.callLabel, AppColors.success),
+                      _buildQuickAction(const Icon(Icons.phone, size: 20), l10n.callLabel, AppColors.success),
                       const SizedBox(width: 10),
-                      _buildQuickAction(context, l10n, const FaIcon(FontAwesomeIcons.whatsapp, size: 20), l10n.whatsappLabel, const Color(0xFF25D366)),
+                      _buildQuickAction(const FaIcon(FontAwesomeIcons.whatsapp, size: 20), l10n.whatsappLabel, const Color(0xFF25D366)),
                       const SizedBox(width: 10),
-                      _buildQuickAction(context, l10n, const Icon(Icons.email, size: 20), l10n.emailActionLabel, AppColors.primary),
+                      _buildQuickAction(const Icon(Icons.email, size: 20), l10n.emailActionLabel, AppColors.primary),
                       const SizedBox(width: 10),
-                      _buildQuickAction(context, l10n, const Icon(Icons.sms, size: 20), l10n.smsLabel, AppColors.warm),
+                      _buildQuickAction(const Icon(Icons.sms, size: 20), l10n.smsLabel, AppColors.warm),
                     ],
                   ),
                   const SizedBox(height: 100),

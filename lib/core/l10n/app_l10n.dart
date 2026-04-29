@@ -10,6 +10,8 @@ class AppL10n {
   final bool _en;
   const AppL10n(this._en);
 
+  bool get isEnglish => _en;
+
   // ─── App ────────────────────────────────────────────────────────────────
   String get appName => 'My Leads';
   String get slogan =>
