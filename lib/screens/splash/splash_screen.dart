@@ -114,7 +114,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
               // App name
               const Text(
-                'My Leads',
+                'Me2Leads',
                 style: TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.w800,

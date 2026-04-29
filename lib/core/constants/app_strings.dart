@@ -2,7 +2,7 @@ class AppStrings {
   AppStrings._();
 
   // App
-  static const String appName = 'My Leads';
+  static const String appName = 'Me2Leads';
   static const String slogan = 'Scannez. Connectez. Convertissez.';
   static const String sloganEn = 'Scan. Connect. Convert.';
 

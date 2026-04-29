@@ -13,7 +13,7 @@ class AppL10n {
   bool get isEnglish => _en;
 
   // ─── App ────────────────────────────────────────────────────────────────
-  String get appName => 'My Leads';
+  String get appName => 'Me2Leads';
   String get slogan =>
       _en ? 'Scan. Connect. Convert.' : 'Scannez. Connectez. Convertissez.';
   String get pitchShort => _en
@@ -96,8 +96,8 @@ class AppL10n {
 
   // ─── Auth – Signup ───────────────────────────────────────────────────────
   String get signupSubtitle => _en
-      ? 'Join My Leads and start converting your contacts.'
-      : 'Rejoignez My Leads et commencez\nà convertir vos contacts.';
+      ? 'Join Me2Leads and start converting your contacts.'
+      : 'Rejoignez Me2Leads et commencez\nà convertir vos contacts.';
   String get firstName => _en ? 'First name' : 'Prénom';
   String get firstNameHint => _en ? 'Jean' : 'Jean';
   String get firstNameRequired =>
@@ -454,7 +454,7 @@ class AppL10n {
   String get currentPlanBadge => _en ? 'CURRENT PLAN' : 'PLAN ACTUEL';
   String get freePlanName => _en ? 'Free' : 'Gratuit';
   String get freePlanTagline =>
-      _en ? 'Discover My Leads' : 'Découvrir My Leads';
+      _en ? 'Discover Me2Leads' : 'Découvrir Me2Leads';
   String get upgradeNow => _en ? 'Upgrade now' : 'Améliorer maintenant';
   String get subscriptionPlanOption =>
       _en ? 'Subscription Plan' : "Plan d'abonnement";
@@ -474,7 +474,7 @@ class AppL10n {
   String get popularBadge => _en ? 'POPULAR' : 'POPULAIRE';
   String get currentBadge => _en ? 'CURRENT' : 'ACTUEL';
   String get freePlanDesc =>
-      _en ? 'To discover My Leads' : 'Pour découvrir My Leads';
+      _en ? 'To discover Me2Leads' : 'Pour découvrir Me2Leads';
   String get premiumPlanName => 'Premium';
   String get premiumPlanDesc =>
       _en ? 'For demanding professionals' : 'Pour les professionnels exigeants';

@@ -112,7 +112,7 @@ class ContactActions {
       buf.writeln('Notes : ${contact.notes}');
     }
     buf.writeln();
-    buf.writeln('Partagé via My Leads');
+    buf.writeln('Partagé via Me2Leads');
 
     await SharePlus.instance.share(
       ShareParams(

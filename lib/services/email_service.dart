@@ -29,12 +29,12 @@ class EmailService {
       String toEmail, String code) async {
     return _sendEmail(
       to: toEmail,
-      subject: 'MyLeads - Code de vérification',
+      subject: 'Me2Leads - Code de vérification',
       body: 'Bonjour,\n\n'
-          'Votre code de vérification MyLeads est : $code\n\n'
+          'Votre code de vérification Me2Leads est : $code\n\n'
           'Ce code expire dans 10 minutes.\n\n'
-          'Si vous n\'avez pas créé de compte MyLeads, ignorez cet email.\n\n'
-          '— L\'équipe MyLeads',
+          'Si vous n\'avez pas créé de compte Me2Leads, ignorez cet email.\n\n'
+          '— L\'équipe Me2Leads',
     );
   }
 
@@ -44,12 +44,12 @@ class EmailService {
   static Future<bool> sendRecoveryEmail(String toEmail, String code) async {
     return _sendEmail(
       to: toEmail,
-      subject: 'MyLeads - Code de récupération',
+      subject: 'Me2Leads - Code de récupération',
       body: 'Bonjour,\n\n'
-          'Votre code de récupération MyLeads est : $code\n\n'
+          'Votre code de récupération Me2Leads est : $code\n\n'
           'Ce code expire dans 10 minutes.\n\n'
           'Si vous n\'avez pas demandé ce code, ignorez cet email.\n\n'
-          '— L\'équipe MyLeads',
+          '— L\'équipe Me2Leads',
     );
   }
 
@@ -62,7 +62,7 @@ class EmailService {
   }) async {
     try {
       final message = Message()
-        ..from = Address(AppConfig.smtpUsername, 'MyLeads')
+        ..from = Address(AppConfig.smtpUsername, 'Me2Leads')
         ..recipients.add(to)
         ..subject = subject
         ..text = body;

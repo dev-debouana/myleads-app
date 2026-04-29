@@ -257,7 +257,7 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'My Leads v1.0.0',
+                    'Me2Leads v1.0.0',
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.hint(context),

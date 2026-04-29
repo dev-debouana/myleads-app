@@ -45,17 +45,17 @@ void main() async {
     debugPrint('NotificationService.init failed: $e\n$st');
   }
 
-  runApp(const ProviderScope(child: MyLeadsApp()));
+  runApp(const ProviderScope(child: Me2LeadsApp()));
 }
 
-class MyLeadsApp extends ConsumerWidget {
-  const MyLeadsApp({super.key});
+class Me2LeadsApp extends ConsumerWidget {
+  const Me2LeadsApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     return MaterialApp.router(
-      title: 'My Leads',
+      title: 'Me2Leads',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

@@ -1,4 +1,4 @@
-name: Build My Leads APK & Web
+name: Build Me2Leads APK & Web
 
 on:
   push:
@@ -173,9 +173,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0
-          name: "My Leads v1.0.0 - Release"
+          name: "Me2Leads v1.0.0 - Release"
           body: |
-            ## My Leads v1.0.0
+            ## Me2Leads v1.0.0
 
             **Scannez. Connectez. Convertissez.**
 
@@ -191,7 +191,7 @@ jobs:
             - Forfaits Free (10 contacts) / Premium (2.99EUR/mois) / Business (5.99EUR/utilisateur/mois)
 
             ### Installation Android
-            1. Telechargez `MyLeads-v1.0.0.apk`
+            1. Telechargez `Me2Leads-v1.0.0.apk`
             2. Activez "Sources inconnues" dans Parametres > Securite
             3. Installez le fichier APK
 
