@@ -10,6 +10,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/contacts_provider.dart';
 import '../../providers/reminders_provider.dart';
 import '../../services/photo_storage_service.dart';
+import '../../services/storage_service.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -46,6 +47,9 @@ class ProfileScreen extends ConsumerWidget {
     final l10n = ref.watch(l10nProvider);
     final auth = ref.watch(authProvider);
     final contacts = ref.watch(contactsProvider);
+    final currentUser = StorageService.currentUser;
+    final orgId = currentUser?.organizationId;
+    final orgRole = currentUser?.orgRole;
     final displayName =
         auth.userName.isEmpty ? (l10n.isEnglish ? 'User' : 'Utilisateur') : auth.userName;
     final displayEmail = auth.userEmail.isEmpty ? '—' : auth.userEmail;
@@ -239,6 +243,39 @@ class ProfileScreen extends ConsumerWidget {
                     AppColors.cold,
                     () => context.push('/settings'),
                   ),
+                  // ── Organization section ──────────────────────────────
+                  if (orgId != null)
+                    _menuItem(
+                      context,
+                      Icons.corporate_fare_rounded,
+                      l10n.orgAdminMenuTitle,
+                      orgRole == 'admin'
+                          ? l10n.orgAdminMenuDesc
+                          : l10n.orgMemberMenuDesc,
+                      AppColors.primary.withValues(alpha: 0.08),
+                      AppColors.primary,
+                      () => context.push('/organization'),
+                    )
+                  else ...[
+                    _menuItem(
+                      context,
+                      Icons.corporate_fare_rounded,
+                      l10n.createOrgTitle,
+                      l10n.createOrgDesc,
+                      AppColors.primary.withValues(alpha: 0.08),
+                      AppColors.primary,
+                      () => context.push('/organization/create'),
+                    ),
+                    _menuItem(
+                      context,
+                      Icons.group_add_rounded,
+                      l10n.joinOrgTitle,
+                      l10n.joinOrgDesc,
+                      AppColors.accent.withValues(alpha: 0.1),
+                      AppColors.accent,
+                      () => context.push('/organization/join'),
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   _menuItem(
                     context,

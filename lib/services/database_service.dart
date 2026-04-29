@@ -10,6 +10,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../models/app_notification.dart';
 import '../models/contact.dart';
 import '../models/interaction.dart';
+import '../models/organization.dart';
 import '../models/reminder.dart';
 import '../models/user_account.dart';
 import '../core/utils/validators.dart';
@@ -26,7 +27,7 @@ import 'web_db_factory_stub.dart'
 class DatabaseService {
   static Database? _db;
   static const _dbName = 'myleads.db';
-  static const _dbVersion = 6;
+  static const _dbVersion = 7;
 
   static Future<Database> get database async {
     _db ??= await _initDb();
@@ -121,6 +122,37 @@ class DatabaseService {
       await db.execute(
           'CREATE INDEX IF NOT EXISTS idx_notifications_owner ON notifications(owner_id)');
     }
+    if (oldVersion < 7) {
+      // v6 → v7: organizations + membership tables; org columns on users
+      await db.execute('ALTER TABLE users ADD COLUMN organization_id TEXT');
+      await db.execute('ALTER TABLE users ADD COLUMN org_role TEXT');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS organizations (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          owner_id TEXT NOT NULL,
+          invite_code TEXT NOT NULL UNIQUE,
+          created_at TEXT NOT NULL
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS organization_members (
+          id TEXT PRIMARY KEY,
+          organization_id TEXT NOT NULL,
+          user_id TEXT NOT NULL,
+          role TEXT NOT NULL DEFAULT 'member',
+          status TEXT NOT NULL DEFAULT 'active',
+          joined_at TEXT NOT NULL,
+          FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          UNIQUE (organization_id, user_id)
+        )
+      ''');
+      await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_org_members_org ON organization_members(organization_id)');
+      await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_org_members_user ON organization_members(user_id)');
+    }
   }
 
   static Future<void> _onCreate(Database db, int version) async {
@@ -146,7 +178,9 @@ class DatabaseService {
         last_login_at TEXT,
         password_changed_at TEXT NOT NULL,
         photo_path TEXT,
-        email_verified INTEGER NOT NULL DEFAULT 0
+        email_verified INTEGER NOT NULL DEFAULT 0,
+        organization_id TEXT,
+        org_role TEXT
       )
     ''');
 
@@ -262,6 +296,35 @@ class DatabaseService {
     ''');
     await db.execute(
         'CREATE INDEX idx_notifications_owner ON notifications(owner_id)');
+
+    // ----- ORGANIZATIONS (v7) -----
+    await db.execute('''
+      CREATE TABLE organizations (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        owner_id TEXT NOT NULL,
+        invite_code TEXT NOT NULL UNIQUE,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE organization_members (
+        id TEXT PRIMARY KEY,
+        organization_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'member',
+        status TEXT NOT NULL DEFAULT 'active',
+        joined_at TEXT NOT NULL,
+        FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE (organization_id, user_id)
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_org_members_org ON organization_members(organization_id)');
+    await db.execute(
+        'CREATE INDEX idx_org_members_user ON organization_members(user_id)');
   }
 
   // =====================================================================
@@ -371,6 +434,8 @@ class DatabaseService {
         'password_changed_at': u.passwordChangedAt.toIso8601String(),
         'photo_path': u.photoPath,
         'email_verified': u.emailVerified ? 1 : 0,
+        'organization_id': u.organizationId,
+        'org_role': u.orgRole,
       };
 
   static UserAccount _userFromRow(Map<String, dynamic> row) {
@@ -407,6 +472,8 @@ class DatabaseService {
           DateTime.parse(row['password_changed_at'] as String),
       photoPath: row['photo_path'] as String?,
       emailVerified: (row['email_verified'] as int?) == 1,
+      organizationId: row['organization_id'] as String?,
+      orgRole: row['org_role'] as String?,
     );
   }
 
@@ -930,8 +997,168 @@ class DatabaseService {
           where: 'owner_id = ?', whereArgs: [userId]);
       await txn.delete('notifications',
           where: 'owner_id = ?', whereArgs: [userId]);
+      await txn.delete('organization_members',
+          where: 'user_id = ?', whereArgs: [userId]);
       await txn.delete('users', where: 'id = ?', whereArgs: [userId]);
     });
+  }
+
+  // =====================================================================
+  // ORGANIZATIONS
+  // =====================================================================
+
+  static Future<Organization?> findOrganizationById(String id) async {
+    final db = await database;
+    final rows = await db.query('organizations', where: 'id = ?', whereArgs: [id], limit: 1);
+    if (rows.isEmpty) return null;
+    return _orgFromRow(rows.first);
+  }
+
+  static Future<Organization?> findOrganizationByInviteCode(String code) async {
+    final db = await database;
+    final rows = await db.query(
+      'organizations',
+      where: 'invite_code = ?',
+      whereArgs: [code.trim().toUpperCase()],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return _orgFromRow(rows.first);
+  }
+
+  static Future<void> insertOrganization(Organization org) async {
+    final db = await database;
+    await db.insert('organizations', _orgToRow(org));
+  }
+
+  static Future<void> updateOrganization(Organization org) async {
+    final db = await database;
+    await db.update('organizations', _orgToRow(org), where: 'id = ?', whereArgs: [org.id]);
+  }
+
+  static Future<void> deleteOrganization(String orgId) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      // Clear org membership from users
+      await txn.update(
+        'users',
+        {'organization_id': null, 'org_role': null},
+        where: 'organization_id = ?',
+        whereArgs: [orgId],
+      );
+      await txn.delete('organization_members', where: 'organization_id = ?', whereArgs: [orgId]);
+      await txn.delete('organizations', where: 'id = ?', whereArgs: [orgId]);
+    });
+  }
+
+  static Map<String, dynamic> _orgToRow(Organization o) => {
+        'id': o.id,
+        'name': o.name,
+        'owner_id': o.ownerId,
+        'invite_code': o.inviteCode,
+        'created_at': o.createdAt.toIso8601String(),
+      };
+
+  static Organization _orgFromRow(Map<String, dynamic> row) => Organization(
+        id: row['id'] as String,
+        name: row['name'] as String,
+        ownerId: row['owner_id'] as String,
+        inviteCode: row['invite_code'] as String,
+        createdAt: DateTime.parse(row['created_at'] as String),
+      );
+
+  // =====================================================================
+  // ORGANIZATION MEMBERS
+  // =====================================================================
+
+  /// Load all members of [orgId] with their denormalized user info.
+  static Future<List<OrgMember>> getMembersForOrganization(String orgId) async {
+    final db = await database;
+    final memberRows = await db.query(
+      'organization_members',
+      where: 'organization_id = ?',
+      whereArgs: [orgId],
+      orderBy: 'joined_at ASC',
+    );
+
+    final members = <OrgMember>[];
+    for (final row in memberRows) {
+      final userId = row['user_id'] as String;
+      final user = await findUserById(userId);
+      if (user == null) continue;
+
+      final contactRows = await db.query(
+        'contacts',
+        columns: ['COUNT(*) as cnt'],
+        where: 'owner_id = ?',
+        whereArgs: [userId],
+      );
+      final contactCount = (contactRows.first['cnt'] as int?) ?? 0;
+
+      members.add(OrgMember(
+        id: row['id'] as String,
+        organizationId: orgId,
+        userId: userId,
+        role: row['role'] as String? ?? 'member',
+        status: row['status'] as String? ?? 'active',
+        joinedAt: DateTime.parse(row['joined_at'] as String),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        photoPath: user.photoPath,
+        contactCount: contactCount,
+      ));
+    }
+    return members;
+  }
+
+  static Future<void> insertOrgMember({
+    required String id,
+    required String orgId,
+    required String userId,
+    required String role,
+  }) async {
+    final db = await database;
+    await db.insert(
+      'organization_members',
+      {
+        'id': id,
+        'organization_id': orgId,
+        'user_id': userId,
+        'role': role,
+        'status': 'active',
+        'joined_at': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  static Future<void> removeOrgMember(String orgId, String userId) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete(
+        'organization_members',
+        where: 'organization_id = ? AND user_id = ?',
+        whereArgs: [orgId, userId],
+      );
+      await txn.update(
+        'users',
+        {'organization_id': null, 'org_role': null},
+        where: 'id = ?',
+        whereArgs: [userId],
+      );
+    });
+  }
+
+  static Future<bool> isUserInOrganization(String orgId, String userId) async {
+    final db = await database;
+    final rows = await db.query(
+      'organization_members',
+      where: 'organization_id = ? AND user_id = ?',
+      whereArgs: [orgId, userId],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
   }
 
   // =====================================================================

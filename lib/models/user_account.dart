@@ -1,3 +1,6 @@
+// Sentinel used in copyWith to distinguish "not provided" from explicit null.
+const _sentinel = Object();
+
 /// User account stored in the local SQLite database.
 ///
 /// Sensitive fields (email, names, phone) are persisted in encrypted
@@ -21,6 +24,8 @@ class UserAccount {
   final DateTime passwordChangedAt;
   final String? photoPath; // local file path to profile photo
   final bool emailVerified; // whether email has been verified
+  final String? organizationId; // org this user belongs to (null = no org)
+  final String? orgRole; // 'admin' | 'member' | null
 
   UserAccount({
     required this.id,
@@ -40,6 +45,8 @@ class UserAccount {
     DateTime? passwordChangedAt,
     this.photoPath,
     this.emailVerified = false,
+    this.organizationId,
+    this.orgRole,
   })  : createdAt = createdAt ?? DateTime.now(),
         passwordChangedAt = passwordChangedAt ?? DateTime.now();
 
@@ -63,6 +70,8 @@ class UserAccount {
     DateTime? passwordChangedAt,
     String? photoPath,
     bool? emailVerified,
+    Object? organizationId = _sentinel,
+    Object? orgRole = _sentinel,
   }) {
     return UserAccount(
       id: id ?? this.id,
@@ -82,6 +91,10 @@ class UserAccount {
       passwordChangedAt: passwordChangedAt ?? this.passwordChangedAt,
       photoPath: photoPath ?? this.photoPath,
       emailVerified: emailVerified ?? this.emailVerified,
+      organizationId: identical(organizationId, _sentinel)
+          ? this.organizationId
+          : organizationId as String?,
+      orgRole: identical(orgRole, _sentinel) ? this.orgRole : orgRole as String?,
     );
   }
 }

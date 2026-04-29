@@ -545,6 +545,72 @@ class AppL10n {
       _en ? 'INCOMPLETE PROFILE' : 'PROFIL INCOMPLET';
   String get notificationLabel => _en ? 'NOTIFICATION' : 'NOTIFICATION';
 
+  // ─── Organization ─────────────────────────────────────────────────────────
+  String get orgSectionTitle => _en ? 'Organization' : 'Organisation';
+  String get createOrgTitle => _en ? 'Create an organization' : "Créer une organisation";
+  String get createOrgDesc => _en
+      ? 'Group your team under a single account and manage members.'
+      : "Regroupez votre équipe sous un seul compte et gérez les membres.";
+  String get joinOrgTitle => _en ? 'Join an organization' : 'Rejoindre une organisation';
+  String get joinOrgDesc => _en
+      ? 'Enter the invite code provided by your administrator.'
+      : "Entrez le code d'invitation fourni par votre administrateur.";
+  String get orgName => _en ? 'ORGANIZATION NAME' : 'NOM DE L\'ORGANISATION';
+  String get orgNameHint => _en ? 'e.g. Acme Corp' : 'ex. Société Dupont';
+  String get orgNameRequired => _en ? 'Name is required' : 'Le nom est obligatoire';
+  String get orgCreated =>
+      _en ? 'Organization created successfully' : 'Organisation créée avec succès';
+  String get orgAdminMenuTitle => _en ? 'My Organization' : 'Mon organisation';
+  String get orgAdminMenuDesc =>
+      _en ? 'Manage members and settings' : 'Gérer les membres et paramètres';
+  String get orgMemberMenuDesc =>
+      _en ? 'View your organization' : 'Voir votre organisation';
+  String get createOrJoinOrg =>
+      _en ? 'Create or join an organization' : "Créer ou rejoindre une organisation";
+  String get inviteCode => _en ? 'INVITE CODE' : "CODE D'INVITATION";
+  String get inviteCodeHint => _en ? 'Enter 8-character code' : 'Code à 8 caractères';
+  String get inviteCodeLabel => _en ? 'Your invite code' : "Votre code d'invitation";
+  String get copyCode => _en ? 'Copy code' : 'Copier le code';
+  String get codeCopied => _en ? 'Code copied!' : 'Code copié !';
+  String get joinOrg => _en ? 'Join' : 'Rejoindre';
+  String get orgJoined =>
+      _en ? 'You joined the organization' : "Vous avez rejoint l'organisation";
+  String get orgMembersTitle => _en ? 'Members' : 'Membres';
+  String get orgAdminBadge => _en ? 'Admin' : 'Admin';
+  String get orgMemberBadge => _en ? 'Member' : 'Membre';
+  String get memberSince => _en ? 'Since' : 'Depuis';
+  String get removeMember => _en ? 'Remove' : 'Retirer';
+  String get removeMemberTitle => _en ? 'Remove member' : 'Retirer le membre';
+  String removeMemberConfirm(String name) => _en
+      ? 'Remove $name from the organization?'
+      : 'Retirer $name de l\'organisation ?';
+  String get leaveOrg => _en ? 'Leave organization' : "Quitter l'organisation";
+  String get leaveOrgTitle => _en ? 'Leave organization' : "Quitter l'organisation";
+  String get leaveOrgConfirm => _en
+      ? 'Are you sure you want to leave this organization?'
+      : 'Êtes-vous sûr de vouloir quitter cette organisation ?';
+  String get deleteOrg => _en ? 'Delete organization' : "Supprimer l'organisation";
+  String get deleteOrgTitle => _en ? 'Delete organization' : "Supprimer l'organisation";
+  String get deleteOrgConfirm => _en
+      ? 'This will permanently remove the organization and all memberships. Continue?'
+      : "Cela supprimera définitivement l'organisation et tous les membres. Continuer ?";
+  String get orgSettingsTitle => _en ? 'Organization settings' : "Paramètres de l'organisation";
+  String get shareInviteCode => _en ? 'Share invite code' : "Partager le code d'invitation";
+  String get inviteInfo => _en
+      ? 'Share this code so colleagues can join your organization.'
+      : 'Partagez ce code pour que vos collègues rejoignent votre organisation.';
+  String get noOrgMembers =>
+      _en ? 'No members yet' : 'Aucun membre pour le moment';
+  String orgContactsCount(int n) => _en ? '$n contact${n == 1 ? '' : 's'}' : '$n contact${n > 1 ? 's' : ''}';
+  String get orgDeletedSuccess =>
+      _en ? 'Organization deleted' : 'Organisation supprimée';
+  String get memberRemovedSuccess =>
+      _en ? 'Member removed' : 'Membre retiré';
+  String get orgLeftSuccess =>
+      _en ? 'You have left the organization' : "Vous avez quitté l'organisation";
+  String get orgNameUpdated =>
+      _en ? 'Organization name updated' : "Nom de l'organisation mis à jour";
+
   // ─── Currency helpers ─────────────────────────────────────────────────────
   // [eurToTargetRate] is the live EUR → target-currency rate (e.g. 1.08 for USD).
   // Callers that watch [eurToUsdRateProvider] should pass the live value;

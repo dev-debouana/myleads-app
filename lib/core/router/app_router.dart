@@ -23,6 +23,9 @@ import '../../screens/notifications/notifications_screen.dart';
 import '../../screens/settings/settings_screen.dart';
 import '../../screens/pricing/subscription_plan_screen.dart';
 import '../../screens/pricing/payment_history_screen.dart';
+import '../../screens/organization/create_organization_screen.dart';
+import '../../screens/organization/join_organization_screen.dart';
+import '../../screens/organization/organization_admin_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -384,6 +387,48 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => CustomTransitionPage(
         key: state.pageKey,
         child: const PaymentHistoryScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end)
+              .chain(CurveTween(curve: Curves.easeInOut));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    ),
+    GoRoute(
+      path: '/organization',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const OrganizationAdminScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end)
+              .chain(CurveTween(curve: Curves.easeInOut));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    ),
+    GoRoute(
+      path: '/organization/create',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const CreateOrganizationScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end)
+              .chain(CurveTween(curve: Curves.easeInOut));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    ),
+    GoRoute(
+      path: '/organization/join',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const JoinOrganizationScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
