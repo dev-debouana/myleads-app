@@ -33,6 +33,8 @@ class AuthState {
   final String userEmail;
   final String? userPhotoPath;
   final String? error;
+  /// Current subscription plan: 'free' | 'premium' | 'business'.
+  final String plan;
 
   const AuthState({
     this.isLoggedIn = false,
@@ -41,6 +43,7 @@ class AuthState {
     this.userEmail = '',
     this.userPhotoPath,
     this.error,
+    this.plan = 'free',
   });
 
   AuthState copyWith({
@@ -52,6 +55,7 @@ class AuthState {
     String? error,
     bool clearError = false,
     bool clearPhoto = false,
+    String? plan,
   }) {
     return AuthState(
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
@@ -60,6 +64,7 @@ class AuthState {
       userEmail: userEmail ?? this.userEmail,
       userPhotoPath: clearPhoto ? null : (userPhotoPath ?? this.userPhotoPath),
       error: clearError ? null : (error ?? this.error),
+      plan: plan ?? this.plan,
     );
   }
 }
@@ -71,6 +76,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           userName: StorageService.userName,
           userEmail: StorageService.userEmail,
           userPhotoPath: StorageService.currentUser?.photoPath,
+          plan: StorageService.currentUser?.plan ?? 'free',
         ));
 
   // ---------------- Email login ----------------
@@ -136,6 +142,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isLoading: false,
       userName: updated.fullName,
       userEmail: updated.email,
+      plan: updated.plan,
       clearError: true,
     );
     return true;
@@ -329,9 +336,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isLoading: false,
       userName: user.fullName,
       userEmail: user.email,
+      plan: user.plan,
       clearError: true,
     );
     return true;
+  }
+
+  // ---------------- Plan management ----------------
+
+  /// Switches the current user's subscription plan, persists it to the database,
+  /// and updates the in-memory session so every Riverpod listener is notified.
+  ///
+  /// Returns `null` on success, or an error string on failure.
+  Future<String?> changePlan(String plan) async {
+    final user = StorageService.currentUser;
+    if (user == null) return 'Aucun utilisateur connecté';
+    if (!['free', 'premium', 'business'].contains(plan)) {
+      return 'Forfait invalide';
+    }
+    final updated = user.copyWith(plan: plan);
+    await DatabaseService.updateUser(updated);
+    await StorageService.setCurrentSession(updated, user.sessionToken ?? '');
+    state = state.copyWith(plan: plan);
+    return null;
   }
 
   // ---------------- Logout ----------------

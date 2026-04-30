@@ -26,6 +26,7 @@ class UserAccount {
   final bool emailVerified; // whether email has been verified
   final String? organizationId; // org this user belongs to (null = no org)
   final String? orgRole; // 'admin' | 'member' | null
+  final String plan; // 'free' | 'premium' | 'business'
 
   UserAccount({
     required this.id,
@@ -47,6 +48,7 @@ class UserAccount {
     this.emailVerified = false,
     this.organizationId,
     this.orgRole,
+    this.plan = 'free',
   })  : createdAt = createdAt ?? DateTime.now(),
         passwordChangedAt = passwordChangedAt ?? DateTime.now();
 
@@ -72,6 +74,7 @@ class UserAccount {
     bool? emailVerified,
     Object? organizationId = _sentinel,
     Object? orgRole = _sentinel,
+    String? plan,
   }) {
     return UserAccount(
       id: id ?? this.id,
@@ -95,6 +98,7 @@ class UserAccount {
           ? this.organizationId
           : organizationId as String?,
       orgRole: identical(orgRole, _sentinel) ? this.orgRole : orgRole as String?,
+      plan: plan ?? this.plan,
     );
   }
 }

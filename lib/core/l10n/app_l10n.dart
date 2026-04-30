@@ -492,6 +492,10 @@ class AppL10n {
       : 'Paiement sécurisé. Annulation à tout moment.';
   String get comingSoon => _en ? ' plan coming soon!' : ' bientôt disponible !';
   String get freeLabel => _en ? 'Free' : 'Gratuit';
+  String get planChangedSuccess =>
+      _en ? 'Plan updated successfully' : 'Forfait mis à jour avec succès';
+  String get planChangeError =>
+      _en ? 'Error changing plan' : 'Erreur lors du changement de forfait';
 
   // ─── Payment History ─────────────────────────────────────────────────────
   String get paymentHistoryTitle =>

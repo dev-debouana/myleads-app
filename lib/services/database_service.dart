@@ -27,7 +27,7 @@ import 'web_db_factory_stub.dart'
 class DatabaseService {
   static Database? _db;
   static const _dbName = 'myleads.db';
-  static const _dbVersion = 8;
+  static const _dbVersion = 9;
 
   static Future<Database> get database async {
     _db ??= await _initDb();
@@ -160,6 +160,10 @@ class DatabaseService {
       // Ensure admins (role='admin') get can_edit=1 retrospectively
       try { await db.execute("UPDATE organization_members SET can_edit = 1, can_create = 1 WHERE role = 'admin'"); } catch (_) {}
     }
+    if (oldVersion < 9) {
+      // v8 → v9: subscription plan stored on the user row
+      try { await db.execute("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'free'"); } catch (_) {}
+    }
   }
 
   static Future<void> _onCreate(Database db, int version) async {
@@ -187,7 +191,8 @@ class DatabaseService {
         photo_path TEXT,
         email_verified INTEGER NOT NULL DEFAULT 0,
         organization_id TEXT,
-        org_role TEXT
+        org_role TEXT,
+        plan TEXT NOT NULL DEFAULT 'free'
       )
     ''');
 
@@ -445,6 +450,7 @@ class DatabaseService {
         'email_verified': u.emailVerified ? 1 : 0,
         'organization_id': u.organizationId,
         'org_role': u.orgRole,
+        'plan': u.plan,
       };
 
   static UserAccount _userFromRow(Map<String, dynamic> row) {
@@ -483,6 +489,7 @@ class DatabaseService {
       emailVerified: (row['email_verified'] as int?) == 1,
       organizationId: row['organization_id'] as String?,
       orgRole: row['org_role'] as String?,
+      plan: row['plan'] as String? ?? 'free',
     );
   }
 

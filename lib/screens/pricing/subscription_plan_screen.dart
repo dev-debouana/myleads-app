@@ -3,17 +3,42 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/currency_provider.dart';
 import '../../providers/settings_provider.dart';
 
-class SubscriptionPlanScreen extends ConsumerWidget {
+class SubscriptionPlanScreen extends ConsumerStatefulWidget {
   const SubscriptionPlanScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SubscriptionPlanScreen> createState() =>
+      _SubscriptionPlanScreenState();
+}
+
+class _SubscriptionPlanScreenState
+    extends ConsumerState<SubscriptionPlanScreen> {
+  String? _loadingPlan;
+
+  Future<void> _selectPlan(String planId) async {
+    setState(() => _loadingPlan = planId);
+    final err = await ref.read(authProvider.notifier).changePlan(planId);
+    if (!mounted) return;
+    setState(() => _loadingPlan = null);
+    final l10n = ref.read(l10nProvider);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(err == null ? l10n.planChangedSuccess : l10n.planChangeError),
+        backgroundColor: err == null ? AppColors.success : AppColors.error,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = ref.watch(l10nProvider);
     final currency = ref.watch(settingsProvider).currency;
     final eurToUsd = ref.watch(eurToUsdRateProvider);
+    final currentPlan = ref.watch(authProvider).plan;
 
     return Scaffold(
       backgroundColor: AppColors.bg(context),
@@ -87,7 +112,11 @@ class SubscriptionPlanScreen extends ConsumerWidget {
                     description: l10n.freePlanDesc,
                     features: _freeFeatures(l10n),
                     isPopular: false,
-                    isCurrent: true,
+                    isCurrent: currentPlan == 'free',
+                    isLoading: _loadingPlan == 'free',
+                    onSelect: currentPlan == 'free'
+                        ? null
+                        : () => _selectPlan('free'),
                     l10n: l10n,
                   ),
                   const SizedBox(height: 16),
@@ -100,6 +129,11 @@ class SubscriptionPlanScreen extends ConsumerWidget {
                     description: l10n.premiumPlanDesc,
                     features: _premiumFeatures(l10n),
                     isPopular: true,
+                    isCurrent: currentPlan == 'premium',
+                    isLoading: _loadingPlan == 'premium',
+                    onSelect: currentPlan == 'premium'
+                        ? null
+                        : () => _selectPlan('premium'),
                     l10n: l10n,
                   ),
                   const SizedBox(height: 16),
@@ -112,6 +146,11 @@ class SubscriptionPlanScreen extends ConsumerWidget {
                     description: l10n.businessPlanDesc,
                     features: _businessFeatures(l10n),
                     isPopular: false,
+                    isCurrent: currentPlan == 'business',
+                    isLoading: _loadingPlan == 'business',
+                    onSelect: currentPlan == 'business'
+                        ? null
+                        : () => _selectPlan('business'),
                     l10n: l10n,
                   ),
 
@@ -256,6 +295,8 @@ class _PlanCard extends StatelessWidget {
   final List<String> features;
   final bool isPopular;
   final bool isCurrent;
+  final bool isLoading;
+  final VoidCallback? onSelect;
   final AppL10n l10n;
 
   const _PlanCard({
@@ -267,6 +308,8 @@ class _PlanCard extends StatelessWidget {
     required this.l10n,
     this.period,
     this.isCurrent = false,
+    this.isLoading = false,
+    this.onSelect,
   });
 
   @override
@@ -423,14 +466,7 @@ class _PlanCard extends StatelessWidget {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('$title${l10n.comingSoon}'),
-                      backgroundColor: AppColors.primary,
-                    ),
-                  );
-                },
+                onPressed: isLoading ? null : onSelect,
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       isPopular ? AppColors.accent : AppColors.primary,
@@ -440,13 +476,22 @@ class _PlanCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  '${l10n.choosePlanCta} $title',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: isLoading
+                    ? SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: isPopular ? AppColors.primary : Colors.white,
+                        ),
+                      )
+                    : Text(
+                        '${l10n.choosePlanCta} $title',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
             ),
           ],

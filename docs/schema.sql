@@ -1,5 +1,5 @@
 -- ============================================================
--- myleads.db  —  SQLite schema v8
+-- myleads.db  —  SQLite schema v9
 -- Generated from lib/services/database_service.dart
 -- ============================================================
 
@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS users (
   photo_path           TEXT,
   email_verified       INTEGER NOT NULL DEFAULT 0, -- 0=false, 1=true
   organization_id      TEXT,                       -- FK → organizations.id (nullable)
-  org_role             TEXT                        -- 'admin' | 'member' | NULL
+  org_role             TEXT,                       -- 'admin' | 'member' | NULL
+  plan                 TEXT NOT NULL DEFAULT 'free' -- 'free' | 'premium' | 'business'
 );
 
 -- ============================================================

@@ -70,9 +70,12 @@ class StorageService {
     await _secure.write(key: _kHasOnboarded, value: value.toString());
   }
 
-  static Future<String> get userPlan async =>
-      (await _secure.read(key: _kUserPlan)) ?? 'free';
+  /// Current user's subscription plan, read directly from the cached user row.
+  /// Falls back to 'free' when no session is active.
+  static String get userPlan => _cachedUser?.plan ?? 'free';
 
+  /// Kept for backwards-compatibility. Plan changes should go through
+  /// [AuthNotifier.changePlan], which persists to the database.
   static Future<void> setUserPlan(String plan) async {
     await _secure.write(key: _kUserPlan, value: plan);
   }
