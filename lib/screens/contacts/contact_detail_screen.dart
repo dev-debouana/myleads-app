@@ -12,7 +12,9 @@ import '../../models/contact.dart';
 import '../../models/interaction.dart';
 import '../../models/reminder.dart';
 import '../../providers/contacts_provider.dart';
+import '../../providers/organization_provider.dart';
 import '../../services/contact_actions.dart';
+import '../../services/storage_service.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../providers/reminders_provider.dart';
 import '../reminders/reminder_detail_screen.dart';
@@ -73,6 +75,11 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
         ? Color(int.parse(contact.avatarColor!))
         : AppColors.primary;
 
+    final currentUser = StorageService.currentUser;
+    final isOwner = currentUser != null && contact.ownerId == currentUser.id;
+    final canEditOthers = ref.watch(orgCanEditOthersProvider);
+    final canEdit = isOwner || canEditOthers;
+
     return Scaffold(
       backgroundColor: AppColors.bg(context),
       body: SingleChildScrollView(
@@ -112,7 +119,7 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
                         ),
                         const Spacer(),
                         GestureDetector(
-                          onTap: () => _showActionsSheet(context, contact),
+                          onTap: () => _showActionsSheet(context, contact, canEdit: canEdit),
                           child: Container(
                             width: 40,
                             height: 40,
@@ -232,48 +239,49 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
               ),
             ),
 
-            // Edit / Delete row
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () =>
-                          context.push('/contact/${contact.id}/edit'),
-                      icon: const Icon(Icons.edit_outlined, size: 18),
-                      label: Text(l10n.editButton),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: const BorderSide(
-                            color: AppColors.primary, width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+            // Edit / Delete row — hidden when user lacks edit privilege
+            if (canEdit)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () =>
+                            context.push('/contact/${contact.id}/edit'),
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        label: Text(l10n.editButton),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(
+                              color: AppColors.primary, width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => _confirmDelete(context, contact),
-                      icon: const Icon(Icons.delete_outline, size: 18),
-                      label: Text(l10n.deleteButton),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.hot,
-                        side:
-                            const BorderSide(color: AppColors.hot, width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _confirmDelete(contact),
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        label: Text(l10n.deleteButton),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.hot,
+                          side: const BorderSide(
+                              color: AppColors.hot, width: 1.5),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
             // Information Section
             _buildSection(
@@ -756,7 +764,7 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
     );
   }
 
-  void _showActionsSheet(BuildContext context, Contact contact) {
+  void _showActionsSheet(BuildContext context, Contact contact, {required bool canEdit}) {
     final l10n = ref.read(l10nProvider);
     showModalBottomSheet(
       context: context,
@@ -777,14 +785,15 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.edit, color: AppColors.primary),
-              title: Text(l10n.editButton),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/contact/${contact.id}/edit');
-              },
-            ),
+            if (canEdit)
+              ListTile(
+                leading: const Icon(Icons.edit, color: AppColors.primary),
+                title: Text(l10n.editButton),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/contact/${contact.id}/edit');
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.share, color: AppColors.primary),
               title: Text(l10n.shareButton),
@@ -793,15 +802,16 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
                 ContactActions.share(context, contact);
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.delete, color: AppColors.hot),
-              title: Text(l10n.deleteButton,
-                  style: const TextStyle(color: AppColors.hot)),
-              onTap: () {
-                Navigator.pop(ctx);
-                _confirmDelete(context, contact);
-              },
-            ),
+            if (canEdit)
+              ListTile(
+                leading: const Icon(Icons.delete, color: AppColors.hot),
+                title: Text(l10n.deleteButton,
+                    style: const TextStyle(color: AppColors.hot)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _confirmDelete(contact);
+                },
+              ),
             SizedBox(height: MediaQuery.of(ctx).padding.bottom),
           ],
         ),
@@ -809,8 +819,10 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, Contact contact) async {
+  Future<void> _confirmDelete(Contact contact) async {
     final l10n = ref.read(l10nProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
@@ -873,8 +885,13 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
     );
 
     if (confirmed == true && mounted) {
-      await ref.read(contactsProvider.notifier).deleteContact(contact.id);
-      if (mounted) context.pop();
+      final err = await ref.read(contactsProvider.notifier).deleteContact(contact.id);
+      if (!mounted) return;
+      if (err != null) {
+        messenger.showSnackBar(SnackBar(content: Text(err))); // pre-captured
+      } else {
+        router.pop(); // pre-captured
+      }
     }
   }
 }

@@ -8,6 +8,7 @@ import '../../core/constants/app_strings.dart';
 import '../../core/l10n/app_l10n.dart';
 import '../../models/contact.dart';
 import '../../providers/contacts_provider.dart';
+import '../../providers/organization_provider.dart';
 import '../../services/contact_actions.dart';
 
 class ContactsScreen extends ConsumerWidget {
@@ -18,6 +19,7 @@ class ContactsScreen extends ConsumerWidget {
     final l10n = ref.watch(l10nProvider);
     final state = ref.watch(contactsProvider);
     final contacts = state.filteredContacts;
+    final canCreate = ref.watch(orgCanCreateProvider);
 
     return Scaffold(
       backgroundColor: AppColors.bg(context),
@@ -53,19 +55,20 @@ class ContactsScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () => context.push('/contact/new'),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(12),
+                    if (canCreate)
+                      GestureDetector(
+                        onTap: () => context.push('/contact/new'),
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.add,
+                              color: Colors.white, size: 22),
                         ),
-                        child: const Icon(Icons.add,
-                            color: Colors.white, size: 22),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 16),

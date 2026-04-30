@@ -180,6 +180,31 @@ class _OrganizationAdminScreenState
     }
   }
 
+  Future<void> _updatePrivileges(OrgMember member,
+      {required bool canEdit, required bool canCreate}) async {
+    final l10n = ref.read(l10nProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    final err = await ref.read(organizationProvider.notifier).updateMemberPrivileges(
+      userId: member.userId,
+      canEdit: canEdit,
+      canCreate: canCreate,
+    );
+    if (!mounted) return;
+    if (err != null) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(err), backgroundColor: AppColors.hot),
+      );
+    } else {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.privilegeUpdated),
+          backgroundColor: AppColors.success,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   Future<void> _showRenameDialog(BuildContext context, Organization org) async {
     final l10n = ref.read(l10nProvider);
     final ctrl = TextEditingController(text: org.name);
@@ -407,6 +432,12 @@ class _OrganizationAdminScreenState
                   onRemove: isAdmin && m.userId != currentUserId
                       ? () => _confirmRemoveMember(context, m)
                       : null,
+                  onToggleEdit: isAdmin && m.role != 'admin'
+                      ? (val) => _updatePrivileges(m, canEdit: val, canCreate: m.canCreate)
+                      : null,
+                  onToggleCreate: isAdmin && m.role != 'admin'
+                      ? (val) => _updatePrivileges(m, canEdit: m.canEdit, canCreate: val)
+                      : null,
                 )),
 
           const SizedBox(height: 24),
@@ -455,6 +486,8 @@ class _MemberCard extends StatelessWidget {
     required this.isAdmin,
     required this.l10n,
     this.onRemove,
+    this.onToggleEdit,
+    this.onToggleCreate,
   });
 
   final OrgMember member;
@@ -462,6 +495,8 @@ class _MemberCard extends StatelessWidget {
   final bool isAdmin;
   final AppL10n l10n;
   final VoidCallback? onRemove;
+  final void Function(bool)? onToggleEdit;
+  final void Function(bool)? onToggleCreate;
 
   String _initials(String name) {
     final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
@@ -556,6 +591,23 @@ class _MemberCard extends StatelessWidget {
                     style:
                         TextStyle(fontSize: 11, color: AppColors.hint(context)),
                   ),
+                  // Privilege toggles — only shown to admin for non-admin members
+                  if (onToggleEdit != null || onToggleCreate != null) ...[
+                    const SizedBox(height: 10),
+                    Divider(
+                        height: 1, color: AppColors.borderColor(context)),
+                    const SizedBox(height: 8),
+                    _PrivilegeToggle(
+                      label: l10n.editPrivilege,
+                      value: member.canEdit,
+                      onChanged: onToggleEdit,
+                    ),
+                    _PrivilegeToggle(
+                      label: l10n.createPrivilege,
+                      value: member.canCreate,
+                      onChanged: onToggleCreate,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -605,6 +657,38 @@ class _RoleBadge extends StatelessWidget {
           letterSpacing: 0.5,
         ),
       ),
+    );
+  }
+}
+
+class _PrivilegeToggle extends StatelessWidget {
+  const _PrivilegeToggle({
+    required this.label,
+    required this.value,
+    this.onChanged,
+  });
+
+  final String label;
+  final bool value;
+  final void Function(bool)? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 12, color: AppColors.secondary(context)),
+          ),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeThumbColor: AppColors.primary,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ],
     );
   }
 }

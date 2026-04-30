@@ -114,8 +114,15 @@ class ContactsNotifier extends StateNotifier<ContactsState> {
       state = state.copyWith(contacts: [], isLoading: false);
       return;
     }
-    final contacts = await StorageService.getAllContacts();
-    if (contacts.isEmpty) {
+    final user = StorageService.currentUser;
+    List<Contact> contacts;
+    if (user?.organizationId != null) {
+      // Org member: load contacts from all active members of the org.
+      contacts = await DatabaseService.getAllContactsForOrganization(user!.organizationId!);
+    } else {
+      contacts = await StorageService.getAllContacts();
+    }
+    if (contacts.isEmpty && user?.organizationId == null) {
       await _seedDemoData();
     } else {
       state = state.copyWith(contacts: contacts, isLoading: false);
@@ -304,15 +311,23 @@ class ContactsNotifier extends StateNotifier<ContactsState> {
   // ============== CRUD ==============
 
   Future<ContactResult> addContact(Contact contact) async {
+    final user = StorageService.currentUser;
     final ownerId = _ownerId;
     if (ownerId.isEmpty) {
       return const ContactResult.failure('Vous devez être connecté');
     }
 
-    final newContact = contact.copyWith(
-      id: _uuid.v4(),
-      ownerId: ownerId,
+    // Privilege check: can this user create contacts?
+    final canCreate = await DatabaseService.canUserCreateContact(
+      userId: ownerId,
+      orgId: user?.organizationId,
     );
+    if (!canCreate) {
+      return const ContactResult.failure(
+          "Vous n'avez pas les droits pour créer des contacts");
+    }
+
+    final newContact = contact.copyWith(id: _uuid.v4(), ownerId: ownerId);
 
     final validationErr = _validateContact(newContact);
     if (validationErr != null) return ContactResult.failure(validationErr);
@@ -342,17 +357,30 @@ class ContactsNotifier extends StateNotifier<ContactsState> {
   }
 
   Future<ContactResult> updateContact(Contact contact) async {
+    final user = StorageService.currentUser;
     final ownerId = _ownerId;
     if (ownerId.isEmpty) {
       return const ContactResult.failure('Vous devez être connecté');
     }
 
-    final updated = contact.copyWith(ownerId: ownerId);
+    // Privilege check: owner can always edit their own; org admin / can_edit can edit others'.
+    final canEdit = await DatabaseService.canUserEditContact(
+      userId: ownerId,
+      orgId: user?.organizationId,
+      contactOwnerId: contact.ownerId,
+    );
+    if (!canEdit) {
+      return const ContactResult.failure(
+          "Vous n'avez pas les droits pour modifier ce contact");
+    }
+
+    // Preserve the contact's original ownerId — never change ownership on edit.
+    final updated = contact;
     final validationErr = _validateContact(updated);
     if (validationErr != null) return ContactResult.failure(validationErr);
 
     final conflict = await DatabaseService.findContactConflict(
-      ownerId: ownerId,
+      ownerId: contact.ownerId, // use original owner for conflict scope
       phone: updated.phone,
       email: updated.email,
       excludeId: updated.id,
@@ -360,7 +388,7 @@ class ContactsNotifier extends StateNotifier<ContactsState> {
     if (conflict != null) return ContactResult.failure(conflict);
 
     final identical = await DatabaseService.hasIdenticalContact(
-      ownerId: ownerId,
+      ownerId: contact.ownerId, // scope to original owner
       firstName: updated.firstName,
       lastName: updated.lastName,
       phone: updated.phone,
@@ -372,9 +400,7 @@ class ContactsNotifier extends StateNotifier<ContactsState> {
           'Un contact identique (même nom et coordonnées) existe déjà');
     }
 
-    // Capture previous version BEFORE the write so we can log a diff
-    // into the interaction history (doc v7). lastContactDate changes
-    // on every logged call/sms/email so we ignore it.
+    // Capture previous version for diff/audit logging.
     Contact? previous;
     try {
       previous = state.contacts.firstWhere((c) => c.id == updated.id);
@@ -397,9 +423,7 @@ class ContactsNotifier extends StateNotifier<ContactsState> {
             type: 'edit',
             content: 'Contact modifié: ${diff.join(' · ')}',
           ));
-        } catch (_) {
-          // Best-effort — never block the update on audit logging.
-        }
+        } catch (_) {}
       }
     }
 
@@ -434,11 +458,32 @@ class ContactsNotifier extends StateNotifier<ContactsState> {
     return out;
   }
 
-  Future<void> deleteContact(String id) async {
+  Future<String?> deleteContact(String id) async {
+    final user = StorageService.currentUser;
+    final ownerId = _ownerId;
+
+    // Find the contact to check ownership.
+    Contact? target;
+    try {
+      target = state.contacts.firstWhere((c) => c.id == id);
+    } catch (_) {}
+
+    if (target != null) {
+      final canEdit = await DatabaseService.canUserEditContact(
+        userId: ownerId,
+        orgId: user?.organizationId,
+        contactOwnerId: target.ownerId,
+      );
+      if (!canEdit) {
+        return "Vous n'avez pas les droits pour supprimer ce contact";
+      }
+    }
+
     await DatabaseService.deleteContact(id);
     state = state.copyWith(
       contacts: state.contacts.where((c) => c.id != id).toList(),
     );
+    return null;
   }
 
   Future<void> addInteraction(Interaction interaction) async {

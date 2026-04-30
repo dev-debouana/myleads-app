@@ -14,12 +14,17 @@ class OrgState {
   final List<OrgMember> members;
   final bool isLoading;
   final String? error;
+  // Current user's privileges (populated in loadForCurrentUser).
+  final bool currentUserCanEdit;   // can edit any org member's contacts
+  final bool currentUserCanCreate; // can create new contacts
 
   const OrgState({
     this.organization,
     this.members = const [],
     this.isLoading = false,
     this.error,
+    this.currentUserCanEdit = true,
+    this.currentUserCanCreate = true,
   });
 
   OrgState copyWith({
@@ -27,6 +32,8 @@ class OrgState {
     List<OrgMember>? members,
     bool? isLoading,
     String? error,
+    bool? currentUserCanEdit,
+    bool? currentUserCanCreate,
     bool clearError = false,
     bool clearOrg = false,
   }) {
@@ -35,6 +42,8 @@ class OrgState {
       members: members ?? this.members,
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
+      currentUserCanEdit: currentUserCanEdit ?? this.currentUserCanEdit,
+      currentUserCanCreate: currentUserCanCreate ?? this.currentUserCanCreate,
     );
   }
 }
@@ -42,7 +51,7 @@ class OrgState {
 class OrgNotifier extends StateNotifier<OrgState> {
   OrgNotifier() : super(const OrgState());
 
-  /// Load org data for the current user (call on app start / profile open).
+  /// Load org data + current user's privileges. Call on app start / profile open.
   Future<void> loadForCurrentUser() async {
     final user = StorageService.currentUser;
     if (user == null || user.organizationId == null) {
@@ -57,46 +66,96 @@ class OrgNotifier extends StateNotifier<OrgState> {
         return;
       }
       final members = await DatabaseService.getMembersForOrganization(org.id);
-      state = state.copyWith(isLoading: false, organization: org, members: members);
+      final privs = await DatabaseService.getMemberPrivileges(
+        userId: user.id,
+        orgId: org.id,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        organization: org,
+        members: members,
+        currentUserCanEdit: privs.canEdit,
+        currentUserCanCreate: privs.canCreate,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
-  /// Reload members (useful after invite/remove).
+  /// Reload members list and refresh current user privileges.
   Future<void> refreshMembers() async {
     final org = state.organization;
     if (org == null) return;
     try {
       final members = await DatabaseService.getMembersForOrganization(org.id);
-      state = state.copyWith(members: members);
+      final user = StorageService.currentUser;
+      if (user != null) {
+        final privs = await DatabaseService.getMemberPrivileges(
+          userId: user.id,
+          orgId: org.id,
+        );
+        state = state.copyWith(
+          members: members,
+          currentUserCanEdit: privs.canEdit,
+          currentUserCanCreate: privs.canCreate,
+        );
+      } else {
+        state = state.copyWith(members: members);
+      }
     } catch (_) {}
   }
 
+  /// Admin updates the edit/create privileges for a member.
+  Future<String?> updateMemberPrivileges({
+    required String userId,
+    required bool canEdit,
+    required bool canCreate,
+  }) async {
+    final user = StorageService.currentUser;
+    if (user == null) return 'Aucun utilisateur connecté';
+    if (user.orgRole != 'admin') return "Action réservée à l'administrateur";
+    final org = state.organization;
+    if (org == null) return 'Aucune organisation';
+    // Cannot change admin privileges.
+    final target = state.members.firstWhere(
+      (m) => m.userId == userId,
+      orElse: () => throw Exception('Membre introuvable'),
+    );
+    if (target.role == 'admin') return "Les droits de l'administrateur ne peuvent pas être modifiés";
+
+    try {
+      await DatabaseService.updateMemberPrivileges(
+        orgId: org.id,
+        userId: userId,
+        canEdit: canEdit,
+        canCreate: canCreate,
+      );
+      // Refresh members so UI reflects the change.
+      await refreshMembers();
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   /// Create a new organization with the current user as admin.
-  /// Returns null on success, error string on failure.
   Future<String?> createOrganization(String name) async {
     final user = StorageService.currentUser;
     if (user == null) return 'Aucun utilisateur connecté';
-    if (name.trim().isEmpty) return 'Le nom de l\'organisation est obligatoire';
-    if (user.organizationId != null) {
-      return 'Vous appartenez déjà à une organisation';
-    }
+    if (name.trim().isEmpty) return "Le nom de l'organisation est obligatoire";
+    if (user.organizationId != null) return 'Vous appartenez déjà à une organisation';
 
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final orgId = _uuid.v4();
-      final inviteCode = _generateInviteCode();
       final org = Organization(
         id: orgId,
         name: name.trim(),
         ownerId: user.id,
-        inviteCode: inviteCode,
+        inviteCode: _generateInviteCode(),
       );
 
       await DatabaseService.insertOrganization(org);
-
-      // Add admin as first member
       await DatabaseService.insertOrgMember(
         id: _uuid.v4(),
         orgId: orgId,
@@ -104,13 +163,18 @@ class OrgNotifier extends StateNotifier<OrgState> {
         role: 'admin',
       );
 
-      // Update user record
       final updated = user.copyWith(organizationId: orgId, orgRole: 'admin');
       await DatabaseService.updateUser(updated);
       await StorageService.setCurrentSession(updated, user.sessionToken ?? '');
 
       final members = await DatabaseService.getMembersForOrganization(orgId);
-      state = state.copyWith(isLoading: false, organization: org, members: members);
+      state = state.copyWith(
+        isLoading: false,
+        organization: org,
+        members: members,
+        currentUserCanEdit: true,
+        currentUserCanCreate: true,
+      );
       return null;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -119,14 +183,11 @@ class OrgNotifier extends StateNotifier<OrgState> {
   }
 
   /// Join an existing organization via its invite code.
-  /// Returns null on success, error string on failure.
   Future<String?> joinByCode(String code) async {
     final user = StorageService.currentUser;
     if (user == null) return 'Aucun utilisateur connecté';
-    if (code.trim().isEmpty) return 'Le code d\'invitation est obligatoire';
-    if (user.organizationId != null) {
-      return 'Vous appartenez déjà à une organisation';
-    }
+    if (code.trim().isEmpty) return "Le code d'invitation est obligatoire";
+    if (user.organizationId != null) return 'Vous appartenez déjà à une organisation';
 
     state = state.copyWith(isLoading: true, clearError: true);
     try {
@@ -136,8 +197,7 @@ class OrgNotifier extends StateNotifier<OrgState> {
         return 'Code invalide ou organisation introuvable';
       }
 
-      final alreadyIn = await DatabaseService.isUserInOrganization(org.id, user.id);
-      if (alreadyIn) {
+      if (await DatabaseService.isUserInOrganization(org.id, user.id)) {
         state = state.copyWith(isLoading: false, error: 'Vous êtes déjà membre de cette organisation');
         return 'Vous êtes déjà membre de cette organisation';
       }
@@ -154,7 +214,14 @@ class OrgNotifier extends StateNotifier<OrgState> {
       await StorageService.setCurrentSession(updated, user.sessionToken ?? '');
 
       final members = await DatabaseService.getMembersForOrganization(org.id);
-      state = state.copyWith(isLoading: false, organization: org, members: members);
+      final privs = await DatabaseService.getMemberPrivileges(userId: user.id, orgId: org.id);
+      state = state.copyWith(
+        isLoading: false,
+        organization: org,
+        members: members,
+        currentUserCanEdit: privs.canEdit,
+        currentUserCanCreate: privs.canCreate,
+      );
       return null;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -162,14 +229,14 @@ class OrgNotifier extends StateNotifier<OrgState> {
     }
   }
 
-  /// Admin removes a member (cannot remove self — use leaveOrganization).
+  /// Admin removes a member (cannot remove self).
   Future<String?> removeMember(String targetUserId) async {
     final user = StorageService.currentUser;
     if (user == null) return 'Aucun utilisateur connecté';
-    if (user.orgRole != 'admin') return 'Action réservée à l\'administrateur';
+    if (user.orgRole != 'admin') return "Action réservée à l'administrateur";
     final org = state.organization;
     if (org == null) return 'Aucune organisation';
-    if (targetUserId == user.id) return 'Utilisez "Quitter l\'organisation" pour vous retirer';
+    if (targetUserId == user.id) return "Utilisez \"Quitter l'organisation\" pour vous retirer";
 
     try {
       await DatabaseService.removeOrgMember(org.id, targetUserId);
@@ -180,8 +247,7 @@ class OrgNotifier extends StateNotifier<OrgState> {
     }
   }
 
-  /// Current user leaves the organization. Admin must transfer ownership first
-  /// (or delete the org if they are the last member).
+  /// Current user leaves the organization.
   Future<String?> leaveOrganization() async {
     final user = StorageService.currentUser;
     if (user == null) return 'Aucun utilisateur connecté';
@@ -197,8 +263,11 @@ class OrgNotifier extends StateNotifier<OrgState> {
       }
 
       if (isLastAdmin && state.members.length <= 1) {
-        // Admin leaves + last member → delete org
         await DatabaseService.deleteOrganization(org.id);
+        final refreshed = await DatabaseService.findUserById(user.id);
+        if (refreshed != null) {
+          await StorageService.setCurrentSession(refreshed, refreshed.sessionToken ?? '');
+        }
       } else {
         await DatabaseService.removeOrgMember(org.id, user.id);
         final updated = user.copyWith(organizationId: null, orgRole: null);
@@ -213,25 +282,21 @@ class OrgNotifier extends StateNotifier<OrgState> {
     }
   }
 
-  /// Admin deletes the entire organization (removes all members).
+  /// Admin deletes the entire organization.
   Future<String?> deleteOrganization() async {
     final user = StorageService.currentUser;
     if (user == null) return 'Aucun utilisateur connecté';
-    if (user.orgRole != 'admin') return 'Action réservée à l\'administrateur';
+    if (user.orgRole != 'admin') return "Action réservée à l'administrateur";
     final org = state.organization;
     if (org == null) return 'Aucune organisation';
 
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       await DatabaseService.deleteOrganization(org.id);
-
-      // The deleteOrganization method already clears org fields on all users
-      // in the DB; refresh the current user's in-memory session.
       final refreshed = await DatabaseService.findUserById(user.id);
       if (refreshed != null) {
         await StorageService.setCurrentSession(refreshed, refreshed.sessionToken ?? '');
       }
-
       state = const OrgState();
       return null;
     } catch (e) {
@@ -244,7 +309,7 @@ class OrgNotifier extends StateNotifier<OrgState> {
   Future<String?> updateOrgName(String newName) async {
     final user = StorageService.currentUser;
     if (user == null) return 'Aucun utilisateur connecté';
-    if (user.orgRole != 'admin') return 'Action réservée à l\'administrateur';
+    if (user.orgRole != 'admin') return "Action réservée à l'administrateur";
     if (newName.trim().isEmpty) return 'Le nom est obligatoire';
     final org = state.organization;
     if (org == null) return 'Aucune organisation';
@@ -268,4 +333,17 @@ class OrgNotifier extends StateNotifier<OrgState> {
 
 final organizationProvider = StateNotifierProvider<OrgNotifier, OrgState>((ref) {
   return OrgNotifier();
+});
+
+/// Derived privilege providers — cheap to watch in the UI.
+final orgCanCreateProvider = Provider<bool>((ref) {
+  final user = StorageService.currentUser;
+  if (user?.organizationId == null) return true; // solo user: always can create
+  return ref.watch(organizationProvider).currentUserCanCreate;
+});
+
+final orgCanEditOthersProvider = Provider<bool>((ref) {
+  final user = StorageService.currentUser;
+  if (user?.organizationId == null) return false; // solo: no "others" to edit
+  return ref.watch(organizationProvider).currentUserCanEdit;
 });

@@ -27,7 +27,7 @@ import 'web_db_factory_stub.dart'
 class DatabaseService {
   static Database? _db;
   static const _dbName = 'myleads.db';
-  static const _dbVersion = 7;
+  static const _dbVersion = 8;
 
   static Future<Database> get database async {
     _db ??= await _initDb();
@@ -152,6 +152,13 @@ class DatabaseService {
           'CREATE INDEX IF NOT EXISTS idx_org_members_org ON organization_members(organization_id)');
       await db.execute(
           'CREATE INDEX IF NOT EXISTS idx_org_members_user ON organization_members(user_id)');
+    }
+    if (oldVersion < 8) {
+      // v7 → v8: per-member access privileges on org contacts
+      try { await db.execute('ALTER TABLE organization_members ADD COLUMN can_edit INTEGER NOT NULL DEFAULT 0'); } catch (_) {}
+      try { await db.execute('ALTER TABLE organization_members ADD COLUMN can_create INTEGER NOT NULL DEFAULT 1'); } catch (_) {}
+      // Ensure admins (role='admin') get can_edit=1 retrospectively
+      try { await db.execute("UPDATE organization_members SET can_edit = 1, can_create = 1 WHERE role = 'admin'"); } catch (_) {}
     }
   }
 
@@ -316,6 +323,8 @@ class DatabaseService {
         role TEXT NOT NULL DEFAULT 'member',
         status TEXT NOT NULL DEFAULT 'active',
         joined_at TEXT NOT NULL,
+        can_edit INTEGER NOT NULL DEFAULT 0,
+        can_create INTEGER NOT NULL DEFAULT 1,
         FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         UNIQUE (organization_id, user_id)
@@ -1095,11 +1104,13 @@ class DatabaseService {
       );
       final contactCount = (contactRows.first['cnt'] as int?) ?? 0;
 
+      final role = row['role'] as String? ?? 'member';
+      final isAdmin = role == 'admin';
       members.add(OrgMember(
         id: row['id'] as String,
         organizationId: orgId,
         userId: userId,
-        role: row['role'] as String? ?? 'member',
+        role: role,
         status: row['status'] as String? ?? 'active',
         joinedAt: DateTime.parse(row['joined_at'] as String),
         firstName: user.firstName,
@@ -1107,6 +1118,8 @@ class DatabaseService {
         email: user.email,
         photoPath: user.photoPath,
         contactCount: contactCount,
+        canEdit: isAdmin || (row['can_edit'] as int? ?? 0) == 1,
+        canCreate: isAdmin || (row['can_create'] as int? ?? 1) == 1,
       ));
     }
     return members;
@@ -1119,6 +1132,7 @@ class DatabaseService {
     required String role,
   }) async {
     final db = await database;
+    final isAdmin = role == 'admin';
     await db.insert(
       'organization_members',
       {
@@ -1128,6 +1142,8 @@ class DatabaseService {
         'role': role,
         'status': 'active',
         'joined_at': DateTime.now().toIso8601String(),
+        'can_edit': isAdmin ? 1 : 0,
+        'can_create': 1,
       },
       conflictAlgorithm: ConflictAlgorithm.ignore,
     );
@@ -1159,6 +1175,107 @@ class DatabaseService {
       limit: 1,
     );
     return rows.isNotEmpty;
+  }
+
+  /// Update the edit/create privileges for a single member.
+  static Future<void> updateMemberPrivileges({
+    required String orgId,
+    required String userId,
+    required bool canEdit,
+    required bool canCreate,
+  }) async {
+    final db = await database;
+    await db.update(
+      'organization_members',
+      {'can_edit': canEdit ? 1 : 0, 'can_create': canCreate ? 1 : 0},
+      where: 'organization_id = ? AND user_id = ?',
+      whereArgs: [orgId, userId],
+    );
+  }
+
+  /// Load all contacts owned by any active member of [orgId].
+  static Future<List<Contact>> getAllContactsForOrganization(String orgId) async {
+    final db = await database;
+    final memberRows = await db.query(
+      'organization_members',
+      columns: ['user_id'],
+      where: "organization_id = ? AND status = 'active'",
+      whereArgs: [orgId],
+    );
+    if (memberRows.isEmpty) return [];
+    final ids = memberRows.map((r) => r['user_id'] as String).toList();
+    final placeholders = ids.map((_) => '?').join(', ');
+    final rows = await db.rawQuery(
+      'SELECT * FROM contacts WHERE owner_id IN ($placeholders) ORDER BY created_at DESC',
+      ids,
+    );
+    return rows.map(_contactFromRow).toList();
+  }
+
+  /// Returns true when [userId] is allowed to edit/delete a contact owned by
+  /// [contactOwnerId] within [orgId]. Pass [orgId] as null for solo accounts.
+  static Future<bool> canUserEditContact({
+    required String userId,
+    required String? orgId,
+    required String contactOwnerId,
+  }) async {
+    if (userId == contactOwnerId) return true; // always own your own contacts
+    if (orgId == null) return false; // not in an org → can't touch others'
+    final db = await database;
+    final rows = await db.query(
+      'organization_members',
+      columns: ['role', 'can_edit'],
+      where: 'organization_id = ? AND user_id = ?',
+      whereArgs: [orgId, userId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return false;
+    final role = rows.first['role'] as String? ?? 'member';
+    if (role == 'admin') return true;
+    return (rows.first['can_edit'] as int? ?? 0) == 1;
+  }
+
+  /// Returns true when [userId] is allowed to create a new contact.
+  /// Solo users (no org) can always create. Org members need can_create=1.
+  static Future<bool> canUserCreateContact({
+    required String userId,
+    required String? orgId,
+  }) async {
+    if (orgId == null) return true;
+    final db = await database;
+    final rows = await db.query(
+      'organization_members',
+      columns: ['role', 'can_create'],
+      where: 'organization_id = ? AND user_id = ?',
+      whereArgs: [orgId, userId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return true; // not found → treat as solo
+    final role = rows.first['role'] as String? ?? 'member';
+    if (role == 'admin') return true;
+    return (rows.first['can_create'] as int? ?? 1) == 1;
+  }
+
+  /// Convenience: fetch the privilege row for the current user in their org.
+  /// Returns {canEdit, canCreate} or defaults when not in an org.
+  static Future<({bool canEdit, bool canCreate})> getMemberPrivileges({
+    required String userId,
+    required String? orgId,
+  }) async {
+    if (orgId == null) return (canEdit: true, canCreate: true);
+    final db = await database;
+    final rows = await db.query(
+      'organization_members',
+      columns: ['role', 'can_edit', 'can_create'],
+      where: 'organization_id = ? AND user_id = ?',
+      whereArgs: [orgId, userId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return (canEdit: true, canCreate: true);
+    final isAdmin = (rows.first['role'] as String?) == 'admin';
+    final canEdit = isAdmin || (rows.first['can_edit'] as int? ?? 0) == 1;
+    final canCreate = isAdmin || (rows.first['can_create'] as int? ?? 1) == 1;
+    return (canEdit: canEdit, canCreate: canCreate);
   }
 
   // =====================================================================

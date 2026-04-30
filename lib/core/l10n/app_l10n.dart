@@ -613,6 +613,17 @@ class AppL10n {
       _en ? 'You have left the organization' : "Vous avez quitté l'organisation";
   String get orgNameUpdated =>
       _en ? 'Organization name updated' : "Nom de l'organisation mis à jour";
+  String get noEditPermission =>
+      _en ? 'You do not have permission to edit this contact' : "Vous n'avez pas la permission de modifier ce contact";
+  String get noCreatePermission =>
+      _en ? 'You do not have permission to create contacts' : "Vous n'avez pas la permission de créer des contacts";
+  String get editPrivilege =>
+      _en ? 'Can edit contacts' : 'Peut modifier les contacts';
+  String get createPrivilege =>
+      _en ? 'Can create contacts' : 'Peut créer des contacts';
+  String get privilegeUpdated =>
+      _en ? 'Privileges updated' : 'Privilèges mis à jour';
+  String get privileges => _en ? 'Privileges' : 'Privilèges';
 
   // ─── Currency helpers ─────────────────────────────────────────────────────
   // [eurToTargetRate] is the live EUR → target-currency rate (e.g. 1.08 for USD).

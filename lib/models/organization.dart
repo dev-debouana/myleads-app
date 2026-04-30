@@ -45,6 +45,8 @@ class OrgMember {
   final String email;
   final String? photoPath;
   final int contactCount;
+  final bool canEdit;   // may edit any org contact (admin always true)
+  final bool canCreate; // may create new contacts (admin always true)
 
   OrgMember({
     required this.id,
@@ -58,6 +60,8 @@ class OrgMember {
     required this.email,
     this.photoPath,
     this.contactCount = 0,
+    this.canEdit = false,
+    this.canCreate = true,
   }) : joinedAt = joinedAt ?? DateTime.now();
 
   String get fullName => '$firstName $lastName'.trim();
@@ -74,6 +78,8 @@ class OrgMember {
     String? email,
     String? photoPath,
     int? contactCount,
+    bool? canEdit,
+    bool? canCreate,
   }) {
     return OrgMember(
       id: id ?? this.id,
@@ -87,6 +93,8 @@ class OrgMember {
       email: email ?? this.email,
       photoPath: photoPath ?? this.photoPath,
       contactCount: contactCount ?? this.contactCount,
+      canEdit: canEdit ?? this.canEdit,
+      canCreate: canCreate ?? this.canCreate,
     );
   }
 }
