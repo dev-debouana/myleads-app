@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -134,39 +134,39 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
     await _captureCard();
   }
 
-  /// Captures the current camera frame, runs OCR, and navigates to review.
-  ///
-  /// Uses [MobileScannerController.captureImage] (available in 5.2+) to
-  /// grab a JPEG frame from the live preview, writes it to a temp file,
-  /// and passes the path to the OCR pipeline — no external camera app.
+  /// Captures a photo via the device camera, runs OCR, and navigates to review.
   Future<void> _captureCard() async {
     try {
-      Uint8List? bytes;
-      if (!kIsWeb && _cameraController != null) {
-        bytes = await _cameraController!.captureImage();
-      }
-
-      if (!mounted) return;
-
       Map<String, String> ocrData = {};
 
-      if (bytes != null && !kIsWeb) {
-        _showDetectionToast();
-        try {
-          final tmpDir = await getTemporaryDirectory();
-          final tmpPath = p.join(
-            tmpDir.path,
-            'card_scan_${DateTime.now().millisecondsSinceEpoch}.jpg',
-          );
-          await File(tmpPath).writeAsBytes(bytes, flush: true);
+      if (!kIsWeb) {
+        final picker = ImagePicker();
+        final XFile? photo = await picker.pickImage(
+          source: ImageSource.camera,
+          preferredCameraDevice: CameraDevice.rear,
+        );
 
-          final rawText = await ocr_service.recognizeTextFromFile(tmpPath);
-          if (rawText.isNotEmpty) {
-            ocrData = OcrParser.parse(rawText);
-            ocrData['photoPath'] = tmpPath;
+        if (!mounted) return;
+
+        if (photo != null) {
+          _showDetectionToast();
+          try {
+            final tmpDir = await getTemporaryDirectory();
+            final tmpPath = p.join(
+              tmpDir.path,
+              'card_scan_${DateTime.now().millisecondsSinceEpoch}.jpg',
+            );
+            final bytes = await photo.readAsBytes();
+            await File(tmpPath).writeAsBytes(bytes, flush: true);
+
+            final rawText = await ocr_service.recognizeTextFromFile(tmpPath);
+            if (rawText.isNotEmpty) {
+              ocrData = OcrParser.parse(rawText);
+              ocrData['photoPath'] = tmpPath;
+            }
+          } catch (_) {
+            // OCR failed — proceed with empty data.
           }
-        } catch (_) {
-          // OCR failed — proceed with empty data.
         }
       }
 
@@ -260,7 +260,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
             MobileScanner(
               controller: _cameraController!,
               onDetect: _onDetect,
-              errorBuilder: (context, error, child) {
+              errorBuilder: (context, error) {
                 return Center(
                   child: Text(
                     l10n.cameraUnavailable,
