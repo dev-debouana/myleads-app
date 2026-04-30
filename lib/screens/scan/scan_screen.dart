@@ -1,9 +1,13 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
@@ -31,8 +35,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
   late AnimationController _scanLineController;
   late Animation<double> _scanLineAnimation;
 
-  MobileScannerController? _qrController;
-  final ImagePicker _imagePicker = ImagePicker();
+  MobileScannerController? _cameraController;
 
   // ----------------------------------------------------------
   // Lifecycle
@@ -50,40 +53,43 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
     _scanLineAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _scanLineController, curve: Curves.easeInOut),
     );
+
+    // Start camera immediately so card/QR views are never black on first load.
+    _initCameraController();
   }
 
   @override
   void dispose() {
     _scanLineController.dispose();
-    _disposeQrController();
+    _disposeCameraController();
     super.dispose();
   }
 
   // ----------------------------------------------------------
-  // QR controller helpers
+  // Camera controller helpers
   // ----------------------------------------------------------
 
-  void _initQrController() {
-    _disposeQrController();
+  void _initCameraController() {
+    _disposeCameraController();
     try {
-      _qrController = MobileScannerController(
+      _cameraController = MobileScannerController(
         detectionSpeed: DetectionSpeed.normal,
         facing: CameraFacing.back,
         torchEnabled: _flashOn,
       );
     } catch (_) {
       // Camera unavailable (simulator / permissions denied).
-      _qrController = null;
+      _cameraController = null;
     }
   }
 
-  void _disposeQrController() {
+  void _disposeCameraController() {
     try {
-      _qrController?.dispose();
+      _cameraController?.dispose();
     } catch (_) {
       // Ignore disposal errors.
     }
-    _qrController = null;
+    _cameraController = null;
   }
 
   // ----------------------------------------------------------
@@ -92,15 +98,19 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
 
   void _switchMode(ScanMode mode) {
     if (mode == _mode) return;
+
+    // NFC needs no camera; card and QR both need the live preview.
+    if (mode == ScanMode.nfc) {
+      _disposeCameraController();
+    } else if (_cameraController == null) {
+      // Returning from NFC — restart the camera before rebuilding.
+      _initCameraController();
+    }
+
     setState(() {
       _mode = mode;
       _flashOn = false;
     });
-    if (mode == ScanMode.qr) {
-      _initQrController();
-    } else {
-      _disposeQrController();
-    }
   }
 
   // ----------------------------------------------------------
@@ -109,11 +119,9 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
 
   void _toggleFlash() {
     setState(() => _flashOn = !_flashOn);
-    if (_mode == ScanMode.qr) {
-      try {
-        _qrController?.toggleTorch();
-      } catch (_) {}
-    }
+    try {
+      _cameraController?.toggleTorch();
+    } catch (_) {}
   }
 
   // ----------------------------------------------------------
@@ -123,52 +131,46 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
   Future<void> _onCapture() async {
     if (_isCapturing) return;
     setState(() => _isCapturing = true);
-
-    switch (_mode) {
-      case ScanMode.card:
-        await _captureCard();
-        break;
-      case ScanMode.qr:
-        // QR detection happens automatically via the scanner callback.
-        // Pressing capture in QR mode acts as a manual fallback (same as card).
-        await _captureCard();
-        break;
-      case ScanMode.nfc:
-        // NFC reading would be triggered separately; treat capture as card scan.
-        await _captureCard();
-        break;
-    }
+    await _captureCard();
   }
 
+  /// Captures the current camera frame, runs OCR, and navigates to review.
+  ///
+  /// Uses [MobileScannerController.captureImage] (available in 5.2+) to
+  /// grab a JPEG frame from the live preview, writes it to a temp file,
+  /// and passes the path to the OCR pipeline — no external camera app.
   Future<void> _captureCard() async {
     try {
-      final photo = await _imagePicker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 90,
-        preferredCameraDevice: CameraDevice.rear,
-      );
+      Uint8List? bytes;
+      if (!kIsWeb && _cameraController != null) {
+        bytes = await _cameraController!.captureImage();
+      }
 
       if (!mounted) return;
 
-      if (photo != null) {
+      Map<String, String> ocrData = {};
+
+      if (bytes != null && !kIsWeb) {
         _showDetectionToast();
+        try {
+          final tmpDir = await getTemporaryDirectory();
+          final tmpPath = p.join(
+            tmpDir.path,
+            'card_scan_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          );
+          await File(tmpPath).writeAsBytes(bytes, flush: true);
 
-        // Run OCR on the captured image (mobile only)
-        Map<String, String> ocrData = {};
-        if (!kIsWeb) {
-          try {
-            final rawText = await ocr_service.recognizeTextFromFile(photo.path);
-            if (rawText.isNotEmpty) {
-              ocrData = OcrParser.parse(rawText);
-              ocrData['photoPath'] = photo.path;
-            }
-          } catch (_) {
-            // OCR failed — proceed with empty data
+          final rawText = await ocr_service.recognizeTextFromFile(tmpPath);
+          if (rawText.isNotEmpty) {
+            ocrData = OcrParser.parse(rawText);
+            ocrData['photoPath'] = tmpPath;
           }
+        } catch (_) {
+          // OCR failed — proceed with empty data.
         }
-
-        if (mounted) context.push('/review', extra: ocrData);
       }
+
+      if (mounted) context.push('/review', extra: ocrData);
     } catch (_) {
       if (!mounted) return;
       _showDetectionToast();
@@ -179,6 +181,16 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
     }
   }
 
+  /// Unified detect callback used by [MobileScanner] in all modes.
+  ///
+  /// In card mode, barcode detections are silently ignored so they do not
+  /// hijack the OCR flow. In QR mode, detections are forwarded to
+  /// [_onQrDetected].
+  void _onDetect(BarcodeCapture capture) {
+    if (_mode != ScanMode.qr) return;
+    _onQrDetected(capture);
+  }
+
   void _onQrDetected(BarcodeCapture capture) {
     if (_isCapturing) return;
     final barcodes = capture.barcodes;
@@ -187,7 +199,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
     setState(() => _isCapturing = true);
     _showDetectionToast();
 
-    // Parse QR/barcode data — could be vCard or plain text
+    // Parse QR/barcode data — could be vCard or plain text.
     final raw = barcodes.first.rawValue ?? '';
     final ocrData = raw.isNotEmpty ? OcrParser.parse(raw) : <String, String>{};
 
@@ -243,11 +255,11 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Camera preview (QR mode only)
-          if (_mode == ScanMode.qr && _qrController != null)
+          // Live camera preview — active in card and QR modes.
+          if (_mode != ScanMode.nfc && _cameraController != null)
             MobileScanner(
-              controller: _qrController!,
-              onDetect: _onQrDetected,
+              controller: _cameraController!,
+              onDetect: _onDetect,
               errorBuilder: (context, error, child) {
                 return Center(
                   child: Text(
@@ -258,8 +270,8 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
               },
             ),
 
-          // Dark overlay for non-QR modes
-          if (_mode != ScanMode.qr)
+          // Solid black background for NFC mode (no camera needed).
+          if (_mode == ScanMode.nfc)
             Container(color: Colors.black),
 
           // Top bar
@@ -644,4 +656,3 @@ class _CornerBracketPainter extends CustomPainter {
       oldDelegate.strokeWidth != strokeWidth ||
       oldDelegate.radius != radius;
 }
-
