@@ -195,9 +195,17 @@ class _OrganizationAdminScreenState
       builder: (_) => _MemberManagementSheet(
         member: member,
         onToggleEdit: (val) => _updatePrivileges(member,
-            canEdit: val, canCreate: member.canCreate),
+            canEdit: val,
+            canCreate: member.canCreate,
+            canViewReminders: member.canViewReminders),
         onToggleCreate: (val) => _updatePrivileges(member,
-            canEdit: member.canEdit, canCreate: val),
+            canEdit: member.canEdit,
+            canCreate: val,
+            canViewReminders: member.canViewReminders),
+        onToggleViewReminders: (val) => _updatePrivileges(member,
+            canEdit: member.canEdit,
+            canCreate: member.canCreate,
+            canViewReminders: val),
         onSuspend: member.status == 'active'
             ? () => _doSuspend(member)
             : () => _doReactivate(member),
@@ -207,7 +215,9 @@ class _OrganizationAdminScreenState
   }
 
   Future<void> _updatePrivileges(OrgMember member,
-      {required bool canEdit, required bool canCreate}) async {
+      {required bool canEdit,
+      required bool canCreate,
+      required bool canViewReminders}) async {
     final l10n = ref.read(l10nProvider);
     final err = await ref
         .read(organizationProvider.notifier)
@@ -215,6 +225,7 @@ class _OrganizationAdminScreenState
           userId: member.userId,
           canEdit: canEdit,
           canCreate: canCreate,
+          canViewReminders: canViewReminders,
         );
     if (!mounted) return;
     if (err != null) {
@@ -835,6 +846,7 @@ class _MemberManagementSheet extends ConsumerWidget {
     required this.member,
     required this.onToggleEdit,
     required this.onToggleCreate,
+    required this.onToggleViewReminders,
     required this.onSuspend,
     required this.onRemove,
   });
@@ -842,6 +854,7 @@ class _MemberManagementSheet extends ConsumerWidget {
   final OrgMember member;
   final void Function(bool) onToggleEdit;
   final void Function(bool) onToggleCreate;
+  final void Function(bool) onToggleViewReminders;
   final VoidCallback onSuspend;
   final VoidCallback onRemove;
 
@@ -934,6 +947,11 @@ class _MemberManagementSheet extends ConsumerWidget {
               label: l10n.createPrivilege,
               value: live.canCreate,
               onChanged: onToggleCreate,
+            ),
+            _PrivilegeRow(
+              label: l10n.viewRemindersPrivilege,
+              value: live.canViewReminders,
+              onChanged: onToggleViewReminders,
             ),
 
             const SizedBox(height: 12),

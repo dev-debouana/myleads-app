@@ -71,9 +71,23 @@ class RemindersNotifier extends StateNotifier<RemindersState> {
   }
 
   Future<void> _load() async {
-    final ownerId = StorageService.currentUserId;
-    if (ownerId.isEmpty) return;
-    final list = await DatabaseService.getAllRemindersForOwner(ownerId);
+    final user = StorageService.currentUser;
+    if (user == null || user.id.isEmpty) return;
+    final orgId = user.organizationId;
+    final List<Reminder> list;
+    if (orgId != null) {
+      final privs = await DatabaseService.getMemberPrivileges(
+        userId: user.id,
+        orgId: orgId,
+      );
+      list = await DatabaseService.getRemindersForOrgUser(
+        userId: user.id,
+        orgId: orgId,
+        canViewReminders: privs.canViewReminders,
+      );
+    } else {
+      list = await DatabaseService.getAllRemindersForOwner(user.id);
+    }
     state = state.copyWith(reminders: list);
   }
 

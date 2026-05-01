@@ -27,7 +27,7 @@ import 'web_db_factory_stub.dart'
 class DatabaseService {
   static Database? _db;
   static const _dbName = 'myleads.db';
-  static const _dbVersion = 9;
+  static const _dbVersion = 10;
 
   static Future<Database> get database async {
     _db ??= await _initDb();
@@ -163,6 +163,12 @@ class DatabaseService {
     if (oldVersion < 9) {
       // v8 → v9: subscription plan stored on the user row
       try { await db.execute("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'free'"); } catch (_) {}
+    }
+    if (oldVersion < 10) {
+      // v9 → v10: per-member permission to view shared-contact reminders
+      try { await db.execute('ALTER TABLE organization_members ADD COLUMN can_view_reminders INTEGER NOT NULL DEFAULT 0'); } catch (_) {}
+      // Admins can view all reminders by default
+      try { await db.execute("UPDATE organization_members SET can_view_reminders = 1 WHERE role = 'admin'"); } catch (_) {}
     }
   }
 
@@ -1127,6 +1133,7 @@ class DatabaseService {
         contactCount: contactCount,
         canEdit: isAdmin || (row['can_edit'] as int? ?? 0) == 1,
         canCreate: isAdmin || (row['can_create'] as int? ?? 1) == 1,
+        canViewReminders: isAdmin || (row['can_view_reminders'] as int? ?? 0) == 1,
       ));
     }
     return members;
@@ -1151,6 +1158,7 @@ class DatabaseService {
         'joined_at': DateTime.now().toIso8601String(),
         'can_edit': isAdmin ? 1 : 0,
         'can_create': 1,
+        'can_view_reminders': isAdmin ? 1 : 0,
       },
       conflictAlgorithm: ConflictAlgorithm.ignore,
     );
@@ -1184,17 +1192,22 @@ class DatabaseService {
     return rows.isNotEmpty;
   }
 
-  /// Update the edit/create privileges for a single member.
+  /// Update the edit/create/view-reminders privileges for a single member.
   static Future<void> updateMemberPrivileges({
     required String orgId,
     required String userId,
     required bool canEdit,
     required bool canCreate,
+    required bool canViewReminders,
   }) async {
     final db = await database;
     await db.update(
       'organization_members',
-      {'can_edit': canEdit ? 1 : 0, 'can_create': canCreate ? 1 : 0},
+      {
+        'can_edit': canEdit ? 1 : 0,
+        'can_create': canCreate ? 1 : 0,
+        'can_view_reminders': canViewReminders ? 1 : 0,
+      },
       where: 'organization_id = ? AND user_id = ?',
       whereArgs: [orgId, userId],
     );
@@ -1219,15 +1232,19 @@ class DatabaseService {
     return rows.map(_contactFromRow).toList();
   }
 
-  /// Returns true when [userId] is allowed to edit/delete a contact owned by
-  /// [contactOwnerId] within [orgId]. Pass [orgId] as null for solo accounts.
+  /// Returns true when [userId] is allowed to edit/delete [contactOwnerId]'s
+  /// contact. Solo users can only touch their own contacts. Org admins always
+  /// can. Org members need can_edit=1 — even for contacts they own themselves,
+  /// since the admin may revoke edit rights for the whole shared workspace.
   static Future<bool> canUserEditContact({
     required String userId,
     required String? orgId,
     required String contactOwnerId,
   }) async {
-    if (userId == contactOwnerId) return true; // always own your own contacts
-    if (orgId == null) return false; // not in an org → can't touch others'
+    if (orgId == null) {
+      // Solo account — can only edit their own contacts.
+      return userId == contactOwnerId;
+    }
     final db = await database;
     final rows = await db.query(
       'organization_members',
@@ -1238,7 +1255,7 @@ class DatabaseService {
     );
     if (rows.isEmpty) return false;
     final role = rows.first['role'] as String? ?? 'member';
-    if (role == 'admin') return true;
+    if (role == 'admin') return true; // admins are never restricted
     return (rows.first['can_edit'] as int? ?? 0) == 1;
   }
 
@@ -1263,26 +1280,60 @@ class DatabaseService {
     return (rows.first['can_create'] as int? ?? 1) == 1;
   }
 
-  /// Convenience: fetch the privilege row for the current user in their org.
-  /// Returns {canEdit, canCreate} or defaults when not in an org.
-  static Future<({bool canEdit, bool canCreate})> getMemberPrivileges({
+  /// Convenience: fetch all privilege flags for the current user in their org.
+  /// Returns defaults (full access) when not in an org.
+  static Future<({bool canEdit, bool canCreate, bool canViewReminders})>
+      getMemberPrivileges({
     required String userId,
     required String? orgId,
   }) async {
-    if (orgId == null) return (canEdit: true, canCreate: true);
+    if (orgId == null) {
+      return (canEdit: true, canCreate: true, canViewReminders: true);
+    }
     final db = await database;
     final rows = await db.query(
       'organization_members',
-      columns: ['role', 'can_edit', 'can_create'],
+      columns: ['role', 'can_edit', 'can_create', 'can_view_reminders'],
       where: 'organization_id = ? AND user_id = ?',
       whereArgs: [orgId, userId],
       limit: 1,
     );
-    if (rows.isEmpty) return (canEdit: true, canCreate: true);
+    if (rows.isEmpty) {
+      return (canEdit: true, canCreate: true, canViewReminders: true);
+    }
     final isAdmin = (rows.first['role'] as String?) == 'admin';
     final canEdit = isAdmin || (rows.first['can_edit'] as int? ?? 0) == 1;
     final canCreate = isAdmin || (rows.first['can_create'] as int? ?? 1) == 1;
-    return (canEdit: canEdit, canCreate: canCreate);
+    final canViewReminders =
+        isAdmin || (rows.first['can_view_reminders'] as int? ?? 0) == 1;
+    return (canEdit: canEdit, canCreate: canCreate, canViewReminders: canViewReminders);
+  }
+
+  /// Load reminders visible to [userId] within [orgId].
+  /// With [canViewReminders]=true the user sees reminders owned by any active
+  /// org member; otherwise only their own reminders are returned.
+  static Future<List<Reminder>> getRemindersForOrgUser({
+    required String userId,
+    required String orgId,
+    required bool canViewReminders,
+  }) async {
+    if (!canViewReminders) return getAllRemindersForOwner(userId);
+    final db = await database;
+    final memberRows = await db.query(
+      'organization_members',
+      columns: ['user_id'],
+      where: "organization_id = ? AND status = 'active'",
+      whereArgs: [orgId],
+    );
+    if (memberRows.isEmpty) return getAllRemindersForOwner(userId);
+    final ids = memberRows.map((r) => r['user_id'] as String).toList();
+    final placeholders = ids.map((_) => '?').join(', ');
+    final rows = await db.rawQuery(
+      'SELECT * FROM reminders WHERE owner_id IN ($placeholders) '
+      'ORDER BY start_date_time ASC',
+      ids,
+    );
+    return rows.map(_reminderFromRow).toList();
   }
 
   /// Set a member's status to 'active' or 'suspended'.

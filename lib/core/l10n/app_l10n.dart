@@ -643,6 +643,8 @@ class AppL10n {
   String get privilegeUpdated =>
       _en ? 'Privileges updated' : 'Privilèges mis à jour';
   String get privileges => _en ? 'Privileges' : 'Privilèges';
+  String get viewRemindersPrivilege =>
+      _en ? 'Can view shared reminders' : 'Peut voir les rappels partagés';
   String get memberManagement => _en ? 'Manage member' : 'Gérer le membre';
   String get youLabel => _en ? '(you)' : '(vous)';
   String get suspendMember => _en ? 'Suspend' : 'Suspendre';

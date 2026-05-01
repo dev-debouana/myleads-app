@@ -45,8 +45,9 @@ class OrgMember {
   final String email;
   final String? photoPath;
   final int contactCount;
-  final bool canEdit;   // may edit any org contact (admin always true)
-  final bool canCreate; // may create new contacts (admin always true)
+  final bool canEdit;          // may edit any org contact (admin always true)
+  final bool canCreate;        // may create new contacts (admin always true)
+  final bool canViewReminders; // may view reminders on shared contacts (admin always true)
 
   OrgMember({
     required this.id,
@@ -62,6 +63,7 @@ class OrgMember {
     this.contactCount = 0,
     this.canEdit = false,
     this.canCreate = true,
+    this.canViewReminders = false,
   }) : joinedAt = joinedAt ?? DateTime.now();
 
   String get fullName => '$firstName $lastName'.trim();
@@ -80,6 +82,7 @@ class OrgMember {
     int? contactCount,
     bool? canEdit,
     bool? canCreate,
+    bool? canViewReminders,
   }) {
     return OrgMember(
       id: id ?? this.id,
@@ -95,6 +98,7 @@ class OrgMember {
       contactCount: contactCount ?? this.contactCount,
       canEdit: canEdit ?? this.canEdit,
       canCreate: canCreate ?? this.canCreate,
+      canViewReminders: canViewReminders ?? this.canViewReminders,
     );
   }
 }

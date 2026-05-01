@@ -76,9 +76,12 @@ class _ContactDetailScreenState extends ConsumerState<ContactDetailScreen> {
         : AppColors.primary;
 
     final currentUser = StorageService.currentUser;
+    final inOrg = currentUser?.organizationId != null;
     final isOwner = currentUser != null && contact.ownerId == currentUser.id;
     final canEditOthers = ref.watch(orgCanEditOthersProvider);
-    final canEdit = isOwner || canEditOthers;
+    // Org users: governed solely by the can_edit privilege (admin always true).
+    // Solo users: can only touch their own contacts.
+    final canEdit = inOrg ? canEditOthers : isOwner;
 
     return Scaffold(
       backgroundColor: AppColors.bg(context),
