@@ -1285,6 +1285,32 @@ class DatabaseService {
     return (canEdit: canEdit, canCreate: canCreate);
   }
 
+  /// Set a member's status to 'active' or 'suspended'.
+  static Future<void> updateMemberStatus({
+    required String orgId,
+    required String userId,
+    required String status,
+  }) async {
+    final db = await database;
+    await db.update(
+      'organization_members',
+      {'status': status},
+      where: 'organization_id = ? AND user_id = ?',
+      whereArgs: [orgId, userId],
+    );
+  }
+
+  /// Replace the organization's invite code.
+  static Future<void> updateOrgInviteCode(String orgId, String newCode) async {
+    final db = await database;
+    await db.update(
+      'organizations',
+      {'invite_code': newCode},
+      where: 'id = ?',
+      whereArgs: [orgId],
+    );
+  }
+
   // =====================================================================
   // Helpers
   // =====================================================================

@@ -643,6 +643,37 @@ class AppL10n {
   String get privilegeUpdated =>
       _en ? 'Privileges updated' : 'Privilèges mis à jour';
   String get privileges => _en ? 'Privileges' : 'Privilèges';
+  String get memberManagement => _en ? 'Manage member' : 'Gérer le membre';
+  String get youLabel => _en ? '(you)' : '(vous)';
+  String get suspendMember => _en ? 'Suspend' : 'Suspendre';
+  String get suspendMemberTitle => _en ? 'Suspend member' : 'Suspendre le membre';
+  String suspendMemberConfirm(String name) => _en
+      ? 'Suspend $name? They will lose access to the organisation.'
+      : 'Suspendre $name ? Il/elle perdra l\'accès à l\'organisation.';
+  String get reactivateMember => _en ? 'Reactivate' : 'Réactiver';
+  String get reactivateMemberTitle =>
+      _en ? 'Reactivate member' : 'Réactiver le membre';
+  String reactivateMemberConfirm(String name) => _en
+      ? 'Reactivate $name and restore their access?'
+      : 'Réactiver $name et rétablir son accès ?';
+  String get memberSuspendedSuccess =>
+      _en ? 'Member suspended' : 'Membre suspendu';
+  String get memberReactivatedSuccess =>
+      _en ? 'Member reactivated' : 'Membre réactivé';
+  String get suspendedBadge => _en ? 'SUSPENDED' : 'SUSPENDU';
+  String get regenerateCode => _en ? 'Regenerate code' : 'Régénérer le code';
+  String get regenerateCodeTitle =>
+      _en ? 'Regenerate invite code' : "Régénérer le code d'invitation";
+  String get regenerateCodeConfirm => _en
+      ? 'The current code will be invalidated immediately. Members who have not yet joined will need the new code.'
+      : 'Le code actuel sera invalidé immédiatement. Les membres qui n\'ont pas encore rejoint auront besoin du nouveau code.';
+  String get codeRegenerated =>
+      _en ? 'Invite code regenerated' : "Code d'invitation régénéré";
+  String get orgStatsTitle => _en ? 'Organisation' : 'Organisation';
+  String orgTotalContacts(int n) =>
+      _en ? '$n total contact${n == 1 ? '' : 's'}' : '$n contact${n > 1 ? 's' : ''} au total';
+  String orgActiveMembers(int n) =>
+      _en ? '$n active member${n == 1 ? '' : 's'}' : '$n membre${n > 1 ? 's' : ''} actif${n > 1 ? 's' : ''}';
 
   // ─── Currency helpers ─────────────────────────────────────────────────────
   // [eurToTargetRate] is the live EUR → target-currency rate (e.g. 1.08 for USD).

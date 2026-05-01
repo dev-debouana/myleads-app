@@ -305,6 +305,64 @@ class OrgNotifier extends StateNotifier<OrgState> {
     }
   }
 
+  /// Admin suspends a member (cannot suspend self or another admin).
+  Future<String?> suspendMember(String targetUserId) async {
+    final user = StorageService.currentUser;
+    if (user == null) return 'Aucun utilisateur connecté';
+    if (user.orgRole != 'admin') return "Action réservée à l'administrateur";
+    final org = state.organization;
+    if (org == null) return 'Aucune organisation';
+    if (targetUserId == user.id) return 'Vous ne pouvez pas vous suspendre vous-même';
+    final target = state.members.firstWhere(
+      (m) => m.userId == targetUserId,
+      orElse: () => throw Exception('Membre introuvable'),
+    );
+    if (target.role == 'admin') return "Impossible de suspendre un administrateur";
+    try {
+      await DatabaseService.updateMemberStatus(
+          orgId: org.id, userId: targetUserId, status: 'suspended');
+      await refreshMembers();
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  /// Admin reactivates a suspended member.
+  Future<String?> reactivateMember(String targetUserId) async {
+    final user = StorageService.currentUser;
+    if (user == null) return 'Aucun utilisateur connecté';
+    if (user.orgRole != 'admin') return "Action réservée à l'administrateur";
+    final org = state.organization;
+    if (org == null) return 'Aucune organisation';
+    try {
+      await DatabaseService.updateMemberStatus(
+          orgId: org.id, userId: targetUserId, status: 'active');
+      await refreshMembers();
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  /// Admin regenerates the organization's invite code.
+  Future<String?> regenerateInviteCode() async {
+    final user = StorageService.currentUser;
+    if (user == null) return 'Aucun utilisateur connecté';
+    if (user.orgRole != 'admin') return "Action réservée à l'administrateur";
+    final org = state.organization;
+    if (org == null) return 'Aucune organisation';
+    try {
+      final newCode = _generateInviteCode();
+      await DatabaseService.updateOrgInviteCode(org.id, newCode);
+      final updated = org.copyWith(inviteCode: newCode);
+      state = state.copyWith(organization: updated);
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   /// Update the organization name (admin only).
   Future<String?> updateOrgName(String newName) async {
     final user = StorageService.currentUser;
