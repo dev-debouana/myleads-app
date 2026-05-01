@@ -348,6 +348,39 @@ class NotificationService {
   }
 
   // -----------------------------------------------------------------------
+  // Public API — schedule both upcoming + overdue pushes for a reminder
+  // -----------------------------------------------------------------------
+
+  /// Call on every reminder create/update.
+  ///
+  /// Schedules the upcoming push (15 min before start) and — crucially —
+  /// also pre-schedules the overdue push (4 h after the deadline) so it
+  /// fires even when the app is closed. Any previously registered overdue
+  /// push is cancelled and its in-app record removed first so that a
+  /// changed deadline is always honoured.
+  static Future<void> scheduleAllReminderNotifications(Reminder reminder) async {
+    if (reminder.isCompleted) return;
+
+    // Re-schedule upcoming push (cancels stale alarm internally).
+    await scheduleReminderUpcoming(reminder);
+
+    // Reset the overdue push so an updated end-time takes effect.
+    final overdueNotifId = 'overdue_${reminder.id}';
+    if (!kIsWeb && _initialized) {
+      try {
+        await _plugin.cancel(_overduePushId(reminder.id));
+      } catch (_) {}
+    }
+    final exists = await DatabaseService.notificationExists(overdueNotifId);
+    if (exists) {
+      await DatabaseService.deleteNotification(overdueNotifId);
+    }
+
+    // Re-create (and schedule) the overdue push for the current deadline.
+    await createOverdueReminderNotification(reminder);
+  }
+
+  // -----------------------------------------------------------------------
   // Public API — cancel all scheduled pushes for a reminder
   // -----------------------------------------------------------------------
 

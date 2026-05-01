@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../models/contact.dart';
 import '../models/interaction.dart';
 import '../services/database_service.dart';
+import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 
 const _uuid = Uuid();
@@ -353,6 +354,9 @@ class ContactsNotifier extends StateNotifier<ContactsState> {
 
     await DatabaseService.insertContact(newContact);
     state = state.copyWith(contacts: [...state.contacts, newContact]);
+    if (newContact.status == 'hot' || newContact.status == 'warm') {
+      NotificationService.createIncompleteContactNotification(newContact);
+    }
     return ContactResult.success(newContact);
   }
 
@@ -411,6 +415,10 @@ class ContactsNotifier extends StateNotifier<ContactsState> {
     await DatabaseService.updateContact(updated);
     final list = state.contacts.map((c) => c.id == updated.id ? updated : c).toList();
     state = state.copyWith(contacts: list);
+
+    if (updated.status == 'hot' || updated.status == 'warm') {
+      NotificationService.createIncompleteContactNotification(updated);
+    }
 
     if (previous != null) {
       final diff = _diffContact(previous, updated);

@@ -5,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'providers/settings_provider.dart';
 import 'services/action_tracker.dart';
+import 'services/background_task.dart';
 import 'services/notification_service.dart';
 import 'services/storage_service.dart';
 
@@ -43,6 +44,12 @@ void main() async {
     await NotificationService.init();
   } catch (e, st) {
     debugPrint('NotificationService.init failed: $e\n$st');
+  }
+
+  try {
+    await initBackgroundTasks();
+  } catch (e, st) {
+    debugPrint('initBackgroundTasks failed: $e\n$st');
   }
 
   runApp(const ProviderScope(child: Me2LeadsApp()));

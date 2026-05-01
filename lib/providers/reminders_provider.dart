@@ -114,7 +114,7 @@ class RemindersNotifier extends StateNotifier<RemindersState> {
     );
     await DatabaseService.insertReminder(r);
     state = state.copyWith(reminders: [...state.reminders, r]);
-    NotificationService.scheduleReminderUpcoming(r);
+    NotificationService.scheduleAllReminderNotifications(r);
     return r;
   }
 
@@ -124,7 +124,7 @@ class RemindersNotifier extends StateNotifier<RemindersState> {
       reminders: state.reminders.map((r) => r.id == reminder.id ? reminder : r).toList(),
     );
     if (!reminder.isCompleted) {
-      NotificationService.scheduleReminderUpcoming(reminder);
+      NotificationService.scheduleAllReminderNotifications(reminder);
     }
   }
 
