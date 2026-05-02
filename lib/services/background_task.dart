@@ -50,8 +50,8 @@ Future<void> initBackgroundTasks() async {
       _kPeriodicTaskName,
       _kPeriodicTaskName,
       frequency: const Duration(hours: 1),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
-      constraints: Constraints(networkType: NetworkType.not_required),
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+      constraints: Constraints(networkType: NetworkType.notRequired),
     );
   } catch (_) {}
 }
