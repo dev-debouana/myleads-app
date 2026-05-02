@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/contact.dart';
@@ -391,26 +389,25 @@ class ReminderDetailScreen extends ConsumerWidget {
         color = AppColors.primary;
         icon = Icons.sms_rounded;
         label = l10n.sendSms;
-        action = () => _launch('sms:${contact.phone ?? ""}');
+        action = () => ContactActions.sms(context, contact);
         break;
       case 'whatsapp':
         color = const Color(0xFF25D366);
         icon = Icons.chat_rounded;
         label = l10n.openWhatsapp;
-        final phone = (contact.phone ?? '').replaceAll(RegExp(r'[^\d+]'), '');
-        action = () => _launch('https://wa.me/$phone');
+        action = () => ContactActions.whatsapp(context, contact);
         break;
       case 'email':
         color = AppColors.warm;
         icon = Icons.email_rounded;
         label = l10n.sendEmail;
-        action = () => _launch('mailto:${contact.email ?? ""}');
+        action = () => ContactActions.email(context, contact);
         break;
       default:
         color = AppColors.success;
         icon = Icons.phone_rounded;
         label = l10n.callLabel;
-        action = () => _launch('tel:${contact.phone ?? ""}');
+        action = () => ContactActions.call(context, contact);
     }
     return ElevatedButton.icon(
       onPressed: action,
@@ -424,11 +421,6 @@ class ReminderDetailScreen extends ConsumerWidget {
         elevation: 0,
       ),
     );
-  }
-
-  Future<void> _launch(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
   void _confirmDelete(
