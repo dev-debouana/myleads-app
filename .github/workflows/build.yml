@@ -32,6 +32,21 @@ jobs:
           flutter create --project-name me2leads --org com.debouana --platforms android,ios,web .
           flutter pub get
 
+      - name: Patch iOS app display name
+        run: |
+          python3 << 'PYEOF'
+          import plistlib
+
+          path = 'ios/Runner/Info.plist'
+          with open(path, 'rb') as f:
+              plist = plistlib.load(f)
+          plist['CFBundleDisplayName'] = 'Me2Leads'
+          plist['CFBundleName'] = 'Me2Leads'
+          with open(path, 'wb') as f:
+              plistlib.dump(plist, f)
+          print('ios/Runner/Info.plist patched')
+          PYEOF
+
       - name: Add ProGuard rules for ML Kit
         run: |
           # Create ProGuard rules
@@ -68,6 +83,9 @@ jobs:
           path = 'android/app/src/main/AndroidManifest.xml'
           with open(path, 'r') as f:
               content = f.read()
+
+          # Change app display label (flutter create defaults to package name)
+          content = content.replace('android:label="me2leads"', 'android:label="Me2Leads"')
 
           # Add INTERNET permission (idempotent)
           if 'android.permission.INTERNET' not in content:
