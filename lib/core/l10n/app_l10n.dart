@@ -677,6 +677,80 @@ class AppL10n {
   String orgActiveMembers(int n) =>
       _en ? '$n active member${n == 1 ? '' : 's'}' : '$n membre${n > 1 ? 's' : ''} actif${n > 1 ? 's' : ''}';
 
+  // ─── Import / Export ─────────────────────────────────────────────────────
+  String get importExportTitle => _en ? 'Import / Export' : 'Import / Export';
+  String get importExportSubtitle =>
+      _en ? 'Manage your contacts' : 'Gérez vos contacts';
+  String get importTab => _en ? 'Import' : 'Importer';
+  String get exportTab => _en ? 'Export' : 'Exporter';
+
+  String get importSection => _en ? 'Import contacts' : 'Importer des contacts';
+  String get importSectionDesc => _en
+      ? 'Load contacts from a file'
+      : 'Charger des contacts depuis un fichier';
+  String get exportSection =>
+      _en ? 'Export contacts' : 'Exporter les contacts';
+  String exportSectionDesc(int n) => _en
+      ? 'Export your $n contact${n == 1 ? '' : 's'}'
+      : 'Exporter vos $n contact${n > 1 ? 's' : ''}';
+
+  String get csvImportDesc =>
+      _en ? 'Salesforce, Odoo, SAP or generic' : 'Salesforce, Odoo, SAP ou générique';
+  String get vcardImportDesc =>
+      _en ? 'Standard vCard / contacts app' : 'vCard standard / app Contacts';
+  String get txtImportDesc =>
+      _en ? 'Me2Leads TXT format' : 'Format TXT Me2Leads';
+
+  String get vcardExportDesc =>
+      _en ? 'Universal contacts format (RFC 6350)' : 'Format contacts universel (RFC 6350)';
+  String get txtExportDesc =>
+      _en ? 'Readable plain text' : 'Texte brut lisible';
+  String csvExportDesc(String formatName) =>
+      _en ? '$formatName compatible CSV' : 'CSV compatible $formatName';
+
+  String get crmFormatLabel => _en ? 'CRM format' : 'Format CRM';
+  String get exportFormatLabel => _en ? 'File format' : 'Format de fichier';
+  String get crmFormatGeneric => _en ? 'Generic' : 'Générique';
+
+  String get importInfoBox => _en
+      ? 'Supported: CSV (Salesforce, Odoo, SAP, generic), vCard (.vcf), and Me2Leads TXT. Contacts with neither phone nor email will be skipped.'
+      : 'Formats supportés : CSV (Salesforce, Odoo, SAP, générique), vCard (.vcf) et TXT Me2Leads. Les contacts sans téléphone ni email sont ignorés.';
+  String get exportInfoBox => _en
+      ? 'Choose a CRM format for CSV to ensure compatibility. vCard and TXT are universal.'
+      : "Choisissez un format CRM pour le CSV afin d'assurer la compatibilité. vCard et TXT sont universels.";
+
+  String importSuccess(int created, int skipped) {
+    final base = _en
+        ? '$created contact${created == 1 ? '' : 's'} imported'
+        : '$created contact${created > 1 ? 's' : ''} importé${created > 1 ? 's' : ''}';
+    if (skipped == 0) return base;
+    final skip = _en
+        ? ', $skipped duplicate${skipped == 1 ? '' : 's'} skipped'
+        : ', $skipped doublon${skipped > 1 ? 's' : ''} ignoré${skipped > 1 ? 's' : ''}';
+    return '$base$skip';
+  }
+
+  String get importError => _en
+      ? 'Error reading file. Please check the format.'
+      : 'Erreur lors de la lecture. Vérifiez le format du fichier.';
+  String get importNoContacts => _en
+      ? 'No valid contacts found in the file.'
+      : 'Aucun contact valide trouvé dans le fichier.';
+  String exportSuccess(int n) => _en
+      ? 'Export ready — $n contact${n == 1 ? '' : 's'}'
+      : 'Export prêt — $n contact${n > 1 ? 's' : ''}';
+  String get exportError => _en ? 'Export failed' : "Échec de l'export";
+  String get exportNoContacts =>
+      _en ? 'No contacts to export' : 'Aucun contact à exporter';
+
+  String get importPreviewTitle =>
+      _en ? 'Import preview' : "Aperçu de l'importation";
+  String importPreviewDesc(int n) => _en
+      ? '$n contact${n == 1 ? '' : 's'} found'
+      : '$n contact${n > 1 ? 's' : ''} trouvé${n > 1 ? 's' : ''}';
+  String importPreviewMore(int n) => _en ? '+ $n more...' : '+ $n autres...';
+  String get confirmImport => _en ? 'Import' : 'Importer';
+
   // ─── Currency helpers ─────────────────────────────────────────────────────
   // [eurToTargetRate] is the live EUR → target-currency rate (e.g. 1.08 for USD).
   // Callers that watch [eurToUsdRateProvider] should pass the live value;

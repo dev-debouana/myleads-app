@@ -251,7 +251,7 @@ class ProfileScreen extends ConsumerWidget {
                     l10n.exportDesc,
                     const Color(0xFF34495E).withOpacity(0.08),
                     const Color(0xFF34495E),
-                    () {},
+                    () => context.push('/import-export'),
                   ),
                   _menuItem(
                     context,
