@@ -1,5 +1,5 @@
 -- ============================================================
--- myleads.db  —  SQLite schema v9
+-- myleads.db  —  SQLite schema v10
 -- Generated from lib/services/database_service.dart
 -- ============================================================
 
@@ -187,19 +187,20 @@ CREATE TABLE IF NOT EXISTS organizations (
 );
 
 -- ============================================================
--- ORGANIZATION MEMBERS  (v7 + v8 privileges)
--- can_edit  / can_create are per-member flags; admins always
--- get both regardless of the stored value.
+-- ORGANIZATION MEMBERS  (v7 + v8 privileges + v10 reminder access)
+-- can_edit / can_create / can_view_reminders are per-member flags;
+-- admins always get all three regardless of the stored value.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS organization_members (
-  id               TEXT PRIMARY KEY,
-  organization_id  TEXT NOT NULL,
-  user_id          TEXT NOT NULL,
-  role             TEXT NOT NULL DEFAULT 'member',  -- 'admin' | 'member'
-  status           TEXT NOT NULL DEFAULT 'active',  -- 'active' | 'inactive'
-  joined_at        TEXT NOT NULL,                   -- ISO-8601
-  can_edit         INTEGER NOT NULL DEFAULT 0,      -- 0=false, 1=true (overridden by role='admin')
-  can_create       INTEGER NOT NULL DEFAULT 1,      -- 0=false, 1=true (overridden by role='admin')
+  id                  TEXT PRIMARY KEY,
+  organization_id     TEXT NOT NULL,
+  user_id             TEXT NOT NULL,
+  role                TEXT NOT NULL DEFAULT 'member',  -- 'admin' | 'member'
+  status              TEXT NOT NULL DEFAULT 'active',  -- 'active' | 'inactive'
+  joined_at           TEXT NOT NULL,                   -- ISO-8601
+  can_edit            INTEGER NOT NULL DEFAULT 0,      -- 0=false, 1=true (overridden by role='admin')
+  can_create          INTEGER NOT NULL DEFAULT 1,      -- 0=false, 1=true (overridden by role='admin')
+  can_view_reminders  INTEGER NOT NULL DEFAULT 0,      -- 0=false, 1=true (overridden by role='admin')
   FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id)         REFERENCES users(id)         ON DELETE CASCADE,
   UNIQUE (organization_id, user_id)
