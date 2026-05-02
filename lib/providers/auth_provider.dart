@@ -372,24 +372,50 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// data that belongs to them (contacts, reminders, interactions,
   /// payment methods, photo files). Clears the session afterwards.
   ///
+  /// When the user is a non-admin org member, their contacts are transferred
+  /// to the org admin first so the org workspace is not affected.
+  /// When the user is the org admin with remaining members, deletion is
+  /// blocked — they must transfer or dissolve the org first.
+  ///
   /// Returns `null` on success, or an error string on failure.
   Future<String?> deleteAccount() async {
     final user = StorageService.currentUser;
     if (user == null) return 'Aucun utilisateur connecté';
     try {
-      // Collect photo paths before rows are erased from the DB.
       final userPhotoPath = user.photoPath;
+
+      if (user.organizationId != null) {
+        if (user.orgRole == 'admin') {
+          // Block deletion if other members still depend on this org.
+          final members = await DatabaseService.getMembersForOrganization(
+              user.organizationId!);
+          final hasOtherMembers = members.any((m) => m.userId != user.id);
+          if (hasOtherMembers) {
+            return "Supprimez ou transférez l'administration de l'organisation avant de supprimer votre compte.";
+          }
+          // Last admin and sole member — dissolve the org before erasing data.
+          await DatabaseService.deleteOrganization(user.organizationId!);
+        } else {
+          // Non-admin member: transfer their contacts to the admin so the org
+          // workspace is unaffected, then erase the account. Contact photo
+          // files are NOT deleted — they now belong to the admin's contacts.
+          await DatabaseService.transferOrgContactsToAdmin(
+              fromUserId: user.id, orgId: user.organizationId!);
+          await DatabaseService.deleteUserAndAllData(user.id);
+          await StorageService.clearSession();
+          state = const AuthState();
+          if (!kIsWeb) _deleteFileIfExists(userPhotoPath);
+          return null;
+        }
+      }
+
+      // Standard path (solo user or admin who just dissolved their org):
+      // collect contact photo paths before rows are erased.
       final List<Contact> contacts =
           await DatabaseService.getAllContactsForOwner(user.id);
-
-      // Erase all DB rows owned by this user.
       await DatabaseService.deleteUserAndAllData(user.id);
-
-      // Clear secure-storage session keys and reset auth state.
       await StorageService.clearSession();
       state = const AuthState();
-
-      // Delete photo files from device storage (best-effort, non-blocking).
       if (!kIsWeb) {
         _deleteFileIfExists(userPhotoPath);
         for (final c in contacts) {

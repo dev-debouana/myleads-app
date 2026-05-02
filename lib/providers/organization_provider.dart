@@ -248,6 +248,10 @@ class OrgNotifier extends StateNotifier<OrgState> {
     if (targetUserId == user.id) return "Utilisez \"Quitter l'organisation\" pour vous retirer";
 
     try {
+      // Transfer the member's contacts to the admin before removal so they
+      // remain visible in the org workspace.
+      await DatabaseService.transferOrgContactsToAdmin(
+          fromUserId: targetUserId, orgId: org.id);
       await DatabaseService.removeOrgMember(org.id, targetUserId);
       await refreshMembers();
       return null;
@@ -278,6 +282,10 @@ class OrgNotifier extends StateNotifier<OrgState> {
           await StorageService.setCurrentSession(refreshed, refreshed.sessionToken ?? '');
         }
       } else {
+        // Transfer contacts to admin before leaving so they remain visible
+        // in the org workspace after this member departs.
+        await DatabaseService.transferOrgContactsToAdmin(
+            fromUserId: user.id, orgId: org.id);
         await DatabaseService.removeOrgMember(org.id, user.id);
         final updated = user.copyWith(organizationId: null, orgRole: null);
         await DatabaseService.updateUser(updated);
@@ -328,6 +336,11 @@ class OrgNotifier extends StateNotifier<OrgState> {
     );
     if (target.role == 'admin') return "Impossible de suspendre un administrateur";
     try {
+      // Transfer contacts to admin before suspension — suspended members are
+      // excluded from getAllContactsForOrganization, so their contacts would
+      // otherwise disappear from the org workspace.
+      await DatabaseService.transferOrgContactsToAdmin(
+          fromUserId: targetUserId, orgId: org.id);
       await DatabaseService.updateMemberStatus(
           orgId: org.id, userId: targetUserId, status: 'suspended');
       await refreshMembers();

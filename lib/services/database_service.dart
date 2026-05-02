@@ -1395,6 +1395,94 @@ class DatabaseService {
     if (rows.isNotEmpty) _onRemoteUpsert?.call('organization_members', Map<String, dynamic>.from(rows.first));
   }
 
+  /// Transfer all contacts owned by [fromUserId] to the organization's admin.
+  ///
+  /// When a member is suspended, removed, or deletes their account, their
+  /// org contacts must not disappear. This method reassigns [owner_id] to the
+  /// admin so the contacts remain visible and editable in the org workspace.
+  ///
+  /// If a transferred contact's [phone_lookup] or [email_lookup] would
+  /// collide with an existing admin contact (violating the per-owner unique
+  /// index), the lookup field is cleared — the encrypted data is preserved and
+  /// the contact is still transferred; only the deduplication hash is lost.
+  ///
+  /// Returns the admin's user id on success, or null when the org / admin
+  /// cannot be found, or when [fromUserId] is the admin themselves.
+  static Future<String?> transferOrgContactsToAdmin({
+    required String fromUserId,
+    required String orgId,
+  }) async {
+    final db = await database;
+
+    final orgRows = await db.query(
+      'organizations',
+      columns: ['owner_id'],
+      where: 'id = ?',
+      whereArgs: [orgId],
+      limit: 1,
+    );
+    if (orgRows.isEmpty) return null;
+    final adminId = orgRows.first['owner_id'] as String;
+    if (adminId == fromUserId) return null;
+
+    final memberContacts = await db.query(
+      'contacts',
+      where: 'owner_id = ?',
+      whereArgs: [fromUserId],
+    );
+    if (memberContacts.isEmpty) return adminId;
+
+    final transferredIds = <String>[];
+    await db.transaction((txn) async {
+      for (final row in memberContacts) {
+        final contactId = row['id'] as String;
+        final phoneLookup = row['phone_lookup'] as String?;
+        final emailLookup = row['email_lookup'] as String?;
+
+        final updates = <String, Object?>{'owner_id': adminId};
+
+        // Null out lookup fields that would collide with admin's existing contacts.
+        if (phoneLookup != null) {
+          final conflict = await txn.query(
+            'contacts',
+            columns: ['id'],
+            where: 'owner_id = ? AND phone_lookup = ?',
+            whereArgs: [adminId, phoneLookup],
+            limit: 1,
+          );
+          if (conflict.isNotEmpty) updates['phone_lookup'] = null;
+        }
+        if (emailLookup != null) {
+          final conflict = await txn.query(
+            'contacts',
+            columns: ['id'],
+            where: 'owner_id = ? AND email_lookup = ?',
+            whereArgs: [adminId, emailLookup],
+            limit: 1,
+          );
+          if (conflict.isNotEmpty) updates['email_lookup'] = null;
+        }
+
+        await txn.update('contacts', updates,
+            where: 'id = ?', whereArgs: [contactId]);
+        transferredIds.add(contactId);
+      }
+    });
+
+    // Best-effort remote sync for each transferred contact.
+    if (_onRemoteUpsert != null) {
+      for (final id in transferredIds) {
+        final rows = await db.query('contacts',
+            where: 'id = ?', whereArgs: [id], limit: 1);
+        if (rows.isNotEmpty) {
+          _onRemoteUpsert!('contacts', Map<String, dynamic>.from(rows.first));
+        }
+      }
+    }
+
+    return adminId;
+  }
+
   /// Replace the organization's invite code.
   static Future<void> updateOrgInviteCode(String orgId, String newCode) async {
     final db = await database;
