@@ -751,6 +751,94 @@ class AppL10n {
   String importPreviewMore(int n) => _en ? '+ $n more...' : '+ $n autres...';
   String get confirmImport => _en ? 'Import' : 'Importer';
 
+  // TXT format guide
+  String get txtGuideTitle =>
+      _en ? 'TXT Format Guide' : 'Guide du format TXT';
+  String get txtGuideSubtitle => _en
+      ? 'Recommended structure for best import results'
+      : 'Structure recommandée pour de meilleurs résultats';
+  String get txtGuideShowBtn =>
+      _en ? 'View format guide' : 'Voir le guide de format';
+  String get txtGuideHideBtn => _en ? 'Hide guide' : 'Masquer le guide';
+  String get txtGuideTemplateLabel => _en ? 'Template' : 'Modèle';
+  String get txtGuideFieldsLabel => _en ? 'Fields reference' : 'Référence des champs';
+  String get txtGuideRequired => _en ? 'Required' : 'Obligatoire';
+  String get txtGuideOptional => _en ? 'Optional' : 'Optionnel';
+  String get txtGuideSeparatorNote => _en
+      ? 'Each contact must start with a separator line: --- Contact N ---'
+      : 'Chaque contact doit commencer par une ligne de séparation : --- Contact N ---';
+  String get txtGuidePhoneEmailNote => _en
+      ? 'At least Phone or Email is required. Contacts missing both will be skipped.'
+      : 'Au moins Téléphone ou Email est obligatoire. Les contacts sans les deux seront ignorés.';
+  String get txtGuideStatusNote => _en
+      ? 'Status values: "Hot Lead", "Warm Lead" (default), or "Cold Lead".'
+      : 'Valeurs de Statut : "Hot Lead", "Warm Lead" (défaut), ou "Cold Lead".';
+  String get txtGuideTagsNote => _en
+      ? 'Tags are comma-separated, e.g. "VIP, Partner, Tech".'
+      : 'Les tags sont séparés par des virgules, ex. : "VIP, Partenaire, Tech".';
+  String get txtGuideMultiNote => _en
+      ? 'Multiple contacts in one file are supported. Increment the number in each separator.'
+      : 'Un fichier peut contenir plusieurs contacts. Incrémentez le numéro dans chaque séparateur.';
+
+  // CSV format guide
+  String get csvGuideTitle =>
+      _en ? 'CSV Format Guide' : 'Guide du format CSV';
+  String get csvGuideSubtitle => _en
+      ? 'Supported headers for Salesforce, Odoo, SAP and generic CSV'
+      : 'En-têtes supportés pour Salesforce, Odoo, SAP et CSV générique';
+  String get csvGuideShowBtn =>
+      _en ? 'View format guide' : 'Voir le guide de format';
+  String get csvGuideHideBtn => _en ? 'Hide guide' : 'Masquer le guide';
+  String get csvGuideTemplateLabel => _en ? 'Generic template' : 'Modèle générique';
+  String get csvGuideColumnsLabel =>
+      _en ? 'Accepted column names' : 'Noms de colonnes acceptés';
+  String get csvGuideHeaderNote => _en
+      ? 'The first row must be a header row. Column names are case-insensitive.'
+      : 'La première ligne doit être une ligne d\'en-tête. Les noms de colonnes ne sont pas sensibles à la casse.';
+  String get csvGuideAutoDetectNote => _en
+      ? 'The CRM format (Salesforce, Odoo, SAP) is auto-detected from the column headers — no manual selection needed.'
+      : 'Le format CRM (Salesforce, Odoo, SAP) est détecté automatiquement depuis les en-têtes — aucune sélection manuelle nécessaire.';
+  String get csvGuidePhoneEmailNote => _en
+      ? 'At least Phone or Email is required per row. Rows missing both are skipped.'
+      : 'Au moins Téléphone ou Email est requis par ligne. Les lignes sans les deux sont ignorées.';
+  String get csvGuideFullNameNote => _en
+      ? 'Odoo\'s "name" column (full name) is split automatically into first and last name.'
+      : 'La colonne "name" d\'Odoo (nom complet) est découpée automatiquement en prénom et nom.';
+  String get csvGuideStatusNote => _en
+      ? 'Status: Salesforce uses Hot/Warm/Cold (Rating), SAP uses HIGH/MEDIUM/LOW (PRIORITY).'
+      : 'Statut : Salesforce utilise Hot/Warm/Cold (Rating), SAP utilise HIGH/MEDIUM/LOW (PRIORITY).';
+  String get csvGuideTsvNote => _en
+      ? 'TSV (tab-separated) files with a .csv or .tsv extension are also supported.'
+      : 'Les fichiers TSV (séparés par des tabulations) avec extension .csv ou .tsv sont aussi acceptés.';
+
+  // vCard format guide
+  String get vcardGuideTitle =>
+      _en ? 'vCard Format Guide' : 'Guide du format vCard';
+  String get vcardGuideSubtitle => _en
+      ? 'Supports vCard 2.1, 3.0 and 4.0 (.vcf)'
+      : 'Compatible vCard 2.1, 3.0 et 4.0 (.vcf)';
+  String get vcardGuideShowBtn =>
+      _en ? 'View format guide' : 'Voir le guide de format';
+  String get vcardGuideHideBtn => _en ? 'Hide guide' : 'Masquer le guide';
+  String get vcardGuideTemplateLabel => _en ? 'Template' : 'Modèle';
+  String get vcardGuidePropsLabel =>
+      _en ? 'Supported properties' : 'Propriétés supportées';
+  String get vcardGuideNameNote => _en
+      ? 'At least FN: (full name) or N: (structured name) is required.'
+      : 'Au moins FN: (nom complet) ou N: (nom structuré) est requis.';
+  String get vcardGuidePhoneEmailNote => _en
+      ? 'At least TEL: or EMAIL: is required. Only the first of each type is imported.'
+      : 'Au moins TEL: ou EMAIL: est requis. Seule la première occurrence de chaque type est importée.';
+  String get vcardGuideStatusNote => _en
+      ? 'X-ME2LEADS-STATUS: accepts hot, warm, or cold. Defaults to warm if absent.'
+      : 'X-ME2LEADS-STATUS: accepte hot, warm ou cold. La valeur par défaut est warm si absente.';
+  String get vcardGuideFoldingNote => _en
+      ? 'Long-line folding (RFC 6350 — lines continued with a leading space or tab) is handled automatically.'
+      : 'Le repli de lignes longues (RFC 6350 — lignes continuées par un espace ou tabulation) est géré automatiquement.';
+  String get vcardGuideMultiNote => _en
+      ? 'Multiple contacts per file are supported — each block delimited by BEGIN:VCARD / END:VCARD.'
+      : 'Un fichier peut contenir plusieurs contacts — chaque bloc délimité par BEGIN:VCARD / END:VCARD.';
+
   // ─── Currency helpers ─────────────────────────────────────────────────────
   // [eurToTargetRate] is the live EUR → target-currency rate (e.g. 1.08 for USD).
   // Callers that watch [eurToUsdRateProvider] should pass the live value;

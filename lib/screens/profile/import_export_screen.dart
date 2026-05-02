@@ -26,6 +26,9 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen>
   bool _isLoading = false;
   String? _resultMessage;
   bool _resultIsError = false;
+  bool _showCsvGuide = false;
+  bool _showVcardGuide = false;
+  bool _showTxtGuide = false;
 
   @override
   void initState() {
@@ -405,6 +408,22 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen>
             subtitle: l10n.csvImportDesc,
             onTap: () => _pickAndImport(['csv', 'tsv']),
           ),
+          const SizedBox(height: 8),
+          _guideToggle(
+            context,
+            label: _showCsvGuide ? l10n.csvGuideHideBtn : l10n.csvGuideShowBtn,
+            color: AppColors.success,
+            onTap: () => setState(() => _showCsvGuide = !_showCsvGuide),
+            expanded: _showCsvGuide,
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _showCsvGuide
+                ? _CsvFormatGuide(l10n: l10n)
+                : const SizedBox.shrink(),
+          ),
           const SizedBox(height: 10),
           _formatCard(
             context,
@@ -414,6 +433,24 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen>
             subtitle: l10n.vcardImportDesc,
             onTap: () => _pickAndImport(['vcf', 'vcard']),
           ),
+          const SizedBox(height: 8),
+          _guideToggle(
+            context,
+            label: _showVcardGuide
+                ? l10n.vcardGuideHideBtn
+                : l10n.vcardGuideShowBtn,
+            color: AppColors.primary,
+            onTap: () => setState(() => _showVcardGuide = !_showVcardGuide),
+            expanded: _showVcardGuide,
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _showVcardGuide
+                ? _VcardFormatGuide(l10n: l10n)
+                : const SizedBox.shrink(),
+          ),
           const SizedBox(height: 10),
           _formatCard(
             context,
@@ -422,6 +459,22 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen>
             title: 'TXT',
             subtitle: l10n.txtImportDesc,
             onTap: () => _pickAndImport(['txt']),
+          ),
+          const SizedBox(height: 8),
+          _guideToggle(
+            context,
+            label: _showTxtGuide ? l10n.txtGuideHideBtn : l10n.txtGuideShowBtn,
+            color: AppColors.warm,
+            onTap: () => setState(() => _showTxtGuide = !_showTxtGuide),
+            expanded: _showTxtGuide,
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _showTxtGuide
+                ? _TxtFormatGuide(l10n: l10n)
+                : const SizedBox.shrink(),
           ),
           const SizedBox(height: 24),
           _infoBox(context, l10n.importInfoBox),
@@ -705,6 +758,42 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen>
       ),
     );
   }
+
+  Widget _guideToggle(
+    BuildContext context, {
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+    required bool expanded,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              expanded
+                  ? Icons.keyboard_arrow_up_rounded
+                  : Icons.keyboard_arrow_down_rounded,
+              size: 18,
+              color: color,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 // ─── Import preview dialog ────────────────────────────────────────────────────
@@ -875,4 +964,739 @@ class _ImportPreviewDialog extends StatelessWidget {
       ),
     );
   }
+}
+
+// ─── TXT format guide ─────────────────────────────────────────────────────────
+
+class _TxtFormatGuide extends StatelessWidget {
+  final AppL10n l10n;
+
+  const _TxtFormatGuide({required this.l10n});
+
+  // Field definitions: (name, required, description_en, description_fr)
+  static const _fields = [
+    ('First Name:', false, 'Contact first name', 'Prénom du contact'),
+    ('Last Name:', true, 'Contact last name', 'Nom de famille du contact'),
+    ('Job Title:', false, 'Position or role', 'Poste ou fonction'),
+    ('Company:', false, 'Company or organisation', 'Société ou organisation'),
+    ('Phone:', false, 'Phone number (required if no email)', 'Téléphone (obligatoire si pas d\'email)'),
+    ('Email:', false, 'Email address (required if no phone)', 'Email (obligatoire si pas de téléphone)'),
+    ('Status:', false, 'Hot Lead / Warm Lead / Cold Lead', 'Hot Lead / Warm Lead / Cold Lead'),
+    ('Source:', false, 'Where the contact was met', 'Lieu ou événement de rencontre'),
+    ('Tags:', false, 'Comma-separated labels', 'Étiquettes séparées par des virgules'),
+    ('Notes:', false, 'Free-form notes', 'Notes libres'),
+  ];
+
+  static const _template = '''--- Contact 1 ---
+First Name: Jean
+Last Name: Dupont
+Job Title: CEO
+Company: Acme Corp
+Phone: +33 6 12 34 56 78
+Email: jean.dupont@acme.com
+Status: Hot Lead
+Source: Tech Conference 2024
+Tags: VIP, Partner
+Notes: Met at the annual conference
+
+--- Contact 2 ---
+First Name: Marie
+Last Name: Martin
+Phone: +33 7 98 76 54 32
+Status: Warm Lead''';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceColor(context),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.warm.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.warm.withOpacity(0.08),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(13),
+                topRight: Radius.circular(13),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.text_snippet_rounded,
+                    color: AppColors.warm, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.txtGuideTitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.onSurface(context),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '·  ${l10n.txtGuideSubtitle}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.secondary(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Template block
+                _sectionLabel(context, l10n.txtGuideTemplateLabel),
+                const SizedBox(height: 8),
+                _templateBlock(context),
+
+                const SizedBox(height: 16),
+
+                // Fields reference
+                _sectionLabel(context, l10n.txtGuideFieldsLabel),
+                const SizedBox(height: 8),
+                _fieldsTable(context),
+
+                const SizedBox(height: 16),
+
+                // Notes
+                _noteRow(context, l10n.txtGuideSeparatorNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.txtGuidePhoneEmailNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.txtGuideStatusNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.txtGuideTagsNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.txtGuideMultiNote),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionLabel(BuildContext context, String text) {
+    return Text(
+      text.toUpperCase(),
+      style: TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w700,
+        color: AppColors.hint(context),
+        letterSpacing: 0.8,
+      ),
+    );
+  }
+
+  Widget _templateBlock(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bg(context),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderColor(context)),
+      ),
+      child: SelectableText(
+        _template,
+        style: const TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 11.5,
+          height: 1.7,
+          color: AppColors.primary,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _fieldsTable(BuildContext context) {
+    final isEn = l10n.isEnglish;
+    return Column(
+      children: _fields.map((f) {
+        final name = f.$1;
+        final required = f.$2;
+        final desc = isEn ? f.$3 : f.$4;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Field name
+              SizedBox(
+                width: 120,
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              // Required / optional badge
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: required
+                      ? AppColors.hot.withOpacity(0.1)
+                      : AppColors.cold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  required ? l10n.txtGuideRequired : l10n.txtGuideOptional,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: required ? AppColors.hot : AppColors.cold,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Description
+              Expanded(
+                child: Text(
+                  desc,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.secondary(context),
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _noteRow(BuildContext context, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 3),
+          child: Icon(
+            Icons.circle,
+            size: 5,
+            color: AppColors.warm,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.secondary(context),
+              height: 1.5,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── CSV format guide ─────────────────────────────────────────────────────────
+
+class _CsvFormatGuide extends StatelessWidget {
+  final AppL10n l10n;
+  const _CsvFormatGuide({required this.l10n});
+
+  // (field label, generic header, Salesforce header, Odoo header, SAP header, required)
+  static const _columns = [
+    ('First name', 'first_name', 'First Name', 'name *', 'FIRST_NAME', false),
+    ('Last name', 'last_name', 'Last Name', 'name *', 'LAST_NAME', true),
+    ('Job title', 'job_title', 'Title', 'function', 'POSITION', false),
+    ('Company', 'company', 'Company', 'company_name', 'COMPANY', false),
+    ('Phone', 'phone', 'Phone', 'phone', 'PHONE', false),
+    ('Email', 'email', 'Email', 'email', 'EMAIL', false),
+    ('Status', 'status', 'Rating', 'x_me2leads_status', 'PRIORITY', false),
+    ('Notes', 'notes', 'Description', 'comment', 'NOTES', false),
+    ('Source', 'source', 'Lead Source', 'source', 'SOURCE', false),
+    ('Tags', 'tags', 'Tags', 'category_id', 'CATEGORY', false),
+  ];
+
+  static const _template =
+      'first_name,last_name,job_title,company,phone,email,status,source,notes,tags\n'
+      'Jean,Dupont,CEO,Acme Corp,+33612345678,jean@acme.com,hot,Conference,Notes here,VIP;Partner';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceColor(context),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.success.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.success.withOpacity(0.08),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(13),
+                topRight: Radius.circular(13),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.table_chart_rounded,
+                    color: AppColors.success, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.csvGuideTitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.onSurface(context),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    '·  ${l10n.csvGuideSubtitle}',
+                    style: TextStyle(
+                        fontSize: 11, color: AppColors.secondary(context)),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _label(context, l10n.csvGuideTemplateLabel),
+                const SizedBox(height: 8),
+                _templateBlock(context),
+                const SizedBox(height: 16),
+                _label(context, l10n.csvGuideColumnsLabel),
+                const SizedBox(height: 8),
+                _columnsTable(context),
+                const SizedBox(height: 16),
+                _noteRow(context, l10n.csvGuideHeaderNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.csvGuideAutoDetectNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.csvGuidePhoneEmailNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.csvGuideFullNameNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.csvGuideStatusNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.csvGuideTsvNote),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _label(BuildContext context, String text) => Text(
+        text.toUpperCase(),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: AppColors.hint(context),
+          letterSpacing: 0.8,
+        ),
+      );
+
+  Widget _templateBlock(BuildContext context) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.bg(context),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.borderColor(context)),
+        ),
+        child: SelectableText(
+          _template,
+          style: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 11,
+            height: 1.7,
+            color: AppColors.success,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+
+  Widget _columnsTable(BuildContext context) {
+    final isEn = l10n.isEnglish;
+    final headerStyle = TextStyle(
+      fontSize: 9,
+      fontWeight: FontWeight.w700,
+      color: AppColors.hint(context),
+      letterSpacing: 0.5,
+    );
+    final cellStyle = TextStyle(
+      fontFamily: 'monospace',
+      fontSize: 10,
+      color: AppColors.onSurface(context),
+    );
+
+    Widget hcell(String t) =>
+        Expanded(child: Text(t, style: headerStyle, overflow: TextOverflow.ellipsis));
+    Widget dcell(String t) =>
+        Expanded(child: Text(t, style: cellStyle, overflow: TextOverflow.ellipsis));
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bg(context),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderColor(context)),
+      ),
+      child: Column(
+        children: [
+          // Header row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.borderColor(context).withOpacity(0.5),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(9),
+                topRight: Radius.circular(9),
+              ),
+            ),
+            child: Row(children: [
+              hcell(isEn ? 'FIELD' : 'CHAMP'),
+              hcell('GENERIC'),
+              hcell('SALESFORCE'),
+              hcell('ODOO'),
+              hcell('SAP'),
+            ]),
+          ),
+          // Data rows
+          ...List.generate(_columns.length, (i) {
+            final c = _columns[i];
+            final isLast = i == _columns.length - 1;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                border: isLast
+                    ? null
+                    : Border(
+                        bottom: BorderSide(
+                          color: AppColors.borderColor(context),
+                          width: 0.5,
+                        ),
+                      ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Row(children: [
+                      Text(
+                        c.$1,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary(context),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (c.$6) ...[
+                        const SizedBox(width: 3),
+                        const Text('*',
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.hot)),
+                      ],
+                    ]),
+                  ),
+                  dcell(c.$2),
+                  dcell(c.$3),
+                  dcell(c.$4),
+                  dcell(c.$5),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _noteRow(BuildContext context, String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Icon(Icons.circle, size: 5, color: AppColors.success),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.secondary(context),
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+// ─── vCard format guide ───────────────────────────────────────────────────────
+
+class _VcardFormatGuide extends StatelessWidget {
+  final AppL10n l10n;
+  const _VcardFormatGuide({required this.l10n});
+
+  // (property, example, description_en, description_fr, required)
+  static const _props = [
+    ('FN:', 'Jean Dupont', 'Full display name', 'Nom complet affiché', false),
+    ('N:', 'Dupont;Jean;;;', 'Structured name — N:Last;First;;;', 'Nom structuré — N:Nom;Prénom;;;', false),
+    ('ORG:', 'Acme Corp', 'Company or organisation', 'Société ou organisation', false),
+    ('TITLE:', 'CEO', 'Job title or role', 'Poste ou fonction', false),
+    ('TEL;TYPE=WORK,VOICE:', '+33612345678', 'Phone number', 'Numéro de téléphone', false),
+    ('EMAIL;TYPE=WORK:', 'jean@acme.com', 'Email address', 'Adresse email', false),
+    ('NOTE:', 'Met at conference', 'Free-form notes', 'Notes libres', false),
+    ('CATEGORIES:', 'VIP,Partner', 'Tags, comma-separated', 'Tags, séparés par des virgules', false),
+    ('X-ME2LEADS-STATUS:', 'hot', 'hot / warm / cold', 'hot / warm / cold', false),
+    ('X-ME2LEADS-SOURCE:', 'Conference 2024', 'Contact source', 'Source du contact', false),
+  ];
+
+  static const _template = 'BEGIN:VCARD\n'
+      'VERSION:3.0\n'
+      'FN:Jean Dupont\n'
+      'N:Dupont;Jean;;;\n'
+      'ORG:Acme Corp\n'
+      'TITLE:CEO\n'
+      'TEL;TYPE=WORK,VOICE:+33612345678\n'
+      'EMAIL;TYPE=WORK:jean@acme.com\n'
+      'NOTE:Met at the annual conference\n'
+      'CATEGORIES:VIP,Partner\n'
+      'X-ME2LEADS-STATUS:hot\n'
+      'X-ME2LEADS-SOURCE:Conference 2024\n'
+      'END:VCARD';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceColor(context),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.primary.withOpacity(0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.07),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(13),
+                topRight: Radius.circular(13),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.contact_page_rounded,
+                    color: AppColors.primary, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.vcardGuideTitle,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.onSurface(context),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    '·  ${l10n.vcardGuideSubtitle}',
+                    style: TextStyle(
+                        fontSize: 11, color: AppColors.secondary(context)),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _label(context, l10n.vcardGuideTemplateLabel),
+                const SizedBox(height: 8),
+                _templateBlock(context),
+                const SizedBox(height: 16),
+                _label(context, l10n.vcardGuidePropsLabel),
+                const SizedBox(height: 8),
+                _propsTable(context),
+                const SizedBox(height: 16),
+                _noteRow(context, l10n.vcardGuideNameNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.vcardGuidePhoneEmailNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.vcardGuideStatusNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.vcardGuideFoldingNote),
+                const SizedBox(height: 6),
+                _noteRow(context, l10n.vcardGuideMultiNote),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _label(BuildContext context, String text) => Text(
+        text.toUpperCase(),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: AppColors.hint(context),
+          letterSpacing: 0.8,
+        ),
+      );
+
+  Widget _templateBlock(BuildContext context) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.bg(context),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.borderColor(context)),
+        ),
+        child: SelectableText(
+          _template,
+          style: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 11,
+            height: 1.7,
+            color: AppColors.primary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+
+  Widget _propsTable(BuildContext context) {
+    final isEn = l10n.isEnglish;
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.bg(context),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.borderColor(context)),
+      ),
+      child: Column(
+        children: List.generate(_props.length, (i) {
+          final p = _props[i];
+          final isLast = i == _props.length - 1;
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              border: isLast
+                  ? null
+                  : Border(
+                      bottom: BorderSide(
+                        color: AppColors.borderColor(context),
+                        width: 0.5,
+                      ),
+                    ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 148,
+                  child: Text(
+                    p.$1,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isEn ? p.$3 : p.$4,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.onSurface(context),
+                        ),
+                      ),
+                      Text(
+                        'e.g. ${p.$2}',
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 10,
+                          color: AppColors.secondary(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _noteRow(BuildContext context, String text) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: Icon(Icons.circle, size: 5, color: AppColors.primary),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.secondary(context),
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      );
 }
