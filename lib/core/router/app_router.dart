@@ -27,6 +27,7 @@ import '../../screens/organization/create_organization_screen.dart';
 import '../../screens/organization/join_organization_screen.dart';
 import '../../screens/organization/organization_admin_screen.dart';
 import '../../screens/profile/import_export_screen.dart';
+import '../../screens/profile/sync_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -430,6 +431,20 @@ final appRouter = GoRouter(
       pageBuilder: (context, state) => CustomTransitionPage(
         key: state.pageKey,
         child: const JoinOrganizationScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end)
+              .chain(CurveTween(curve: Curves.easeInOut));
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+      ),
+    ),
+    GoRoute(
+      path: '/sync',
+      pageBuilder: (context, state) => CustomTransitionPage(
+        key: state.pageKey,
+        child: const SyncScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;

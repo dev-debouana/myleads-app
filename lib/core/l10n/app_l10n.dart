@@ -839,6 +839,35 @@ class AppL10n {
       ? 'Multiple contacts per file are supported — each block delimited by BEGIN:VCARD / END:VCARD.'
       : 'Un fichier peut contenir plusieurs contacts — chaque bloc délimité par BEGIN:VCARD / END:VCARD.';
 
+  // ─── Remote Sync ─────────────────────────────────────────────────────────
+  String get syncScreenTitle => _en ? 'Cloud Sync' : 'Sync Cloud';
+  String get syncLastSyncLabel => _en ? 'Last sync' : 'Dernière sync';
+  String get syncNever => _en ? 'Never' : 'Jamais';
+  String get syncUploadTitle => _en ? 'Upload to cloud' : 'Envoyer vers le cloud';
+  String get syncUploadDesc => _en
+      ? 'Back up your local data to the remote database'
+      : 'Sauvegarder vos données locales sur le serveur distant';
+  String get syncDownloadTitle => _en ? 'Download from cloud' : 'Télécharger du cloud';
+  String get syncDownloadDesc => _en
+      ? 'Restore your data from the remote database'
+      : 'Restaurer vos données depuis le serveur distant';
+  String get syncInProgress => _en ? 'Sync in progress…' : 'Synchronisation en cours…';
+  String get syncSuccess => _en ? 'Sync completed' : 'Synchronisation terminée';
+  String get syncConfirmPullTitle =>
+      _en ? 'Overwrite local data?' : 'Écraser les données locales ?';
+  String get syncConfirmPullBody => _en
+      ? 'Your local contacts and reminders will be replaced with the cloud version. This cannot be undone.'
+      : 'Vos contacts et rappels locaux seront remplacés par la version du cloud. Cette action est irréversible.';
+  String get syncErrNoConnection =>
+      _en ? 'No internet connection' : 'Pas de connexion internet';
+  String get syncErrAuthFailed =>
+      _en ? 'Could not connect to the database' : 'Impossible de se connecter à la base de données';
+  String get syncErrUnknown =>
+      _en ? 'An unexpected error occurred' : 'Une erreur inattendue est survenue';
+  String syncResultLabel(int contacts, int reminders) => _en
+      ? '$contacts contact${contacts == 1 ? '' : 's'}, $reminders reminder${reminders == 1 ? '' : 's'} synced'
+      : '$contacts contact${contacts == 1 ? '' : 's'}, $reminders rappel${reminders == 1 ? '' : 's'} synchronisé${reminders == 1 ? '' : 's'}';
+
   // ─── Currency helpers ─────────────────────────────────────────────────────
   // [eurToTargetRate] is the live EUR → target-currency rate (e.g. 1.08 for USD).
   // Callers that watch [eurToUsdRateProvider] should pass the live value;

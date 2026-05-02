@@ -79,6 +79,9 @@ dependencies:
   # File I/O (import / export)
   file_picker: ^8.1.2
 
+  # Remote database sync
+  mysql_client: ^0.0.27
+
   # HTTP
   http: ^1.2.0
 

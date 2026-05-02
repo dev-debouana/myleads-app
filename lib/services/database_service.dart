@@ -1363,6 +1363,58 @@ class DatabaseService {
   }
 
   // =====================================================================
+  // RAW ROW ACCESS — used exclusively by RemoteSyncService.
+  // These methods bypass model encoding so encrypted blobs and JSON
+  // strings are transferred to/from MySQL without modification.
+  // =====================================================================
+
+  static Future<Map<String, dynamic>?> getRawUserRow(String userId) async {
+    final db = await database;
+    final rows = await db.query('users', where: 'id = ?', whereArgs: [userId], limit: 1);
+    return rows.isEmpty ? null : Map<String, dynamic>.from(rows.first);
+  }
+
+  static Future<List<Map<String, dynamic>>> getRawContactRows(String ownerId) async {
+    final db = await database;
+    return (await db.query('contacts', where: 'owner_id = ?', whereArgs: [ownerId]))
+        .map((r) => Map<String, dynamic>.from(r))
+        .toList();
+  }
+
+  static Future<List<Map<String, dynamic>>> getRawReminderRows(String ownerId) async {
+    final db = await database;
+    return (await db.query('reminders', where: 'owner_id = ?', whereArgs: [ownerId]))
+        .map((r) => Map<String, dynamic>.from(r))
+        .toList();
+  }
+
+  static Future<List<Map<String, dynamic>>> getRawInteractionRows(String ownerId) async {
+    final db = await database;
+    return (await db.query('interactions', where: 'owner_id = ?', whereArgs: [ownerId]))
+        .map((r) => Map<String, dynamic>.from(r))
+        .toList();
+  }
+
+  static Future<Map<String, dynamic>?> getRawOrganizationRow(String orgId) async {
+    final db = await database;
+    final rows = await db.query('organizations', where: 'id = ?', whereArgs: [orgId], limit: 1);
+    return rows.isEmpty ? null : Map<String, dynamic>.from(rows.first);
+  }
+
+  static Future<List<Map<String, dynamic>>> getRawOrgMemberRows(String orgId) async {
+    final db = await database;
+    return (await db.query('organization_members',
+            where: 'organization_id = ?', whereArgs: [orgId]))
+        .map((r) => Map<String, dynamic>.from(r))
+        .toList();
+  }
+
+  static Future<void> upsertRawRow(String table, Map<String, dynamic> row) async {
+    final db = await database;
+    await db.insert(table, row, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  // =====================================================================
   // Helpers
   // =====================================================================
 

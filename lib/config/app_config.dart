@@ -30,6 +30,27 @@ class AppConfig {
 
   static bool get smtpSsl => true;
 
+  // ── MySQL remote sync ───────────────────────────────────────────────────
+
+  static String get mysqlHost => _deobfuscate(const [
+        55, 11, 93, 87, 88, 82, 66, 6, 3, 31, 6, 99, 84, 81, 23, 20,
+        90, 40, 13, 22, 56, 29, 40, 7, 79, 11, 5, 90, 30, 92, 83, 39,
+      ]);
+
+  static int get mysqlPort => 35500;
+
+  static String get mysqlUsername => _deobfuscate(const [
+        57, 28, 46, 10, 20, 5, 29, 83,
+      ]);
+
+  static String get mysqlPassword => _deobfuscate(const [
+        14, 28, 112, 35, 9, 42, 26, 115, 114, 126, 114, 25,
+      ]);
+
+  static String get mysqlDatabase => _deobfuscate(const [
+        57, 28, 42, 4, 20, 8, 7, 86, 66,
+      ]);
+
   // ── Internal ────────────────────────────────────────────────────────────
 
   /// XOR deobfuscation. Key cycles over [data] by index modulo key length.

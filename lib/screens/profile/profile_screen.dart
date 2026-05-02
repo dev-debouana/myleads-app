@@ -242,7 +242,7 @@ class ProfileScreen extends ConsumerWidget {
                     l10n.syncDesc,
                     AppColors.success.withOpacity(0.1),
                     AppColors.success,
-                    () {},
+                    () => context.push('/sync'),
                   ),
                   _menuItem(
                     context,
