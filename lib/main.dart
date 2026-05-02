@@ -7,6 +7,7 @@ import 'providers/settings_provider.dart';
 import 'services/action_tracker.dart';
 import 'services/background_task.dart';
 import 'services/notification_service.dart';
+import 'services/remote_sync_service.dart';
 import 'services/storage_service.dart';
 
 void main() async {
@@ -36,6 +37,7 @@ void main() async {
   // in a degraded state than a permanently white page.
   try {
     await StorageService.init();
+    RemoteSyncService.wireDatabase();
   } catch (e, st) {
     debugPrint('StorageService.init failed: $e\n$st');
   }

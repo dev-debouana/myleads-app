@@ -214,6 +214,70 @@ class RemoteSyncService {
     ''');
   }
 
+  // ── Live-write wiring ───────────────────────────────────────────────────────
+
+  /// Registers callbacks into [DatabaseService] so every local write is
+  /// immediately mirrored to the remote MySQL database in the background.
+  /// Call once after [StorageService.init] during app startup.
+  static void wireDatabase() {
+    DatabaseService.wireRemoteSync(
+      onUpsert: (table, row) { _pushRowBackground(table, row); },
+      onDelete: (table, id)  { _deleteRowBackground(table, id); },
+    );
+  }
+
+  /// Dispatches a background upsert for any supported table.
+  static Future<void> _pushRowBackground(
+      String table, Map<String, dynamic> row) =>
+      _fireAndForget((conn) async {
+        switch (table) {
+          case 'contacts':             await _upsertContact(conn, row);
+          case 'reminders':            await _upsertReminder(conn, row);
+          case 'interactions':         await _upsertInteraction(conn, row);
+          case 'users':                await _upsertUser(conn, row);
+          case 'organizations':        await _upsertOrganization(conn, row);
+          case 'organization_members': await _upsertOrgMember(conn, row);
+        }
+      });
+
+  /// Dispatches a background delete for any supported table.
+  /// Handles cascaded deletes for contacts (interactions + reminders)
+  /// and organisations (all member rows).
+  static Future<void> _deleteRowBackground(String table, String id) =>
+      _fireAndForget((conn) async {
+        if (table == 'contacts') {
+          await conn.execute(
+              'DELETE FROM `interactions` WHERE `contact_id` = :id', {'id': id});
+          await conn.execute(
+              'DELETE FROM `reminders` WHERE `contact_id` = :id', {'id': id});
+        } else if (table == 'organizations') {
+          await conn.execute(
+              'DELETE FROM `organization_members` WHERE `organization_id` = :id',
+              {'id': id});
+        }
+        await conn.execute(
+            'DELETE FROM `$table` WHERE `id` = :id', {'id': id});
+      });
+
+  /// Opens a connection, runs [action], then closes.
+  /// Errors are swallowed so local writes are never blocked by network issues.
+  static Future<void> _fireAndForget(
+      Future<void> Function(MySQLConnection) action) async {
+    if (kIsWeb) return;
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.contains(ConnectivityResult.none)) return;
+    final conn = await _connect();
+    if (conn == null) return;
+    try {
+      await _ensureSchema(conn);
+      await action(conn);
+    } catch (e) {
+      debugPrint('RemoteSyncService background write error: $e');
+    } finally {
+      await conn.close();
+    }
+  }
+
   // ── Push (local → remote) ───────────────────────────────────────────────────
 
   /// Uploads all local data for [userId] to the remote MySQL database.

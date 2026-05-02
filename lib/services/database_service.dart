@@ -29,6 +29,21 @@ class DatabaseService {
   static const _dbName = 'myleads.db';
   static const _dbVersion = 10;
 
+  // ── Remote sync callbacks ──────────────────────────────────────────────────
+  // Wired once at startup by RemoteSyncService.wireDatabase().
+  // Using generic Function types avoids a circular import between this file
+  // and remote_sync_service.dart.
+  static void Function(String table, Map<String, dynamic> row)? _onRemoteUpsert;
+  static void Function(String table, String id)? _onRemoteDelete;
+
+  static void wireRemoteSync({
+    required void Function(String table, Map<String, dynamic> row) onUpsert,
+    required void Function(String table, String id) onDelete,
+  }) {
+    _onRemoteUpsert = onUpsert;
+    _onRemoteDelete = onDelete;
+  }
+
   static Future<Database> get database async {
     _db ??= await _initDb();
     return _db!;
@@ -391,17 +406,16 @@ class DatabaseService {
 
   static Future<void> insertUser(UserAccount user) async {
     final db = await database;
-    await db.insert('users', _userToRow(user));
+    final row = _userToRow(user);
+    await db.insert('users', row);
+    _onRemoteUpsert?.call('users', row);
   }
 
   static Future<void> updateUser(UserAccount user) async {
     final db = await database;
-    await db.update(
-      'users',
-      _userToRow(user),
-      where: 'id = ?',
-      whereArgs: [user.id],
-    );
+    final row = _userToRow(user);
+    await db.update('users', row, where: 'id = ?', whereArgs: [user.id]);
+    _onRemoteUpsert?.call('users', row);
   }
 
   /// Invalidate all sessions for a user (used when password changes).
@@ -554,17 +568,16 @@ class DatabaseService {
 
   static Future<void> insertContact(Contact contact) async {
     final db = await database;
-    await db.insert('contacts', _contactToRow(contact));
+    final row = _contactToRow(contact);
+    await db.insert('contacts', row);
+    _onRemoteUpsert?.call('contacts', row);
   }
 
   static Future<void> updateContact(Contact contact) async {
     final db = await database;
-    await db.update(
-      'contacts',
-      _contactToRow(contact),
-      where: 'id = ?',
-      whereArgs: [contact.id],
-    );
+    final row = _contactToRow(contact);
+    await db.update('contacts', row, where: 'id = ?', whereArgs: [contact.id]);
+    _onRemoteUpsert?.call('contacts', row);
   }
 
   static Future<void> deleteContact(String id) async {
@@ -572,6 +585,7 @@ class DatabaseService {
     await db.delete('contacts', where: 'id = ?', whereArgs: [id]);
     await db.delete('interactions', where: 'contact_id = ?', whereArgs: [id]);
     await db.delete('reminders', where: 'contact_id = ?', whereArgs: [id]);
+    _onRemoteDelete?.call('contacts', id);
   }
 
   /// Check if another contact (excluding [excludeId]) already has the same
@@ -760,22 +774,22 @@ class DatabaseService {
 
   static Future<void> insertReminder(Reminder reminder) async {
     final db = await database;
-    await db.insert('reminders', _reminderToRow(reminder));
+    final row = _reminderToRow(reminder);
+    await db.insert('reminders', row);
+    _onRemoteUpsert?.call('reminders', row);
   }
 
   static Future<void> updateReminder(Reminder reminder) async {
     final db = await database;
-    await db.update(
-      'reminders',
-      _reminderToRow(reminder),
-      where: 'id = ?',
-      whereArgs: [reminder.id],
-    );
+    final row = _reminderToRow(reminder);
+    await db.update('reminders', row, where: 'id = ?', whereArgs: [reminder.id]);
+    _onRemoteUpsert?.call('reminders', row);
   }
 
   static Future<void> deleteReminder(String id) async {
     final db = await database;
     await db.delete('reminders', where: 'id = ?', whereArgs: [id]);
+    _onRemoteDelete?.call('reminders', id);
   }
 
   static Map<String, dynamic> _reminderToRow(Reminder r) {
@@ -897,7 +911,9 @@ class DatabaseService {
 
   static Future<void> insertInteraction(Interaction interaction) async {
     final db = await database;
-    await db.insert('interactions', _interactionToRow(interaction));
+    final row = _interactionToRow(interaction);
+    await db.insert('interactions', row);
+    _onRemoteUpsert?.call('interactions', row);
   }
 
   static Map<String, dynamic> _interactionToRow(Interaction i) => {
@@ -1050,12 +1066,16 @@ class DatabaseService {
 
   static Future<void> insertOrganization(Organization org) async {
     final db = await database;
-    await db.insert('organizations', _orgToRow(org));
+    final row = _orgToRow(org);
+    await db.insert('organizations', row);
+    _onRemoteUpsert?.call('organizations', row);
   }
 
   static Future<void> updateOrganization(Organization org) async {
     final db = await database;
-    await db.update('organizations', _orgToRow(org), where: 'id = ?', whereArgs: [org.id]);
+    final row = _orgToRow(org);
+    await db.update('organizations', row, where: 'id = ?', whereArgs: [org.id]);
+    _onRemoteUpsert?.call('organizations', row);
   }
 
   static Future<void> deleteOrganization(String orgId) async {
@@ -1071,6 +1091,7 @@ class DatabaseService {
       await txn.delete('organization_members', where: 'organization_id = ?', whereArgs: [orgId]);
       await txn.delete('organizations', where: 'id = ?', whereArgs: [orgId]);
     });
+    _onRemoteDelete?.call('organizations', orgId);
   }
 
   static Map<String, dynamic> _orgToRow(Organization o) => {
@@ -1147,25 +1168,31 @@ class DatabaseService {
   }) async {
     final db = await database;
     final isAdmin = role == 'admin';
-    await db.insert(
-      'organization_members',
-      {
-        'id': id,
-        'organization_id': orgId,
-        'user_id': userId,
-        'role': role,
-        'status': 'active',
-        'joined_at': DateTime.now().toIso8601String(),
-        'can_edit': isAdmin ? 1 : 0,
-        'can_create': 1,
-        'can_view_reminders': isAdmin ? 1 : 0,
-      },
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
+    final row = {
+      'id': id,
+      'organization_id': orgId,
+      'user_id': userId,
+      'role': role,
+      'status': 'active',
+      'joined_at': DateTime.now().toIso8601String(),
+      'can_edit': isAdmin ? 1 : 0,
+      'can_create': 1,
+      'can_view_reminders': isAdmin ? 1 : 0,
+    };
+    await db.insert('organization_members', row, conflictAlgorithm: ConflictAlgorithm.ignore);
+    _onRemoteUpsert?.call('organization_members', row);
   }
 
   static Future<void> removeOrgMember(String orgId, String userId) async {
     final db = await database;
+    // Capture member id before deletion so the remote delete targets the right row.
+    final memberRows = await db.query(
+      'organization_members',
+      columns: ['id'],
+      where: 'organization_id = ? AND user_id = ?',
+      whereArgs: [orgId, userId],
+      limit: 1,
+    );
     await db.transaction((txn) async {
       await txn.delete(
         'organization_members',
@@ -1179,6 +1206,9 @@ class DatabaseService {
         whereArgs: [userId],
       );
     });
+    if (memberRows.isNotEmpty) {
+      _onRemoteDelete?.call('organization_members', memberRows.first['id'] as String);
+    }
   }
 
   static Future<bool> isUserInOrganization(String orgId, String userId) async {
@@ -1211,6 +1241,13 @@ class DatabaseService {
       where: 'organization_id = ? AND user_id = ?',
       whereArgs: [orgId, userId],
     );
+    final rows = await db.query(
+      'organization_members',
+      where: 'organization_id = ? AND user_id = ?',
+      whereArgs: [orgId, userId],
+      limit: 1,
+    );
+    if (rows.isNotEmpty) _onRemoteUpsert?.call('organization_members', Map<String, dynamic>.from(rows.first));
   }
 
   /// Load all contacts owned by any active member of [orgId].
@@ -1349,6 +1386,13 @@ class DatabaseService {
       where: 'organization_id = ? AND user_id = ?',
       whereArgs: [orgId, userId],
     );
+    final rows = await db.query(
+      'organization_members',
+      where: 'organization_id = ? AND user_id = ?',
+      whereArgs: [orgId, userId],
+      limit: 1,
+    );
+    if (rows.isNotEmpty) _onRemoteUpsert?.call('organization_members', Map<String, dynamic>.from(rows.first));
   }
 
   /// Replace the organization's invite code.
@@ -1360,6 +1404,8 @@ class DatabaseService {
       where: 'id = ?',
       whereArgs: [orgId],
     );
+    final rows = await db.query('organizations', where: 'id = ?', whereArgs: [orgId], limit: 1);
+    if (rows.isNotEmpty) _onRemoteUpsert?.call('organizations', Map<String, dynamic>.from(rows.first));
   }
 
   // =====================================================================
