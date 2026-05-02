@@ -3,7 +3,9 @@
     "allow": [
       "Bash(flutter build *)",
       "Bash(flutter analyze *)",
-      "Bash(flutter pub *)"
+      "Bash(flutter pub *)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(p['package'], p.get\\('latest',{}\\).get\\('version','?'\\)\\) for p in d.get\\('packages',[]\\) if 'sqlite3' in p['package'].lower\\(\\)]\")",
+      "Bash(./android/gradlew --stop)"
     ]
   }
 }
