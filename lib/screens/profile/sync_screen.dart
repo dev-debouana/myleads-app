@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/l10n/app_l10n.dart';
 import '../../core/theme/app_colors.dart';
+import '../../services/database_service.dart';
 import '../../services/remote_sync_service.dart';
 import '../../services/storage_service.dart';
 
@@ -28,7 +29,9 @@ class _SyncScreenState extends ConsumerState<SyncScreen> {
   }
 
   Future<void> _loadLastSync() async {
-    final ts = await RemoteSyncService.lastSyncAt;
+    final userId = StorageService.currentUserId;
+    if (userId.isEmpty) return;
+    final ts = await DatabaseService.getUserLastSync(userId);
     if (mounted) setState(() => _lastSyncAt = ts);
   }
 

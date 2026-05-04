@@ -27,7 +27,7 @@ import 'web_db_factory_stub.dart'
 class DatabaseService {
   static Database? _db;
   static const _dbName = 'myleads.db';
-  static const _dbVersion = 10;
+  static const _dbVersion = 11;
 
   // ── Remote sync callbacks ──────────────────────────────────────────────────
   // Wired once at startup by RemoteSyncService.wireDatabase().
@@ -185,6 +185,10 @@ class DatabaseService {
       // Admins can view all reminders by default
       try { await db.execute("UPDATE organization_members SET can_view_reminders = 1 WHERE role = 'admin'"); } catch (_) {}
     }
+    if (oldVersion < 11) {
+      // v10 → v11: track when the user last successfully synchronized data
+      try { await db.execute('ALTER TABLE users ADD COLUMN last_sync_at TEXT'); } catch (_) {}
+    }
   }
 
   static Future<void> _onCreate(Database db, int version) async {
@@ -213,7 +217,8 @@ class DatabaseService {
         email_verified INTEGER NOT NULL DEFAULT 0,
         organization_id TEXT,
         org_role TEXT,
-        plan TEXT NOT NULL DEFAULT 'free'
+        plan TEXT NOT NULL DEFAULT 'free',
+        last_sync_at TEXT
       )
     ''');
 
@@ -1546,6 +1551,32 @@ class DatabaseService {
   static Future<void> upsertRawRow(String table, Map<String, dynamic> row) async {
     final db = await database;
     await db.insert(table, row, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  /// Persists the timestamp of the most recent successful sync for [userId].
+  static Future<void> updateUserLastSync(String userId, String isoTimestamp) async {
+    final db = await database;
+    await db.update(
+      'users',
+      {'last_sync_at': isoTimestamp},
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
+
+  /// Returns the ISO-8601 timestamp of the most recent successful sync for
+  /// [userId], or null if the user has never synced from this device.
+  static Future<String?> getUserLastSync(String userId) async {
+    final db = await database;
+    final rows = await db.query(
+      'users',
+      columns: ['last_sync_at'],
+      where: 'id = ?',
+      whereArgs: [userId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return rows.first['last_sync_at'] as String?;
   }
 
   // =====================================================================

@@ -1,6 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mysql_client/mysql_client.dart';
 
 import '../config/app_config.dart';
@@ -39,10 +38,14 @@ class SyncResult {
 class RemoteSyncService {
   RemoteSyncService._();
 
-  static const _kLastSyncKey = 'remote_sync_last_at';
-  static const _storage = FlutterSecureStorage();
+  // Set to true after the first successful _ensureSchema so live-write
+  // background tasks don't run all 6 CREATE TABLE statements on every call.
+  static bool _schemaReady = false;
 
-  static Future<String?> get lastSyncAt => _storage.read(key: _kLastSyncKey);
+  /// Returns the ISO-8601 timestamp of the most recent successful sync for
+  /// [userId], or null if the user has never synced from this device.
+  static Future<String?> lastSyncForUser(String userId) =>
+      DatabaseService.getUserLastSync(userId);
 
   // ── Connection ──────────────────────────────────────────────────────────────
 
@@ -269,7 +272,10 @@ class RemoteSyncService {
     final conn = await _connect();
     if (conn == null) return;
     try {
-      await _ensureSchema(conn);
+      if (!_schemaReady) {
+        await _ensureSchema(conn);
+        _schemaReady = true;
+      }
       await action(conn);
     } catch (e) {
       debugPrint('RemoteSyncService background write error: $e');
@@ -294,6 +300,7 @@ class RemoteSyncService {
 
     try {
       await _ensureSchema(conn);
+      _schemaReady = true;
 
       // User row
       final userRow = await DatabaseService.getRawUserRow(userId);
@@ -329,10 +336,8 @@ class RemoteSyncService {
         }
       }
 
-      await _storage.write(
-        key: _kLastSyncKey,
-        value: DateTime.now().toIso8601String(),
-      );
+      final now = DateTime.now().toIso8601String();
+      await DatabaseService.updateUserLastSync(userId, now);
 
       return SyncResult(
         success: true,
@@ -498,10 +503,8 @@ class RemoteSyncService {
         }
       }
 
-      await _storage.write(
-        key: _kLastSyncKey,
-        value: DateTime.now().toIso8601String(),
-      );
+      final now = DateTime.now().toIso8601String();
+      await DatabaseService.updateUserLastSync(userId, now);
 
       return SyncResult(
         success: true,
